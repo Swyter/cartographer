@@ -7837,7 +7837,7 @@ function LuJGL.initialize(name, w, h)
 		error("error initializing glfw",0)
 	end
 	
-	glfw.glfwOpenWindowHint(glfw.GLFW_WINDOW_NO_RESIZE, true)
+	--glfw.glfwOpenWindowHint(glfw.GLFW_WINDOW_NO_RESIZE, true)
 	
 	-- TODO: Whats a good default for the number of stencil bits?
 	if glfw.glfwOpenWindow(w,h,8,8,8,8,24,8,glfw.GLFW_WINDOW) == 0 then
