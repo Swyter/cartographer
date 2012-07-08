@@ -69,19 +69,20 @@ lujgl.setRenderCallback(
 			gl.glTexCoord2d(font.a.u,font.a.v)--(0,1)
 			gl.glVertex2i(  0, 550)
 			
-	--    v
-	--   4|      3
-	-- u--+-----+
-	--	  |     |
-	--	  |     |
-	--    +-----+--w
-	--   1      |2
-	--          h
-		gl.glEnd()
-		lujgl.end2D()
-		
-		lujgl.checkError()
-		end
+			--    v
+			--   4|      3
+			-- u--+-----+
+			--	  |     |
+			--	  |     |
+			--    +-----+--w
+			--   1      |2
+			--          h
+			
+			gl.glEnd()
+			lujgl.end2D()
+			
+			lujgl.checkError()
+			end
 	)
 	
 lujgl.setEventCallback(function() print("event") end)
