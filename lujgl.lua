@@ -7858,6 +7858,10 @@ function LuJGL.initialize(name, w, h)
 		return false
 	end))
 	
+	glfw.glfwSetWindowSizeCallback(create_callback(function()
+		call_callback(render_cb)
+	end))
+	
 	glfw.glfwSetKeyCallback(create_callback(function(key, down)
 		if key <= 255 then
 			key = string.char(key):lower()
