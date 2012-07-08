@@ -96,7 +96,7 @@ if soilffi then
 		--local imgdatabuffer = ffi.new("int[3]",0)
 		
 		--local image = ffi.gc(soil.SOIL_load_OGL_texture(filepath, soil.SOIL_LOAD_AUTO, soil.SOIL_CREATE_NEW_ID, soil.SOIL_FLAG_MIPMAPS))
-		local image = soilffi.SOIL_load_OGL_texture(filepath, soil.SOIL_LOAD_AUTO, soil.SOIL_CREATE_NEW_ID, soil.SOIL_FLAG_MIPMAPS+soil.SOIL_FLAG_TEXTURE_REPEATS+soil.SOIL_FLAG_INVERT_Y)
+		local image = soilffi.SOIL_load_OGL_texture(filepath, soilffi.SOIL_LOAD_AUTO, soilffi.SOIL_CREATE_NEW_ID, soilffi.SOIL_FLAG_MIPMAPS+soilffi.SOIL_FLAG_TEXTURE_REPEATS+soilffi.SOIL_FLAG_INVERT_Y)
 		
 		if image == 0 then
 			error("SOIL DDS failed")
