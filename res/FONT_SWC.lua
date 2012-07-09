@@ -208,7 +208,8 @@ mab.font:load("R:\\Juegos\\swconquest\\modules\\swconquest\\Module Data\\FONT_DA
 --
 
 function mab.font:print(phrase,x,y,s)
-	x=0
+	x=49
+	y=40
 	s=1--130
 	phrase:gsub(".",
 		function(c)
@@ -239,16 +240,16 @@ function mab.font:char(c,x,y,s)
 	
 	--1
 		gl.glTexCoord2d(u,h)--(0,0)
-		gl.glVertex2i(x, 0+yadj)
+		gl.glVertex2i(x, 0+y+yadj)
 	--2
 		gl.glTexCoord2d(w,h)--(1,0)
-		gl.glVertex2i(s*(sx+x), 0+yadj)
+		gl.glVertex2i(s*(sx+x), 0+y+yadj)
 	--3
 		gl.glTexCoord2d(w,v)--(1,1)
-		gl.glVertex2i(s*(sx+x), s*(sy+yadj))
+		gl.glVertex2i(s*(sx+x), s*(y+sy+yadj))
 	--4
 		gl.glTexCoord2d(u,v)--(0,1)
-		gl.glVertex2i(x, s*(sy+yadj))
+		gl.glVertex2i(x, s*(y+sy+yadj))
 	--    v
 	--   4|      3
 	-- u--+-----+
