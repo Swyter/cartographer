@@ -234,19 +234,21 @@ function mab.font:char(c,x,y,s)
 	
 	--horizontal adjustments
 	x = x+mab.font[c].preshift
+	--vertical adjustments
+	yadj = mab.font[c].yadjust-sy
 	
 	--1
 		gl.glTexCoord2d(u,h)--(0,0)
-		gl.glVertex2i(x, 0)
+		gl.glVertex2i(x, 0+yadj)
 	--2
 		gl.glTexCoord2d(w,h)--(1,0)
-		gl.glVertex2i(s*(sx+x), 0)
+		gl.glVertex2i(s*(sx+x), 0+yadj)
 	--3
 		gl.glTexCoord2d(w,v)--(1,1)
-		gl.glVertex2i(s*(sx+x), s*(sy))
+		gl.glVertex2i(s*(sx+x), s*(sy+yadj))
 	--4
 		gl.glTexCoord2d(u,v)--(0,1)
-		gl.glVertex2i(x, s*(sy))
+		gl.glVertex2i(x, s*(sy+yadj))
 	--    v
 	--   4|      3
 	-- u--+-----+
