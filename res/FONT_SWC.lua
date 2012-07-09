@@ -209,12 +209,12 @@ mab.font:load("R:\\Juegos\\swconquest\\modules\\swconquest\\Module Data\\FONT_DA
 
 function mab.font:print(phrase,x,y,s)
 	x=0
-	s=130
+	s=1--130
 	phrase:gsub(".",
 		function(c)
 			ls = mab.font:char(c,x,y,s)
 			print(x)
-			x = x + ls*3
+			x = x + ls
 		end)
 
 end
@@ -230,18 +230,23 @@ function mab.font:char(c,x,y,s)
 	local w= mab.font[c].w/mab.font.width
 	local h= 1-(mab.font[c].h/mab.font.height)
 	
+	local sx, sy = mab.font[c].w-mab.font[c].u, mab.font[c].h-mab.font[c].v --width
+	
+	--horizontal adjustments
+	x = x+mab.font[c].preshift
+	
 	--1
 		gl.glTexCoord2d(u,h)--(0,0)
 		gl.glVertex2i(x, 0)
 	--2
 		gl.glTexCoord2d(w,h)--(1,0)
-		gl.glVertex2i(s+x, 0)
+		gl.glVertex2i(s*(sx+x), 0)
 	--3
 		gl.glTexCoord2d(w,v)--(1,1)
-		gl.glVertex2i(s+x, s)
+		gl.glVertex2i(s*(sx+x), s*(sy))
 	--4
 		gl.glTexCoord2d(u,v)--(0,1)
-		gl.glVertex2i(x, s)
+		gl.glVertex2i(x, s*(sy))
 	--    v
 	--   4|      3
 	-- u--+-----+
@@ -251,7 +256,7 @@ function mab.font:char(c,x,y,s)
 	--   1      |2
 	--          h
 	gl.glEnd()
-	return mab.font[c].h-mab.font[c].v --width
+	return sx
 end
 
  mab.font:print("ñ hola alksdfalksdfalansdfklnasdlf")
