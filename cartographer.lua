@@ -37,7 +37,7 @@ lujgl.setRenderCallback(
 		
 		lujgl.begin2D()
 		--gl.glColor3d(0,1,0)
-		mab.font:print("This is great!",0,0,150)
+		mab.font:print("¡Hello world!",0,0,150)
 		lujgl.end2D()
 		
 		lujgl.checkError()
