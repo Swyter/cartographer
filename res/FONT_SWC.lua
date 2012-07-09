@@ -258,7 +258,7 @@ function mab.font:char(c,x,y,s)
 	--   1      |2
 	--          h
 	gl.glEnd()
-	return sx
+	return sx+(sx-mab.font[c].postshift)
 end
 
  mab.font:print("ñ hola alksdfalksdfalansdfklnasdlf")
