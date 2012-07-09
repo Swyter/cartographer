@@ -210,7 +210,7 @@ mab.font:load("R:\\Juegos\\swconquest\\modules\\swconquest\\Module Data\\FONT_DA
 function mab.font:print(phrase,x,y,s)
 	x=49
 	y=40
-	s=1.3--130
+	s=1--130
 	phrase:gsub(".",
 		function(c)
 			ls = mab.font:char(c,x,y,s)
@@ -231,6 +231,7 @@ function mab.font:char(c,x,y,s)
 	local w= mab.font[c].w/mab.font.width
 	local h= 1-(mab.font[c].h/mab.font.height)
 	
+	--derivate the correct aspect ratio
 	local sx, sy = mab.font[c].w-mab.font[c].u, mab.font[c].h-mab.font[c].v --width
 	
 	--horizontal adjustments

@@ -18,7 +18,8 @@ gl.glEnable(gl.GL_DEPTH_TEST)
 gl.glEnable(gl.GL_COLOR_MATERIAL)
 
 gl.glEnable(gl.GL_BLEND)
-gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_SRC_COLOR)
+--gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_SRC_COLOR)--outlines
+gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_CONSTANT_ALPHA)--vertex colored solid
 
 gl.glEnable(gl.GL_LIGHTING)
 gl.glEnable(gl.GL_LIGHT0)
@@ -36,7 +37,7 @@ lujgl.setRenderCallback(
 		gl.glBindTexture(gl.GL_TEXTURE_2D,fontdds)
 		
 		lujgl.begin2D()
-		--gl.glColor3d(0,1,0)
+		gl.glColor3d(0,1,0)
 		mab.font:print("¡Hello world!",0,0,150)
 		lujgl.end2D()
 		
