@@ -34,7 +34,7 @@ lujgl.setRenderCallback(
 		gl.glBindTexture(gl.GL_TEXTURE_2D,fontdds)
 		
 		lujgl.begin2D()
-		mab.font:print("hola",0,0,150)
+		mab.font:print("hola, que tal!",0,0,150)
 		lujgl.end2D()
 		
 		lujgl.checkError()
