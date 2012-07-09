@@ -16,7 +16,9 @@ glu.gluLookAt(0,0,5,
 	
 gl.glEnable(gl.GL_DEPTH_TEST)
 gl.glEnable(gl.GL_COLOR_MATERIAL)
+
 gl.glEnable(gl.GL_BLEND)
+gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_SRC_COLOR)
 
 gl.glEnable(gl.GL_LIGHTING)
 gl.glEnable(gl.GL_LIGHT0)
@@ -34,7 +36,8 @@ lujgl.setRenderCallback(
 		gl.glBindTexture(gl.GL_TEXTURE_2D,fontdds)
 		
 		lujgl.begin2D()
-		mab.font:print("El niño era ñoño, achís",0,0,150)
+		--gl.glColor3d(0,1,0)
+		mab.font:print("This is great!",0,0,150)
 		lujgl.end2D()
 		
 		lujgl.checkError()
