@@ -90,7 +90,7 @@ soilffi = ffi.load("soil")
 
 if soilffi then
 	--- Loads an image file to a texture, using SOIL
-	-- @param filepath Path to file to load texture from
+	-- @param filepath Path to file to load texture from / DDS-DXT1-3-5 / PNG / BMP / JPG / TGA / ...
 	-- @return Texture ID
 	function soil.loadTexture(filepath)
 
