@@ -7859,6 +7859,9 @@ function LuJGL.initialize(name, w, h)
 	end))
 	
 	glfw.glfwSetWindowSizeCallback(create_callback(function()
+		glfw.glfwGetWindowSize(size_buffer, size_buffer + 1)
+		LuJGL.width = size_buffer[0]
+		LuJGL.height = size_buffer[1]
 		call_callback(render_cb)
 	end))
 	

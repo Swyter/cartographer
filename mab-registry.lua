@@ -29,7 +29,6 @@ function mab.registry:query()
 
             if out then
                 regout[alias]=out  --make an array with the found values, using the alias as key
-                print(out)
             end
         end
     end
