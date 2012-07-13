@@ -46,7 +46,7 @@ mab.map:load("res")--"R:\\Juegos\\swconquest\\modules\\swconquest")
   
   gl.glHint(gl.GL_POLYGON_SMOOTH_HINT, gl.GL_NICEST)
 
---gl.glEnable(gl.GL_CULL_FACE)
+  gl.glEnable(gl.GL_CULL_FACE)
   gl.glEnable(gl.GL_NORMALIZE)
   
   gl.glHint(gl.GL_PERSPECTIVE_CORRECTION_HINT,gl.GL_NICEST)
@@ -67,8 +67,8 @@ mab.map:load("res")--"R:\\Juegos\\swconquest\\modules\\swconquest")
 --gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_CONSTANT_ALPHA)--vertex colored solid
 
   gl.glEnable(gl.GL_LIGHTING)
-  gl.glEnable(gl.GL_LIGHT0)
-  lujgl.glLight(gl.GL_LIGHT0, gl.GL_AMBIENT, 1,1,1)--0.8, 0.2, 0.2)
+--gl.glEnable(gl.GL_LIGHT0)
+--lujgl.glLight(gl.GL_LIGHT0, gl.GL_AMBIENT, 1,1,1)--0.8, 0.2, 0.2)
 
   local rotx, roty, rotz = 1/math.sqrt(2), 1/math.sqrt(2), 0
   local boxx, boxy, boxz = -0.5,-0.5,2
@@ -77,10 +77,10 @@ mab.map:load("res")--"R:\\Juegos\\swconquest\\modules\\swconquest")
 lujgl.setIdleCallback(function()
 
   --manage non-blocking input
-    if key["w"] or key[283] then print("^",pz); pz=pz+.3 end
-    if key["a"] or key[285] then print("<",px); px=px+.3 end --reversed
-    if key["s"] or key[284] then print("v",pz); pz=pz-.3 end
-    if key["d"] or key[286] then print(">",px); px=px-.3 end --reversed
+    if key["w"] or key[283] then print("^",pz); pz=pz+3 end
+    if key["a"] or key[285] then print("<",px); px=px+3 end --reversed
+    if key["s"] or key[284] then print("v",pz); pz=pz-3 end
+    if key["d"] or key[286] then print(">",px); px=px-3 end --reversed
     
     
     if mouse.lclick then print("dragmode!!",mouse.xold-mouse.x); rang=rang+(mouse.xold-mouse.x)/2; ry=1; end
@@ -107,7 +107,6 @@ lujgl.setRenderCallback(function()
 
   --draw the map
     gl.glDisable(gl.GL_BLEND)
-    gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_LINE )
     
     --print(unpack(mab.map.vtx[mab.map.fcs[1][1]]))
     
@@ -124,6 +123,8 @@ lujgl.setRenderCallback(function()
       gl.glEnd()
     end
     gl.glPopMatrix()
+    
+    gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_LINE )
   
     gl.glPushMatrix()
     gl.glTranslated(boxx, boxy, boxz)
