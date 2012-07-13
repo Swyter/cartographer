@@ -35,6 +35,9 @@ lujgl.initialize("cartographer", 800, 600)
 require "res.FONT_SWC"
 fontdds = soil.loadTexture("res\\FONT_SWC.dds")
 
+--@ load our map
+mab.map:load("res")--"R:\\Juegos\\swconquest\\modules\\swconquest")
+
 --@ opengl directives
   gl.glShadeModel(gl.GL_SMOOTH)
   gl.glEnable(gl.GL_AUTO_NORMAL)
@@ -105,6 +108,20 @@ lujgl.setRenderCallback(function()
   --draw the map
     gl.glDisable(gl.GL_BLEND)
     gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_LINE )
+    
+    --print(unpack(mab.map.vtx[mab.map.fcs[1][1]]))
+    
+    gl.glPushMatrix()
+    gl.glColor3d(0,1,0)
+    for i=1,#mab.map.fcs do
+      gl.glBegin(gl.GL_TRIANGLES)
+      --gl.glNormal3fv(CubeVertices.n[i])
+      for j=1,3 do
+        gl.glVertex3fv(mab.map.vtx[mab.map.fcs[i][j]])
+      end
+      gl.glEnd()
+    end
+    gl.glPopMatrix()
   
     gl.glPushMatrix()
     gl.glTranslated(boxx, boxy, boxz)
