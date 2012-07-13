@@ -77,10 +77,10 @@ mab.map:load("res")--"R:\\Juegos\\swconquest\\modules\\swconquest")
 lujgl.setIdleCallback(function()
 
   --manage non-blocking input
-    if key["w"] or key[283] then print("^",pz); pz=pz+.1 end
-    if key["a"] or key[285] then print("<",px); px=px+.1 end --reversed
-    if key["s"] or key[284] then print("v",pz); pz=pz-.1 end
-    if key["d"] or key[286] then print(">",px); px=px-.1 end --reversed
+    if key["w"] or key[283] then print("^",pz); pz=pz+.3 end
+    if key["a"] or key[285] then print("<",px); px=px+.3 end --reversed
+    if key["s"] or key[284] then print("v",pz); pz=pz-.3 end
+    if key["d"] or key[286] then print(">",px); px=px-.3 end --reversed
     
     
     if mouse.lclick then print("dragmode!!",mouse.xold-mouse.x); rang=rang+(mouse.xold-mouse.x)/2; ry=1; end
@@ -116,6 +116,8 @@ lujgl.setRenderCallback(function()
     for i=1,#mab.map.fcs do
       gl.glBegin(gl.GL_TRIANGLES)
       --gl.glNormal3fv(CubeVertices.n[i])
+      x=tonumber(mab.map.fcs[i][4])
+      gl.glColor3f(unpack(mab.map.terrain[x]))
       for j=1,3 do
         gl.glVertex3fv(mab.map.vtx[mab.map.fcs[i][j]])
       end

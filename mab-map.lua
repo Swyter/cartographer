@@ -74,6 +74,7 @@ function mab.map:load(path)
      local r=mab.map.raw[i]
      
      mab.map.fcs[s]={r[4]+1,r[5]+1,r[6]+1} --lua tables start at 1
+     mab.map.fcs[s][4]=r[1]
      --print(unpack(v))
   end
   
