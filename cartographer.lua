@@ -107,20 +107,28 @@ lujgl.setRenderCallback(function()
 
   --draw the map
     gl.glDisable(gl.GL_BLEND)
-    
-    --print(unpack(mab.map.vtx[mab.map.fcs[1][1]]))
-    
     gl.glPushMatrix()
-    gl.glColor3d(0,1,0)
-    for i=1,#mab.map.fcs do
-      gl.glBegin(gl.GL_TRIANGLES)
-      --gl.glNormal3fv(CubeVertices.n[i])
-      x=tonumber(mab.map.fcs[i][4])
-      gl.glColor3f(unpack(mab.map.terrain[x]))
-      for j=1,3 do
-        gl.glVertex3fv(mab.map.vtx[mab.map.fcs[i][j]])
-      end
-      gl.glEnd()
+
+    if not mapmesh or not gl.glIsList(mapmesh) then
+    
+       mapmesh=gl.glGenLists(1)
+       gl.glNewList(mapmesh, gl.GL_COMPILE)
+      
+        for i=1,#mab.map.fcs do
+          gl.glBegin(gl.GL_TRIANGLES)
+          --gl.glNormal3fv(CubeVertices.n[i])
+          x=tonumber(mab.map.fcs[i][4])
+          gl.glColor3f(unpack(mab.map.terrain[x]))
+          for j=1,3 do
+            gl.glVertex3fv(mab.map.vtx[mab.map.fcs[i][j]])
+          end
+          gl.glEnd()
+        end
+        
+       gl.glEndList()
+    
+    else
+       gl.glCallList(mapmesh)
     end
     gl.glPopMatrix()
     
