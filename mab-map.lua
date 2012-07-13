@@ -1,3 +1,4 @@
+local ffi=require"ffi"
 --# swy.Cartographer Terrain Defines
 rt_water                = 0
 rt_mountain             = 1
@@ -36,7 +37,48 @@ mab.map.terrain={
 }
 
 
-function mab.map:load()
+function mab.map:load(path)
+  mab.map.path=path.."\\map.txt"
+  mab.map.raw={}
+
+  print("start parsing map"); s=0
+  for line in io.lines(mab.map.path) do
+    s=s+1
+    mab.map.raw[s]={}
+    for w in line:gmatch("%S+") do table.insert(mab.map.raw[s], w) end --simpler and surely faster
+  end
+  print("ended parsing map")
+  
+  mab.map.vtx={}
+  mab.map.fcs={}
+  
+  vtx=tonumber(mab.map.raw[1][1])
+  fcs=tonumber(mab.map.raw[vtx+2][1])
+  print(string.format("%d vertex, %d faces",vtx,fcs))
+  
+  --@ vertex array
+  s=0
+  for i=2,vtx+1 do
+     s=s+1
+     local r=mab.map.raw[i]
+     
+     mab.map.vtx[s]=ffi.new("const float[3]",{tonumber(r[1]),tonumber(r[3]),tonumber(r[2])}) --reversed y/z
+     --print(unpack(v))
+  end
+ 
+  
+  --@faces array
+  s=0
+  for i=vtx+3,vtx+2+fcs do
+     s=s+1
+     local r=mab.map.raw[i]
+     
+     mab.map.fcs[s]={r[4]+1,r[5]+1,r[6]+1} --lua tables start at 1
+     --print(unpack(v))
+  end
+  
+  print"ended filling arrays"
+  
 end
 
 function mab.map:save()
