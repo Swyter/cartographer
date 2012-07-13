@@ -1,25 +1,29 @@
 local lujgl = require "lujgl"
 local gl, glu, ffi = lujgl.gl, lujgl.glu, require "ffi"
 
-local key,mouse,px,py,pz,rx,ry,rz={},{},0,0,-5,0,0,0
+local key,mouse,px,py,pz,rx,ry,rz, rang={},{},0,0,-5,0,0,0,0
+
+mouse.x=0
+mouse.y=0
+mouse.xold=0
 
 --@ Load cooler dependencies
 require "soil"
 require "mab-map"
 require "mab-registry"
 
-local CubeVerticies = {}
-CubeVerticies.v = ffi.new("const float[8][3]", {
+local CubeVertices = {}
+CubeVertices.v = ffi.new("const float[8][3]", {
   {0,0,1}, {0,0,0}, {0,1,0}, {0,1,1},
   {1,0,1}, {1,0,0}, {1,1,0}, {1,1,1}
 })
 
-CubeVerticies.n = ffi.new("const float[6][3]", {
+CubeVertices.n = ffi.new("const float[6][3]", {
   {-1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {1.0, 0.0, 0.0},
   {0.0, -1.0, 0.0}, {0.0, 0.0, -1.0}, {0.0, 0.0, 1.0}
 })
 
-CubeVerticies.f = ffi.new("const float[6][4]", { 
+CubeVertices.f = ffi.new("const float[6][4]", { 
   {0, 1, 2, 3}, {3, 2, 6, 7}, {7, 6, 5, 4},
   {4, 5, 1, 0}, {5, 6, 2, 1}, {7, 4, 0, 3}
 })
@@ -75,12 +79,9 @@ lujgl.setIdleCallback(function()
     if key["s"] or key[284] then print("v",pz); pz=pz-.1 end
     if key["d"] or key[286] then print(">",px); px=px-.1 end --reversed
     
-    if mouse.rclick then print("LOL") end
     
-    if mouse.wheel_absl then --mab scroll like effect
-     py=mouse.wheel_absl/2
-     rx=mouse.wheel_absl
-    end
+    if mouse.lclick then print("dragmode!!",mouse.xold-mouse.x); rang=rang+(mouse.xold-mouse.x)/2; ry=1; end
+    mouse.xold=mouse.x
     
  end)
  
@@ -94,7 +95,7 @@ lujgl.setRenderCallback(function()
     gl.glMatrixMode(gl.GL_MODELVIEW)
     
     gl.glTranslatef(px,py,pz)
-    gl.glRotatef(rx,rx,ry,rz)
+    gl.glRotatef(rang,rx,ry,rz)
   
   --light gray and clean the screen
     gl.glClearColor(.3,.3,.32,1)
@@ -111,9 +112,9 @@ lujgl.setRenderCallback(function()
     gl.glColor3d(1,1,0)
     for i=0,5 do
       gl.glBegin(gl.GL_QUADS)
-      gl.glNormal3fv(CubeVerticies.n[i])
+      gl.glNormal3fv(CubeVertices.n[i])
       for j=0,3 do
-        gl.glVertex3fv(CubeVerticies.v[CubeVerticies.f[i][j]])
+        gl.glVertex3fv(CubeVertices.v[CubeVertices.f[i][j]])
       end
       gl.glEnd()
     end
@@ -146,7 +147,7 @@ lujgl.setRenderCallback(function()
     
     lujgl.begin2D()
       gl.glColor4d(1,1,1,1)
-      mab.font:print("¡Hello world!",49,lujgl.height/2,1.4)
+      mab.font:print(rang.."--"..(mouse.xold-mouse.x),49,lujgl.height/2,1.4)
     lujgl.end2D()
     
     gl.glDisable(gl.GL_TEXTURE_2D)
@@ -160,7 +161,7 @@ lujgl.setRenderCallback(function()
 lujgl.setEventCallback(function(ev,...) local arg={...}
     print("Event", ev, ...)
     
-    if ev=="key" then       -- keyboard presses
+    if ev=="key" then        -- keyboard presses
       local down,k=arg[1],arg[2]
       
       if k=="w" or k==283
@@ -185,13 +186,20 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
       mouse.y=y
     
     elseif ev=="wheel" then  -- wheel movement
+     
       mouse.wheel_locl=arg[1]
       mouse.wheel_absl=arg[2]
+      
+      if mouse.wheel_absl then --mab scroll like effect
+       py=mouse.wheel_absl/2
+       rx=mouse.wheel_absl
+       rang=mouse.wheel_absl
+      end
       
     end
 
   end
   )
 
--- start the loop already
+--@ start the loop already
 lujgl.mainLoop()
