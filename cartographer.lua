@@ -1,7 +1,7 @@
 local lujgl = require "lujgl"
 local gl, glu, ffi = lujgl.gl, lujgl.glu, require "ffi"
 
-local key,mouse,px,py,pz={},{},0,0,-5
+local key,mouse,px,py,pz,rx,ry,rz={},{},0,0,-5,0,0,0
 
 --@ Load cooler dependencies
 require "soil"
@@ -84,6 +84,14 @@ lujgl.setIdleCallback(function()
     if key["a"] or key[285] then print("<",px); px=px+.1 end --reversed
     if key["s"] or key[284] then print("v",pz); pz=pz-.1 end
     if key["d"] or key[286] then print(">",px); px=px-.1 end --reversed
+    
+    if mouse.rclick then print("LOL") end
+    
+    if mouse.wheel_absl then --mab scroll like effect
+     py=mouse.wheel_absl/2
+     rx=mouse.wheel_absl
+    end
+    
 
  end)
 lujgl.setRenderCallback(
@@ -95,7 +103,9 @@ lujgl.setRenderCallback(
     gl.glLoadIdentity()
     glu.gluPerspective(60,lujgl.width / lujgl.height, 0.01, 1000)
     gl.glMatrixMode(gl.GL_MODELVIEW)
+    
     gl.glTranslatef(px,py,pz)
+    gl.glRotatef(rx,rx,ry,rz)
   
   --light gray and clean the screen
 		gl.glClearColor(.3,.3,.32,1)
