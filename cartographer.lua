@@ -1,7 +1,7 @@
 local lujgl = require "lujgl"
 local gl, glu, ffi = lujgl.gl, lujgl.glu, require "ffi"
 
-local key,px,py,pz={},0,0,-5
+local key,mouse,px,py,pz={},{},0,0,-5
 
 --@ Load cooler dependencies
 require "soil"
@@ -173,11 +173,23 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
         key[k]=down end
 
     elseif ev=="motion"then -- mouse movement
+      mouse.x=arg[1]
+      mouse.y=arg[2]
     
     elseif ev=="mouse" then -- mouse clicks
     
+    local k,down,x,y=arg[1],arg[2],arg[3],arg[4]
+    
+      if k==1 then mouse.rclick=down end
+      if k==0 then mouse.lclick=down end
+      if k==2 then mouse.mclick=down end
+      
+      mouse.x=x
+      mouse.y=y
+    
     elseif ev=="wheel" then -- wheel movement
-      wheel_locl,wheel_absl=arg[1],arg[2]
+      mouse.wheel_locl=arg[1]
+      mouse.wheel_absl=arg[2]
       
     end
 
