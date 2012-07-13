@@ -79,6 +79,7 @@ function mab.map:load(path)
   end
   
   print"ended filling arrays"
+  mab.map.raw=nil--discard raw material, let the garbage collector do his job
   
 end
 

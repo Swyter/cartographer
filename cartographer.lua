@@ -103,8 +103,16 @@ lujgl.setRenderCallback(function()
   --light gray and clean the screen
     gl.glClearColor(.3,.3,.32,1)
     gl.glClear(bit.bor(gl.GL_COLOR_BUFFER_BIT, gl.GL_DEPTH_BUFFER_BIT))
-
-
+  
+  --Subtle fog
+    gl.glFogi(gl.GL_FOG_MODE, gl.GL_LINEAR)
+    gl.glFogfv(gl.GL_FOG_COLOR, ffi.new("const float[4]", {.36*2,.3*2,.32*2,.6}))
+    gl.glFogf(gl.GL_FOG_DENSITY, 0.35)
+    gl.glHint(gl.GL_FOG_HINT, gl.GL_DONT_CARE)
+    gl.glFogf(gl.GL_FOG_START, 100)
+    gl.glFogf(gl.GL_FOG_END, 1000)
+    gl.glEnable(gl.GL_FOG)
+  
   --draw the map
     gl.glDisable(gl.GL_BLEND)
     gl.glPushMatrix()
@@ -126,6 +134,7 @@ lujgl.setRenderCallback(function()
         end
         
        gl.glEndList()
+       mab.map.vtx,mab.map.fcs=nil,nil --garbage collector, do your work!
     
     else
        gl.glCallList(mapmesh)
