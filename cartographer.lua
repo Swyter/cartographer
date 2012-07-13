@@ -1,7 +1,7 @@
 local lujgl = require "lujgl"
 local gl, glu, ffi = lujgl.gl, lujgl.glu, require "ffi"
 
-local key={}
+local key,px,py,pz={},0,0,-5
 
 --@ Load cooler dependencies
 require "soil"
@@ -46,19 +46,14 @@ fontdds = soil.loadTexture("res\\FONT_SWC.dds")
   
   gl.glHint(gl.GL_POLYGON_SMOOTH_HINT, gl.GL_NICEST)
 
-  gl.glEnable(gl.GL_CULL_FACE)
+  --gl.glEnable(gl.GL_CULL_FACE)
   gl.glEnable(gl.GL_NORMALIZE)
   
   gl.glHint(gl.GL_PERSPECTIVE_CORRECTION_HINT,gl.GL_NICEST)
-  gl.glViewport(0, 0, lujgl.width, lujgl.height)
 
-  gl.glMatrixMode(gl.GL_PROJECTION_MATRIX)
-  gl.glLoadIdentity()
-
-glu.gluPerspective(60,lujgl.width / lujgl.height, 0.01, 1000)
 gl.glMatrixMode(gl.GL_MODELVIEW)
 
-glu.gluLookAt(0,0,5,
+glu.gluLookAt(0,0,-5,
 	0,0,0,
 	0,1,1)
   
@@ -80,7 +75,17 @@ local boxx, boxy, boxz = -0.5,-0.5,2
 
 -- we like callbacks
 
-lujgl.setIdleCallback(function() end)
+lujgl.checkError()
+
+lujgl.setIdleCallback(function()
+
+  --manage non-blocking input
+    if key["w"] or key[283] then print("^",pz); pz=pz+.1 end
+    if key["a"] or key[285] then print("<",px); px=px+.1 end --reversed
+    if key["s"] or key[284] then print("v",pz); pz=pz-.1 end
+    if key["d"] or key[286] then print(">",px); px=px-.1 end --reversed
+
+ end)
 lujgl.setRenderCallback(
 	function()
   
@@ -90,6 +95,7 @@ lujgl.setRenderCallback(
     gl.glLoadIdentity()
     glu.gluPerspective(60,lujgl.width / lujgl.height, 0.01, 1000)
     gl.glMatrixMode(gl.GL_MODELVIEW)
+    gl.glTranslatef(px,py,pz)
   
   --light gray and clean the screen
 		gl.glClearColor(.3,.3,.32,1)
@@ -130,8 +136,6 @@ lujgl.setRenderCallback(
   
   --draw the markers
   
-  
-  
   --draw 2d
     gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_FILL )
     
@@ -148,6 +152,7 @@ lujgl.setRenderCallback(
     
     gl.glDisable(gl.GL_TEXTURE_2D)
     
+    
   --bugs ahoy?
     --lujgl.checkError()
 	end
@@ -157,13 +162,22 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
     print("Event", ev, ...)
     
         if ev=="key"   then -- keyboard presses
+        
+        local down,k=arg[1],arg[2]
+        
+        if k=="w" or k==283
+        or k=="a" or k==285
+        or k=="s" or k==284
+        or k=="d" or k==286 then
+        
+        key[k]=down end
 
     elseif ev=="motion"then -- mouse movement
     
     elseif ev=="mouse" then -- mouse clicks
     
     elseif ev=="wheel" then -- wheel movement
-      wheel_locl,wheel_absl =arg[1],arg[2]
+      wheel_locl,wheel_absl=arg[1],arg[2]
       
     end
 
