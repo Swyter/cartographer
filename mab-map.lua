@@ -62,7 +62,7 @@ function mab.map:load(path)
      s=s+1
      local r=mab.map.raw[i]
      
-     mab.map.vtx[s]=ffi.new("const float[3]",{tonumber(r[1]),tonumber(r[3]),tonumber(r[2])}) --reversed y/z
+     mab.map.vtx[s]=ffi.new("const float[3]",{tonumber(r[1]*-1),tonumber(r[3]),tonumber(r[2])}) --reversed y/z
      --print(unpack(v))
   end
  
