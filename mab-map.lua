@@ -134,7 +134,7 @@ function mab.map:saveobj(file)
 end
 
 
-function string:split(sep)
+function string:split(sep) --from <http://lua-users.org/wiki/SplitJoin> #Method: Using only string.gsub -> Fix
         local sep, fields = sep or "/", {}
         local pattern = string.format("([^%s]+)", sep)
         self:gsub(pattern, function(c) fields[#fields+1] = c end)
@@ -150,19 +150,19 @@ function mab.map:loadobj(file)
     ltrim=line:match("%S.*") or "#"
     index=ltrim:sub(1,1)
     if index ~= "#" then --not a comment
-      raw=line:sub(3,-1)
+      raw=line:sub(3,-1) --skip the index/letter part plus one space
       
-      if index == "v" then --vertex
+      if index == "v" then --@vertex
         local tmp={}; for w in raw:gmatch("%S+") do table.insert(tmp, tonumber(w)) end
         mab.map.vtx[#mab.map.vtx+1]=vector.new(tmp[1],tmp[2],tmp[3])
         
-      elseif index == "f" then --face
-
-        if  string.find(raw, "/") == -1 then --comes with normals && texcoords?
-          fs=fs+1; mab.map.fcs[fs]={}; for w in raw:gmatch("%S+") do
-          table.insert(mab.map.fcs[fs], tonumber(w)) end
+      elseif index == "f" then --@face
+      fs=fs+1;
+        if string.find(raw, "/") == -1 then --line comes with normals && texcoords?
+          mab.map.fcs[fs]={}; for w in raw:gmatch("%S+") do
+          table.insert(mab.map.fcs[fs], tonumber(w)) end --This saves a lot of time recursively parsing stuff, redundancy is slow... branching is good
         else
-          fs=fs+1; mab.map.fcs[fs]={}; for w in raw:gmatch("%S+") do
+          mab.map.fcs[fs]={}; for w in raw:gmatch("%S+") do
           wsplit=w:split()[1];table.insert(mab.map.fcs[fs], tonumber(wsplit)) end
         end
         mab.map.fcs[fs][4]=0 --@FIXME hack, no material as of yet :(
@@ -170,6 +170,4 @@ function mab.map:loadobj(file)
     end
   end
   print("Finished importing OBJ...")
-  --print (mab.map.vtx[1].x)
-  print (mab.map.fcs[1][1])
 end
