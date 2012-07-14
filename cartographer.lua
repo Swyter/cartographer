@@ -34,7 +34,6 @@ lujgl.initialize("cartographer", 800, 600)
 --@ load our font
 require "res.FONT_SWC"
 fontdds = soil.loadTexture("res\\FONT_SWC.dds")
-
 --@ load our map
 mab.map:load("res")--"R:\\Juegos\\swconquest\\modules\\swconquest")
 
@@ -47,7 +46,7 @@ mab.map:load("res")--"R:\\Juegos\\swconquest\\modules\\swconquest")
   gl.glHint(gl.GL_POLYGON_SMOOTH_HINT, gl.GL_NICEST)
 
   gl.glEnable(gl.GL_CULL_FACE)
-  gl.glEnable(gl.GL_NORMALIZE)
+  --gl.glEnable(gl.GL_NORMALIZE)
   
   gl.glHint(gl.GL_PERSPECTIVE_CORRECTION_HINT,gl.GL_NICEST)
 
@@ -56,7 +55,7 @@ mab.map:load("res")--"R:\\Juegos\\swconquest\\modules\\swconquest")
   glu.gluLookAt(0,0,-5,
     0,0,0,
     0,1,1)
-    
+
   gl.glEnable(gl.GL_DEPTH_TEST)
   gl.glDepthFunc(gl.GL_LEQUAL)
 
@@ -67,9 +66,12 @@ mab.map:load("res")--"R:\\Juegos\\swconquest\\modules\\swconquest")
 --gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_CONSTANT_ALPHA)--vertex colored solid
 
   gl.glEnable(gl.GL_LIGHTING)
---gl.glEnable(gl.GL_LIGHT0)
---lujgl.glLight(gl.GL_LIGHT0, gl.GL_AMBIENT, 1,1,1)--0.8, 0.2, 0.2)
-
+  gl.glEnable(gl.GL_LIGHT0)
+  lujgl.glLight(gl.GL_LIGHT0, gl.GL_AMBIENT, 0.2, 0.2, 0.2)
+  lujgl.glLight(gl.GL_LIGHT0, gl.GL_POSITION, 135.66, 129.83, 4.7, 1.0)
+  
+  --gl.glColorMaterial(gl.GL_FRONT, gl.GL_AMBIENT);
+  
   local rotx, roty, rotz = 1/math.sqrt(2), 1/math.sqrt(2), 0
   local boxx, boxy, boxz = -0.5,-0.5,2
 
@@ -83,13 +85,16 @@ lujgl.setIdleCallback(function()
     if key["d"] or key[286] then print(">",px); px=px-3 end --reversed
     
     
+    if key[265] then mab.map:saveobj("_out.obj") end
+    
+    
     if mouse.lclick then print("dragmode!!",mouse.xold-mouse.x); rang=rang+(mouse.xold-mouse.x)/2; ry=1; end
     mouse.xold=mouse.x
     
  end)
  
 lujgl.setRenderCallback(function()
-  
+  gl.glShadeModel(gl.GL_SMOOTH)
   --let's fix aspect ratio
     gl.glViewport(0, 0, lujgl.width, lujgl.height)
     gl.glMatrixMode(gl.GL_PROJECTION_MATRIX)
@@ -115,6 +120,7 @@ lujgl.setRenderCallback(function()
   
   --draw the map
     gl.glDisable(gl.GL_BLEND)
+    gl.glEnable(gl.GL_LIGHT0)
     gl.glPushMatrix()
 
     if not mapmesh or not gl.glIsList(mapmesh) then
@@ -123,18 +129,23 @@ lujgl.setRenderCallback(function()
        gl.glNewList(mapmesh, gl.GL_COMPILE)
       
         for i=1,#mab.map.fcs do
-          gl.glBegin(gl.GL_TRIANGLES)
-          --gl.glNormal3fv(CubeVertices.n[i])
+          gl.glBegin(gl.GL_TRIANGLE_STRIP)
+          
+          nm=mab.map:computenrm(mab.map.fcs[i])
+          gl.glNormal3d(nm.x,nm.y,nm.z)
+          
           x=tonumber(mab.map.fcs[i][4])
           gl.glColor3f(unpack(mab.map.terrain[x]))
+          
           for j=1,3 do
-            gl.glVertex3fv(mab.map.vtx[mab.map.fcs[i][j]])
+            local vt=mab.map.vtx[mab.map.fcs[i][j]]
+            gl.glVertex3d(vt.x,vt.y,vt.z)
           end
           gl.glEnd()
         end
         
        gl.glEndList()
-       mab.map.vtx,mab.map.fcs=nil,nil --garbage collector, do your work!
+       --mab.map=nil --garbage collector, do your work!
     
     else
        gl.glCallList(mapmesh)
@@ -142,6 +153,7 @@ lujgl.setRenderCallback(function()
     gl.glPopMatrix()
     
     gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_LINE )
+    gl.glDisable(gl.GL_LIGHT0)
   
     gl.glPushMatrix()
     gl.glTranslated(boxx, boxy, boxz)
@@ -170,7 +182,7 @@ lujgl.setRenderCallback(function()
       10
     );
     gl.glPopMatrix()
-  
+
   --draw the markers
   
   --draw 2d
@@ -190,6 +202,9 @@ lujgl.setRenderCallback(function()
     gl.glDisable(gl.GL_TEXTURE_2D)
     
     
+    --pixels=ffi.new("int[1]",0)
+    --gl.glReadPixels( mouse.x, lujgl.width-mouse.y, 10,10, gl.GL_DEPTH_COMPONENT, gl.GL_INT, pixels );
+
   --bugs ahoy?
     --lujgl.checkError()
   end
@@ -204,7 +219,9 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
       if k=="w" or k==283
       or k=="a" or k==285
       or k=="s" or k==284
-      or k=="d" or k==286 then
+      or k=="d" or k==286
+
+      or k==265 then --f8
       
       key[k]=down end
 

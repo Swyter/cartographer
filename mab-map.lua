@@ -1,4 +1,5 @@
-local ffi=require"ffi"
+local ffi,vector=require"ffi",require"vectors"
+
 --# swy.Cartographer Terrain Defines
 rt_water                = 0
 rt_mountain             = 1
@@ -61,9 +62,8 @@ function mab.map:load(path)
   for i=2,vtx+1 do
      s=s+1
      local r=mab.map.raw[i]
-     
-     mab.map.vtx[s]=ffi.new("const float[3]",{tonumber(r[1])*-1,tonumber(r[3]),tonumber(r[2])}) --reversed y/z
-     --print(unpack(v))
+
+     mab.map.vtx[s]=vector.new(tonumber(r[1])*-1,tonumber(r[3]),tonumber(r[2])) --reversed y/z
   end
  
   
@@ -75,14 +75,60 @@ function mab.map:load(path)
      
      mab.map.fcs[s]={r[4]+1,r[5]+1,r[6]+1} --lua tables start at 1
      mab.map.fcs[s][4]=r[1]
-     --print(unpack(v))
   end
   
   print"ended filling arrays"
-  mab.map.raw=nil--discard raw material, let the garbage collector do his job
+  mab.map.raw=nil--discard raw material, let the garbage collector do its job
   
 end
 
 function mab.map:save()
     print("Map saving not implemented... yet")
+end
+
+function mab.map:computenrm(triangle)
+     local a,b,c=
+     mab.map.vtx[triangle[1]],
+     mab.map.vtx[triangle[2]],
+     mab.map.vtx[triangle[3]]
+    
+     local U=vector.new(
+     b.x-a.x,
+     b.y-a.y,
+     b.z-a.z
+     )
+     local V=vector.new(
+     c.x-a.x,
+     c.y-a.y,
+     c.z-a.z
+     )
+
+     return U:cross(V):normalized()
+end
+
+
+function mab.map:saveobj(file)
+  print("Exporting OBJ...")
+  io.output(io.open(file,"w"))
+  io.write([[
+  # Mount&Blade Map file
+  # Exported by swyter's cartographer
+
+]])
+  
+  for s=1,vtx do
+    curr=mab.map.vtx[s]
+    io.write(
+      string.format("v %g %g %g\n",curr.x,curr.y,curr.z) --floats
+    )
+  end
+  
+  for s=1,fcs do
+    curr=mab.map.fcs[s]
+    io.write(
+      string.format("f %d %d %d\n",curr[1],curr[2],curr[3]) --integers
+    )
+  end
+  io.close()
+  print("exported OBJ...")
 end
