@@ -21,20 +21,20 @@ mab.map.terrain = mab.map.terrain or {}
 
 ------------->  Color Table -- Red, Green, Blue
 mab.map.terrain={
-    [(rt_water)]            ={   0,   0,   1  },
-    [(rt_mountain)]         ={  .5,  .6,  .4  },
-    [(rt_steppe)]           ={   0,   1,  .5  },
-    [(rt_plain)]            ={   0,   1,  .2  },
-    [(rt_snow)]             ={   1,   1,   1  },
-    [(rt_desert)]           ={   0,   0,  .8  },
-    [(rt_bridge)]           ={   1,   0,   0  },
-    [(rt_river)]            ={   0,   0,  .8  },
-    [(rt_desert)]           ={  .7,  .8,  .6  },
-    [(rt_mountain_forest)]  ={  .5,  .6,  .4  },
-    [(rt_steppe_forest)]    ={  .5,  .6,  .4  },
-    [(rt_forest)]           ={  .5,  .6,  .4  },
-    [(rt_snow_forest)]      ={  .8,  .8,  .8  },
-    [(rt_desert_forest)]    ={  .5,  .6,  .4  }
+    [(rt_water)]            ={  0,   0,  .3  },
+    [(rt_mountain)]         ={ .5,  .6,  .4  },
+    [(rt_steppe)]           ={  0,   1,  .5  },
+    [(rt_plain)]            ={  0,   1,  .2  },
+    [(rt_snow)]             ={  1,   1,   1  },
+    [(rt_desert)]           ={  0,   0,  .8  },
+    [(rt_bridge)]           ={  1,   0,   0  },
+    [(rt_river)]            ={  0,   0,  .5  },
+    [(rt_desert)]           ={ .7,  .8,  .6  },
+    [(rt_mountain_forest)]  ={ .5,  .6,  .4  },
+    [(rt_steppe_forest)]    ={ .4,  .5,  .4  },
+    [(rt_forest)]           ={ .5,  .6,  .4  },
+    [(rt_snow_forest)]      ={ .8,  .8,  .8  },
+    [(rt_desert_forest)]    ={ .5,  .6,  .4  }
 }
 
 
@@ -117,18 +117,59 @@ function mab.map:saveobj(file)
 ]])
   
   for s=1,vtx do
-    curr=mab.map.vtx[s]
+    local curr=mab.map.vtx[s]
     io.write(
       string.format("v %g %g %g\n",curr.x,curr.y,curr.z) --floats
     )
   end
   
   for s=1,fcs do
-    curr=mab.map.fcs[s]
+    local curr=mab.map.fcs[s]
     io.write(
       string.format("f %d %d %d\n",curr[1],curr[2],curr[3]) --integers
     )
   end
   io.close()
   print("exported OBJ...")
+end
+
+
+function string:split(sep)
+        local sep, fields = sep or "/", {}
+        local pattern = string.format("([^%s]+)", sep)
+        self:gsub(pattern, function(c) fields[#fields+1] = c end)
+        return fields
+end
+
+function mab.map:loadobj(file)
+  print("Importing OBJ..."); fs=0
+  mab.map.vtx,mab.map.fcs={},{}
+
+  for line in io.lines(file) do
+  
+    ltrim=line:match("%S.*") or "#"
+    index=ltrim:sub(1,1)
+    if index ~= "#" then --not a comment
+      raw=line:sub(3,-1)
+      
+      if index == "v" then --vertex
+        local tmp={}; for w in raw:gmatch("%S+") do table.insert(tmp, tonumber(w)) end
+        mab.map.vtx[#mab.map.vtx+1]=vector.new(tmp[1],tmp[2],tmp[3])
+        
+      elseif index == "f" then --face
+
+        if  string.find(raw, "/") == -1 then --comes with normals && texcoords?
+          fs=fs+1; mab.map.fcs[fs]={}; for w in raw:gmatch("%S+") do
+          table.insert(mab.map.fcs[fs], tonumber(w)) end
+        else
+          fs=fs+1; mab.map.fcs[fs]={}; for w in raw:gmatch("%S+") do
+          wsplit=w:split()[1];table.insert(mab.map.fcs[fs], tonumber(wsplit)) end
+        end
+        mab.map.fcs[fs][4]=0 --@FIXME hack, no material as of yet :(
+      end
+    end
+  end
+  print("Finished importing OBJ...")
+  --print (mab.map.vtx[1].x)
+  print (mab.map.fcs[1][1])
 end

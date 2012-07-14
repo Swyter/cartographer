@@ -65,8 +65,8 @@ mab.map:load("res")--"R:\\Juegos\\swconquest\\modules\\swconquest")
 --gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_SRC_COLOR)--outlines
 --gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_CONSTANT_ALPHA)--vertex colored solid
 
-  gl.glEnable(gl.GL_LIGHTING)
-  gl.glEnable(gl.GL_LIGHT0)
+--gl.glEnable(gl.GL_LIGHTING)
+--gl.glEnable(gl.GL_LIGHT0)
   lujgl.glLight(gl.GL_LIGHT0, gl.GL_AMBIENT, 0.2, 0.2, 0.2)
   lujgl.glLight(gl.GL_LIGHT0, gl.GL_POSITION, 135.66, 129.83, 4.7, 1.0)
   
@@ -85,7 +85,9 @@ lujgl.setIdleCallback(function()
     if key["d"] or key[286] then print(">",px); px=px-3 end --reversed
     
     
-    if key[265] then mab.map:saveobj("_out.obj") end
+    if key[265] then mab.map:saveobj("_out.obj") end --f8
+    if key[264] then mab.map:loadobj("_out.obj");
+                     gl.glDeleteLists(mapmesh,1);mapmesh=nil end --refresh cached map end --f7
     
     
     if mouse.lclick then print("dragmode!!",mouse.xold-mouse.x); rang=rang+(mouse.xold-mouse.x)/2; ry=1; end
@@ -124,6 +126,7 @@ lujgl.setRenderCallback(function()
     gl.glPushMatrix()
 
     if not mapmesh or not gl.glIsList(mapmesh) then
+    print"(i)no cache avaliable, rebuilding displaylist"
     
        mapmesh=gl.glGenLists(1)
        gl.glNewList(mapmesh, gl.GL_COMPILE)
@@ -221,7 +224,7 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
       or k=="s" or k==284
       or k=="d" or k==286
 
-      or k==265 then --f8
+      or k==265 or k==264 then --f8 & f7
       
       key[k]=down end
 
