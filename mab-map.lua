@@ -26,7 +26,7 @@ mab.map.terrain={
     [(rt_steppe)]           ={  0,   1,  .5  },
     [(rt_plain)]            ={  0,   1,  .2  },
     [(rt_snow)]             ={  1,   1,   1  },
-    [(rt_desert)]           ={  0,   0,  .8  },
+    [(rt_desert)]           ={  1,  .3,  .2  },
     [(rt_bridge)]           ={  1,   0,   0  },
     [(rt_river)]            ={  0,   0,  .5  },
     [(rt_desert)]           ={ .7,  .8,  .6  },
@@ -40,28 +40,29 @@ mab.map.terrain={
 
 function mab.map:load(path)
   mab.map.path=path.."\\map.txt"
-  mab.map.raw={}
+  local raw={}
+  local x = os.clock()
 
-  print("start parsing map"); s=0
+  print("@--start parsing map"); s=0
   for line in io.lines(mab.map.path) do
     s=s+1
-    mab.map.raw[s]={}
-    for w in line:gmatch("%S+") do table.insert(mab.map.raw[s], w) end --simpler and surely faster
+    raw[s]={}
+    for w in line:gmatch("%S+") do table.insert(raw[s], w) end --simpler and surely faster
   end
-  print("ended parsing map")
+  print("   ended parsing "..(os.clock()-x).."s")
   
   mab.map.vtx={}
   mab.map.fcs={}
   
-  vtx=tonumber(mab.map.raw[1][1])
-  fcs=tonumber(mab.map.raw[vtx+2][1])
+  vtx=tonumber(raw[1][1])
+  fcs=tonumber(raw[vtx+2][1])
   print(string.format("%d vertex, %d faces",vtx,fcs))
   
   --@ vertex array
   s=0
   for i=2,vtx+1 do
      s=s+1
-     local r=mab.map.raw[i]
+     local r=raw[i]
 
      mab.map.vtx[s]=vector.new(tonumber(r[1])*-1,tonumber(r[3]),tonumber(r[2])) --reversed y/z
   end
@@ -71,14 +72,14 @@ function mab.map:load(path)
   s=0
   for i=vtx+3,vtx+2+fcs do
      s=s+1
-     local r=mab.map.raw[i]
+     local r=raw[i]
      
      mab.map.fcs[s]={r[4]+1,r[5]+1,r[6]+1} --lua tables start at 1
      mab.map.fcs[s][4]=r[1]
   end
   
-  print"ended filling arrays"
-  mab.map.raw=nil--discard raw material, let the garbage collector do its job
+  print("   ended filling arrays "..(os.clock()-x).."s")
+  raw={}; collectgarbage("collect")--discard raw material, let the garbage collector do its job
   
 end
 
@@ -108,7 +109,7 @@ end
 
 
 function mab.map:saveobj(file)
-  print("Exporting OBJ...")
+  print("@--Exporting OBJ...") local start=os.clock()
   io.output(io.open(file,"w"))
   io.write([[
   # Mount&Blade Map file
@@ -123,14 +124,21 @@ function mab.map:saveobj(file)
     )
   end
   
+ -- for s=1,fcs do
+ --   local curr=mab.map:computenrm(mab.map.fcs[s])
+ --   io.write(
+ --     string.format("vn %f %f %f\n",curr.x,curr.y,curr.z) --floats
+ --   )
+  --end
+  
   for s=1,fcs do
     local curr=mab.map.fcs[s]
     io.write(
-      string.format("f %d %d %d\n",curr[1],curr[2],curr[3]) --integers
+      string.format("f %d//"..s.." %d//"..s.." %d//"..s.."\n",curr[1],curr[2],curr[3]) --integers
     )
   end
   io.close()
-  print("exported OBJ...")
+  print("   done... "..(os.clock()-start).."s")
 end
 
 
@@ -142,32 +150,40 @@ function string:split(sep) --from <http://lua-users.org/wiki/SplitJoin> #Method:
 end
 
 function mab.map:loadobj(file)
-  print("Importing OBJ..."); fs=0
-  mab.map.vtx,mab.map.fcs={},{}
+  print("@--Importing OBJ..."); local fs=0
+  mab.map.vtx,mab.map.fcs,mab.map.nrm,mab.map.nrmi={},{},{},{}
 
   for line in io.lines(file) do
   
     ltrim=line:match("%S.*") or "#"
-    index=ltrim:sub(1,1)
-    if index ~= "#" then --not a comment
-      raw=line:sub(3,-1) --skip the index/letter part plus one space
-      
-      if index == "v" then --@vertex
+    index=ltrim:sub(1,2)
+    if index ~= "# " then --not a comment
+      local raw=line:sub(3,-1) --skip the index/letter part plus one space
+      if index == "v " then --@vertex
         local tmp={}; for w in raw:gmatch("%S+") do table.insert(tmp, tonumber(w)) end
         mab.map.vtx[#mab.map.vtx+1]=vector.new(tmp[1],tmp[2],tmp[3])
         
-      elseif index == "f" then --@face
+      elseif index == "vn" then --@normals
+        local tmp={}; for w in raw:match("%S.*"):gmatch("%S+") do table.insert(tmp, tonumber(w)) end
+        mab.map.nrm[#mab.map.nrm+1]=vector.new(tmp[1],tmp[2],tmp[3])
+        
+      elseif index == "f " then --@face
       fs=fs+1;
         if string.find(raw, "/") == -1 then --line comes with normals && texcoords?
           mab.map.fcs[fs]={}; for w in raw:gmatch("%S+") do
           table.insert(mab.map.fcs[fs], tonumber(w)) end --This saves a lot of time recursively parsing stuff, redundancy is slow... branching is good
         else
-          mab.map.fcs[fs]={}; for w in raw:gmatch("%S+") do
-          wsplit=w:split()[1];table.insert(mab.map.fcs[fs], tonumber(wsplit)) end
+          local nmc=4
+          mab.map.fcs[fs]={};
+          
+          for w in raw:gmatch("%S+") do
+          wsplit=w:split();nmc=nmc+1;
+          table.insert(mab.map.fcs[fs], tonumber(wsplit[1]));
+          table.insert(mab.map.fcs[fs], 1, nmc) end
         end
         mab.map.fcs[fs][4]=0 --@FIXME hack, no material as of yet :(
       end
     end
   end
-  print("Finished importing OBJ...")
+  print("   finished...")
 end

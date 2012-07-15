@@ -1,7 +1,7 @@
 local lujgl = require "lujgl"
 local gl, glu, ffi = lujgl.gl, lujgl.glu, require "ffi"
 
-local key,mouse,px,py,pz,rx,ry,rz, rang={},{},0,0,-5,0,0,0,0
+local key,mouse,px,py,pz,rx,ry,rz, xrang,yrang={},{},0,0,-5,0,0,0, 0,0
 
 mouse.x=0
 mouse.y=0
@@ -46,31 +46,30 @@ mab.map:load("res")--"R:\\Juegos\\swconquest\\modules\\swconquest")
   gl.glHint(gl.GL_POLYGON_SMOOTH_HINT, gl.GL_NICEST)
 
   gl.glEnable(gl.GL_CULL_FACE)
-  --gl.glEnable(gl.GL_NORMALIZE)
+--gl.glEnable(gl.GL_NORMALIZE)
   
   gl.glHint(gl.GL_PERSPECTIVE_CORRECTION_HINT,gl.GL_NICEST)
 
   gl.glMatrixMode(gl.GL_MODELVIEW)
 
   glu.gluLookAt(0,0,-5,
-    0,0,0,
-    0,1,1)
+                0,0,0,
+                0,1,1)
 
   gl.glEnable(gl.GL_DEPTH_TEST)
   gl.glDepthFunc(gl.GL_LEQUAL)
 
   gl.glEnable(gl.GL_COLOR_MATERIAL)
+  
+  gl.glEnable(gl.GL_LIGHTING)
+  gl.glEnable(gl.GL_LIGHT0)
 
 --gl.glEnable(gl.GL_BLEND)
 --gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_SRC_COLOR)--outlines
 --gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_CONSTANT_ALPHA)--vertex colored solid
 
---gl.glEnable(gl.GL_LIGHTING)
---gl.glEnable(gl.GL_LIGHT0)
-  lujgl.glLight(gl.GL_LIGHT0, gl.GL_AMBIENT, 0.2, 0.2, 0.2)
-  lujgl.glLight(gl.GL_LIGHT0, gl.GL_POSITION, 135.66, 129.83, 4.7, 1.0)
-  
-  --gl.glColorMaterial(gl.GL_FRONT, gl.GL_AMBIENT);
+
+--gl.glColorMaterial(gl.GL_FRONT, gl.GL_AMBIENT);
   
   local rotx, roty, rotz = 1/math.sqrt(2), 1/math.sqrt(2), 0
   local boxx, boxy, boxz = -0.5,-0.5,2
@@ -86,12 +85,23 @@ lujgl.setIdleCallback(function()
     
     
     if key[265] then mab.map:saveobj("_out.obj") end --f8
-    if key[264] then mab.map:loadobj("_out.obj");
+    if key[264] then mab.map:loadobj("_out_blender.obj");
                      gl.glDeleteLists(mapmesh,1);mapmesh=nil end --refresh cached map end --f7
     
     
-    if mouse.lclick then print("dragmode!!",mouse.xold-mouse.x); rang=rang+(mouse.xold-mouse.x)/2; ry=1; end
+    if mouse.lclick then print("dragmode!!",mouse.xold-mouse.x); xrang=xrang+(mouse.xold-mouse.x)/2; rx=1; end
+    if mouse.lclick then print("dragmode!!",mouse.yold-mouse.y); yrang=yrang+(mouse.yold-mouse.y)/2; ry=1; end
+    if yrang<-90 then yrang=-90 end
+    if yrang<-90 then yrang=-90 end 
+    
     mouse.xold=mouse.x
+    mouse.yold=mouse.y
+    
+        if yrang > 360 then yrang=0
+    elseif yrang < 0   then yrang=360 end --clamp between 0<>360 deg
+    
+        if xrang > 360 then xrang=0
+    elseif xrang < 0   then xrang=360 end --clamp between 0<>360 deg
     
  end)
  
@@ -105,7 +115,12 @@ lujgl.setRenderCallback(function()
     gl.glMatrixMode(gl.GL_MODELVIEW)
     
     gl.glTranslatef(px,py,pz)
-    gl.glRotatef(rang,rx,ry,rz)
+    gl.glRotatef(yrang,ry,0,0)  
+    gl.glRotatef(xrang,0,rx,0)
+
+
+    lujgl.glLight(gl.GL_LIGHT0, gl.GL_AMBIENT, 0.2, 0.2, 0.2)
+    lujgl.glLight(gl.GL_LIGHT0, gl.GL_POSITION, 135, 135, 135, 135)
   
   --light gray and clean the screen
     gl.glClearColor(.3,.3,.32,1)
@@ -119,14 +134,14 @@ lujgl.setRenderCallback(function()
     gl.glFogf(gl.GL_FOG_START, 100)
     gl.glFogf(gl.GL_FOG_END, 1000)
     gl.glEnable(gl.GL_FOG)
-  
+    
   --draw the map
     gl.glDisable(gl.GL_BLEND)
     gl.glEnable(gl.GL_LIGHT0)
     gl.glPushMatrix()
 
     if not mapmesh or not gl.glIsList(mapmesh) then
-    print"(i)no cache avaliable, rebuilding displaylist"
+    print"(i)no cache avaliable, rebuilding displaylist"; local start=os.clock()
     
        mapmesh=gl.glGenLists(1)
        gl.glNewList(mapmesh, gl.GL_COMPILE)
@@ -134,7 +149,11 @@ lujgl.setRenderCallback(function()
         for i=1,#mab.map.fcs do
           gl.glBegin(gl.GL_TRIANGLE_STRIP)
           
-          nm=mab.map:computenrm(mab.map.fcs[i])
+          if mab.map.nrm and #mab.map.nrm>0 then
+            nm=mab.map.nrm[mab.map.fcs[4]]
+          else
+            nm=mab.map:computenrm(mab.map.fcs[i])
+          end
           gl.glNormal3d(nm.x,nm.y,nm.z)
           
           x=tonumber(mab.map.fcs[i][4])
@@ -148,6 +167,7 @@ lujgl.setRenderCallback(function()
         end
         
        gl.glEndList()
+       print("generated displaylist "..(os.clock()-start).."s")
        --mab.map=nil --garbage collector, do your work!
     
     else
@@ -199,7 +219,7 @@ lujgl.setRenderCallback(function()
     
     lujgl.begin2D()
       gl.glColor4d(1,1,1,1)
-      mab.font:print(rang.."--"..(mouse.xold-mouse.x),49,lujgl.height/2,1.4)
+      mab.font:print(yrang.."--"..(mouse.xold-mouse.x),49,lujgl.height/2,1.4)
     lujgl.end2D()
     
     gl.glDisable(gl.GL_TEXTURE_2D)
@@ -248,9 +268,9 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
       mouse.wheel_absl=arg[2]
       
       if mouse.wheel_absl then --mab scroll like effect
-       py=mouse.wheel_absl/2
-       rx=mouse.wheel_absl
-       rang=mouse.wheel_absl
+       py=py+mouse.wheel_locl
+       --rx=rx+mouse.wheel_locl
+       --rang=mouse.wheel_absl
       end
       
     end
