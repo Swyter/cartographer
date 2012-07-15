@@ -124,12 +124,12 @@ function mab.map:saveobj(file)
     )
   end
   
- -- for s=1,fcs do
- --   local curr=mab.map:computenrm(mab.map.fcs[s])
- --   io.write(
- --     string.format("vn %f %f %f\n",curr.x,curr.y,curr.z) --floats
- --   )
-  --end
+  for s=1,fcs do
+    local curr=mab.map:computenrm(mab.map.fcs[s])
+    io.write(
+      string.format("vn %f %f %f\n",curr.x,curr.y,curr.z) --floats
+    )
+  end
   
   for s=1,fcs do
     local curr=mab.map.fcs[s]
