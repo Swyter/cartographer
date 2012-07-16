@@ -28,7 +28,14 @@ function mab.registry:query()
                                     registry.HKEY_LOCAL_MACHINE, flags)
 
             if out then
+            
+              local f = io.open(out.."\\main.bmp", "r")
+                        or print(string.format("Broken %s install? <%s>",alias:upper(),out))
+              if f then
+                f:close()
+                print(string.format("Found %s installation on <%s>",alias:upper(),out))
                 regout[alias]=out  --make an array with the found values, using the alias as key
+              end
             end
         end
     end

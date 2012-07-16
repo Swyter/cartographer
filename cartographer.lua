@@ -12,6 +12,8 @@ require "soil"
 require "mab-map"
 require "mab-registry"
 
+reg=mab.registry:query()
+
 local CubeVertices = {}
 CubeVertices.v = ffi.new("const float[8][3]", {
   {0,0,1}, {0,0,0}, {0,1,0}, {0,1,1},
@@ -125,7 +127,7 @@ lujgl.setRenderCallback(function()
     lujgl.glLight(gl.GL_LIGHT0, gl.GL_POSITION, 135, 135, 135, 135)
   
   --light gray and clean the screen
-    gl.glClearColor(.3,.3,.32,1)
+    gl.glClearColor(.3,.3,.32,1)--(.18,.18,.22,1) probably this looks better
     gl.glClear(bit.bor(gl.GL_COLOR_BUFFER_BIT, gl.GL_DEPTH_BUFFER_BIT))
   
   --Subtle fog
