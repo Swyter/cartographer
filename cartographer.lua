@@ -87,6 +87,8 @@ lujgl.setIdleCallback(function()
     if key[265] then mab.map:saveobj("_out.obj") end --f8
     if key[264] then mab.map:loadobj("R:\\Juegos\\swconquest\\modules\\swconquest\\Extras\\map2obj.obj",true);
                      gl.glDeleteLists(mapmesh,1);mapmesh=nil end --refresh cached map end --f7
+                     
+    if key[262] then mab.map:save("_saveme.txt",true) end --f5 
     
     
     if mouse.lclick then print("dragmode!!",mouse.xold-mouse.x); xrang=xrang+(mouse.xold-mouse.x)/2; rx=1; end
@@ -240,7 +242,8 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
       or k=="s" or k==284
       or k=="d" or k==286
 
-      or k==265 or k==264 then --f8 & f7
+      or k==265 or k==264  --f8 & f7
+      or k==262 then
       
       key[k]=down end
 
