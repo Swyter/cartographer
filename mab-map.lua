@@ -131,7 +131,7 @@ end
 
 
 function mab.map:saveobj(file,reversed_mode)
-  print("@--Exporting OBJ..."); local start=os.clock(); local lastmat=-1
+  print("@--Exporting OBJ..."); local start=os.clock(); local lastmat=-1;
   io.output(io.open(file,"w"))
   io.write([[
   # Mount&Blade Map file
@@ -140,9 +140,7 @@ function mab.map:saveobj(file,reversed_mode)
 ]])
   
   for s=1,vtx do
-    local curr=mab.map.vtx[s] or {x=0,y=0,z=0}
-    print(curr)
-    if reversed_mode then curr.y,curr.z=curr.z,(curr.y*-1); end
+    local curr=mab.map.vtx[s]; if reversed_mode then curr.y,curr.z=curr.z,(curr.y*-1); end
     io.write(
       string.format("v %g %g %g\n",curr.x,curr.y,curr.z) --floats
     )
@@ -152,7 +150,6 @@ function mab.map:saveobj(file,reversed_mode)
     local curr=mab.map.fcs[s]
     
     if lastmat ~= tonumber(curr[11]) then --implemented material export
-      --print(mat[tonumber(curr[11])])
       io.write(string.format("usemtl %s\n",mat[tonumber(curr[11])])); lastmat=tonumber(curr[11])
     end
     
@@ -187,9 +184,8 @@ function mab.map:loadobj(file,reversed_mode)
         if reversed_mode then tmp[2],tmp[3]=tmp[3],tmp[2]*-1; end
         mab.map.vtx[#mab.map.vtx+1]=vector.new(tmp[1],tmp[2],tmp[3])
         
-      elseif index == "us" then --usemtl forest
+      elseif index == "us" then --usemtl forest -- last material found
         lastmat=line:sub(8,-1)
-        print(lastmat)
       elseif index == "f " then --@face
       fs=fs+1;
       --if string.find(raw, "/") == -1 then --line comes with normals && texcoords?
@@ -209,5 +205,5 @@ function mab.map:loadobj(file,reversed_mode)
       end
     end
   end
-  print("   finished... "..(os.clock()-start).."s")
+  print("   finished... "..(os.clock()-start).."s") vtx=#mab.map.vtx; fcs=#mab.map.fcs; print(string.format("%d vertex, %d faces",vtx,fcs))
 end
