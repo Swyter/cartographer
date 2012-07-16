@@ -85,7 +85,7 @@ lujgl.setIdleCallback(function()
     
     
     if key[265] then mab.map:saveobj("_out.obj") end --f8
-    if key[264] then mab.map:loadobj("_out_blender.obj");
+    if key[264] then mab.map:loadobj("R:\\Juegos\\swconquest\\modules\\swconquest\\Extras\\map2obj.obj",true);
                      gl.glDeleteLists(mapmesh,1);mapmesh=nil end --refresh cached map end --f7
     
     
@@ -149,14 +149,10 @@ lujgl.setRenderCallback(function()
         for i=1,#mab.map.fcs do
           gl.glBegin(gl.GL_TRIANGLE_STRIP)
           
-          if mab.map.nrm and #mab.map.nrm>0 then
-            nm=mab.map.nrm[mab.map.fcs[4]]
-          else
-            nm=mab.map:computenrm(mab.map.fcs[i])
-          end
+          nm=mab.map:computenrm(mab.map.fcs[i])
           gl.glNormal3d(nm.x,nm.y,nm.z)
           
-          x=tonumber(mab.map.fcs[i][4])
+          x=tonumber(mab.map.fcs[i][11])
           gl.glColor3f(unpack(mab.map.terrain[x]))
           
           for j=1,3 do
