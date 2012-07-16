@@ -105,8 +105,30 @@ function mab.map:load(path)
   
 end
 
-function mab.map:save()
-    print("Map saving not implemented... yet")
+function mab.map:save(file,reversed_mode)
+  print("@--Saving Map..."); local start=os.clock(); local lastmat=-1;
+  io.output(io.open(file,"w"))
+  
+  io.write(string.format("%d\n",vtx))
+  for s=1,vtx do
+    local curr=mab.map.vtx[s]
+    if reversed_mode then curr.x,curr.y,curr.z=curr.x*-1,curr.z,curr.y; end
+    
+    io.write(
+      string.format("%g %g %g\n",curr.x,curr.y,curr.z) --floats
+    )
+  end
+  
+  io.write(string.format("%d\n",fcs))
+  for s=1,fcs do
+    local curr=mab.map.fcs[s]
+ 
+    io.write(
+      string.format("%d 0 3 %d %d %d\n",curr[11],curr[1]-1,curr[2]-1,curr[3]-1) --integers
+    )
+  end
+  io.close()
+  print("   done... "..(os.clock()-start).."s")
 end
 
 function mab.map:computenrm(triangle)
