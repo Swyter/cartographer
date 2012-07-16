@@ -15,6 +15,28 @@ rt_forest               = 11
 rt_snow_forest          = 12
 rt_desert_forest        = 13
 
+
+mat={
+[0]                ="water",
+[1]             ="mountain",
+[2]               ="steppe",
+[3]                ="plain",
+[4]                 ="snow",
+[5]               ="desert",
+[7]               ="bridge",
+[8]                ="river",
+[9]      ="mountain_forest",
+[10]        ="steppe_forest",
+[11]               ="forest",
+[12]          ="snow_forest",
+[13]        ="desert_forest",
+}
+
+--#Aliases for clumsy exporters
+rt_ocean=rt_water
+
+
+
 mab = mab or {}
 mab.map = mab.map or {}
 mab.map.terrain = mab.map.terrain or {}
@@ -75,7 +97,7 @@ function mab.map:load(path)
      local r=raw[i]
      
      mab.map.fcs[s]={r[4]+1,r[5]+1,r[6]+1} --lua tables start at 1
-     mab.map.fcs[s][4]=r[1]
+     mab.map.fcs[s][11]=r[1]
   end
   
   print("   ended filling arrays "..(os.clock()-x).."s")
@@ -108,8 +130,8 @@ function mab.map:computenrm(triangle)
 end
 
 
-function mab.map:saveobj(file)
-  print("@--Exporting OBJ...") local start=os.clock()
+function mab.map:saveobj(file,reversed_mode)
+  print("@--Exporting OBJ..."); local start=os.clock(); local lastmat=-1
   io.output(io.open(file,"w"))
   io.write([[
   # Mount&Blade Map file
@@ -118,23 +140,24 @@ function mab.map:saveobj(file)
 ]])
   
   for s=1,vtx do
-    local curr=mab.map.vtx[s]
+    local curr=mab.map.vtx[s] or {x=0,y=0,z=0}
+    print(curr)
+    if reversed_mode then curr.y,curr.z=curr.z,(curr.y*-1); end
     io.write(
       string.format("v %g %g %g\n",curr.x,curr.y,curr.z) --floats
     )
   end
-  
-  for s=1,fcs do
-    local curr=mab.map:computenrm(mab.map.fcs[s])
-    io.write(
-      string.format("vn %f %f %f\n",curr.x,curr.y,curr.z) --floats
-    )
-  end
-  
+ 
   for s=1,fcs do
     local curr=mab.map.fcs[s]
+    
+    if lastmat ~= tonumber(curr[11]) then --implemented material export
+      --print(mat[tonumber(curr[11])])
+      io.write(string.format("usemtl %s\n",mat[tonumber(curr[11])])); lastmat=tonumber(curr[11])
+    end
+    
     io.write(
-      string.format("f %d//"..s.." %d//"..s.." %d//"..s.."\n",curr[1],curr[2],curr[3]) --integers
+      string.format("f %d %d %d\n",curr[1],curr[2],curr[3]) --integers
     )
   end
   io.close()
@@ -149,9 +172,9 @@ function string:split(sep) --from <http://lua-users.org/wiki/SplitJoin> #Method:
         return fields
 end
 
-function mab.map:loadobj(file)
-  print("@--Importing OBJ..."); local fs=0
-  mab.map.vtx,mab.map.fcs,mab.map.nrm,mab.map.nrmi={},{},{},{}
+function mab.map:loadobj(file,reversed_mode)
+  print("@--Importing OBJ..."); local fs=0; local lastmat="plain"; local start=os.clock()
+  mab.map.vtx,mab.map.fcs={},{}
 
   for line in io.lines(file) do
   
@@ -161,29 +184,30 @@ function mab.map:loadobj(file)
       local raw=line:sub(3,-1) --skip the index/letter part plus one space
       if index == "v " then --@vertex
         local tmp={}; for w in raw:gmatch("%S+") do table.insert(tmp, tonumber(w)) end
+        if reversed_mode then tmp[2],tmp[3]=tmp[3],tmp[2]*-1; end
         mab.map.vtx[#mab.map.vtx+1]=vector.new(tmp[1],tmp[2],tmp[3])
         
-      elseif index == "vn" then --@normals
-        local tmp={}; for w in raw:match("%S.*"):gmatch("%S+") do table.insert(tmp, tonumber(w)) end
-        mab.map.nrm[#mab.map.nrm+1]=vector.new(tmp[1],tmp[2],tmp[3])
-        
+      elseif index == "us" then --usemtl forest
+        lastmat=line:sub(8,-1)
+        print(lastmat)
       elseif index == "f " then --@face
       fs=fs+1;
-        if string.find(raw, "/") == -1 then --line comes with normals && texcoords?
+      --if string.find(raw, "/") == -1 then --line comes with normals && texcoords?
           mab.map.fcs[fs]={}; for w in raw:gmatch("%S+") do
           table.insert(mab.map.fcs[fs], tonumber(w)) end --This saves a lot of time recursively parsing stuff, redundancy is slow... branching is good
-        else
-          local nmc=4
+       --[[ else
+          local nmc=3
           mab.map.fcs[fs]={};
           
           for w in raw:gmatch("%S+") do
           wsplit=w:split();nmc=nmc+1;
-          table.insert(mab.map.fcs[fs], tonumber(wsplit[1]));
-          table.insert(mab.map.fcs[fs], 1, nmc) end
-        end
-        mab.map.fcs[fs][4]=0 --@FIXME hack, no material as of yet :(
+          table.insert(mab.map.fcs[fs], tonumber(wsplit[1]));end
+        end]]
+        --print(_G["rt_"..lastmat])
+        --print("rt_"..lastmat)
+        mab.map.fcs[fs][11]=_G["rt_"..lastmat] --@FIXME hack, no material as of yet :(
       end
     end
   end
-  print("   finished...")
+  print("   finished... "..(os.clock()-start).."s")
 end
