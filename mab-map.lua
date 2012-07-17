@@ -153,8 +153,7 @@ function mab.map:computenrm(triangle)
      mab.map.vtx[triangle[1]],
      mab.map.vtx[triangle[2]],
      mab.map.vtx[triangle[3]]
-     
-     --print(a,b,c)
+    
     
      local U=vector.new(
      b.x-a.x,
@@ -251,8 +250,6 @@ function mab.map:loadobj(file,reversed_mode)
                                         tonumber(raw[4])
                                         )
                                         
-             --print(mab.map.vtx[#mab.map.vtx])
-              
         --@material
         ---------------------------
         elseif raw[1]=="usemtl" then
@@ -265,18 +262,12 @@ function mab.map:loadobj(file,reversed_mode)
         
         fcount=(#mab.map.fcs+1)
         mab.map.fcs[fcount]={}
-        
-        --print(ltrim)
           
             for i=2,4 do --for every section do this
             
-              local facesplit=Split(raw[i],'/'); --print(facesplit[1])
+              local facesplit=Split(raw[i],'/');
               
               mab.map.fcs[fcount][i-1]=tonumber(facesplit[1])
-              
-              --print(mab.map.fcs[fcount][1],
-              --      mab.map.fcs[fcount][2],
-              --      mab.map.fcs[fcount][3])
   
             end
             
