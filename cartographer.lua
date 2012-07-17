@@ -87,7 +87,7 @@ lujgl.setIdleCallback(function()
     
     
     if key[265] then mab.map:saveobj("_out.obj") end --f8
-    if key[264] then mab.map:loadobj("R:\\Juegos\\swconquest\\modules\\swconquest\\Extras\\map2obj.obj",true);
+    if key[264] then mab.map:loadobj("_out.obj",true);
                      gl.glDeleteLists(mapmesh,1);mapmesh=nil end --refresh cached map end --f7
                      
     if key[262] then mab.map:save("_saveme.txt",true) end --f5 

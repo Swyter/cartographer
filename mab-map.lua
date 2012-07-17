@@ -32,6 +32,23 @@ mat={
 [13]        ="desert_forest",
 }
 
+--[[ From the OBJ exporter <http://www.mbrepository.com/file.php?id=2220>
+#define rt_ocean 0
+#define rt_mountain 1
+#define rt_steppe 2
+#define rt_plain 3
+#define rt_snow 4
+#define rt_desert 5
+#define rt_ford 7
+#define rt_river 8
+#define rt_mountain_forest 9
+#define rt_steppe_forest 10
+#define rt_forest 11
+#define rt_snow_forest 12
+#define rt_desert_forest 13
+#define rt_water 15
+]]
+
 --#Aliases for clumsy exporters
 rt_ocean=rt_water
 
@@ -136,6 +153,8 @@ function mab.map:computenrm(triangle)
      mab.map.vtx[triangle[1]],
      mab.map.vtx[triangle[2]],
      mab.map.vtx[triangle[3]]
+     
+     --print(a,b,c)
     
      local U=vector.new(
      b.x-a.x,
@@ -184,11 +203,29 @@ function mab.map:saveobj(file,reversed_mode)
 end
 
 
-function string:split(sep) --from <http://lua-users.org/wiki/SplitJoin> #Method: Using only string.gsub -> Fix
-        local sep, fields = sep or "/", {}
-        local pattern = string.format("([^%s]+)", sep)
-        self:gsub(pattern, function(c) fields[#fields+1] = c end)
-        return fields
+function Split(str, delim, maxNb) --from <http://lua-users.org/wiki/SplitJoin> #Function: Split a string with a pattern, Take Three
+    -- Eliminate bad cases...
+    if string.find(str, delim) == nil then
+        return { str }
+    end
+    if maxNb == nil or maxNb < 1 then
+        maxNb = 0    -- No limit
+    end
+    local result = {}
+    local pat = "(.-)" .. delim .. "()"
+    local nb = 0
+    local lastPos
+    for part, pos in string.gfind(str, pat) do
+        nb = nb + 1
+        result[nb] = part
+        lastPos = pos
+        if nb == maxNb then break end
+    end
+    -- Handle the last field
+    if nb ~= maxNb then
+        result[nb + 1] = string.sub(str, lastPos)
+    end
+    return result
 end
 
 function mab.map:loadobj(file,reversed_mode)
@@ -197,35 +234,66 @@ function mab.map:loadobj(file,reversed_mode)
 
   for line in io.lines(file) do
   
-    ltrim=line:match("%S.*") or "#"
-    index=ltrim:sub(1,2)
-    if index ~= "# " then --not a comment
-      local raw=line:sub(3,-1) --skip the index/letter part plus one space
-      if index == "v " then --@vertex
-        local tmp={}; for w in raw:gmatch("%S+") do table.insert(tmp, tonumber(w)) end
-        if reversed_mode then tmp[2],tmp[3]=tmp[3],tmp[2]*-1; end
-        mab.map.vtx[#mab.map.vtx+1]=vector.new(tmp[1],tmp[2],tmp[3])
+    local ltrim=line:match("%S.*") or "#"
+    local index=ltrim:sub(1,1)
+    if index ~= "#" then --not a comment
+    
+        local raw=Split(ltrim," ")
         
-      elseif index == "us" then --usemtl forest -- last material found
-        lastmat=line:sub(8,-1)
-      elseif index == "f " then --@face
-      fs=fs+1;
-      --if string.find(raw, "/") == -1 then --line comes with normals && texcoords?
-          mab.map.fcs[fs]={}; for w in raw:gmatch("%S+") do
-          table.insert(mab.map.fcs[fs], tonumber(w)) end --This saves a lot of time recursively parsing stuff, redundancy is slow... branching is good
-       --[[ else
-          local nmc=3
-          mab.map.fcs[fs]={};
+        --@vertex
+        ---------------------------
+        if     raw[1]=="v"      then
+        
+            if reversed_mode then raw[2],raw[3]=raw[3],raw[2]*-1; end
+            mab.map.vtx[#mab.map.vtx+1]=vector.new(
+                                        tonumber(raw[2]),
+                                        tonumber(raw[3]),
+                                        tonumber(raw[4])
+                                        )
+                                        
+             --print(mab.map.vtx[#mab.map.vtx])
+              
+        --@material
+        ---------------------------
+        elseif raw[1]=="usemtl" then
+        
+            lastmat=raw[2]
+        
+        --@face
+        ---------------------------
+        elseif raw[1]=="f"      then
+        
+        fcount=(#mab.map.fcs+1)
+        mab.map.fcs[fcount]={}
+        
+        --print(ltrim)
           
-          for w in raw:gmatch("%S+") do
-          wsplit=w:split();nmc=nmc+1;
-          table.insert(mab.map.fcs[fs], tonumber(wsplit[1]));end
-        end]]
-        --print(_G["rt_"..lastmat])
-        --print("rt_"..lastmat)
-        mab.map.fcs[fs][11]=_G["rt_"..lastmat] --@FIXME hack, no material as of yet :(
+            for i=2,4 do --for every section do this
+            
+              local facesplit=Split(raw[i],'/'); --print(facesplit[1])
+              
+              mab.map.fcs[fcount][i-1]=tonumber(facesplit[1])
+              
+              --print(mab.map.fcs[fcount][1],
+              --      mab.map.fcs[fcount][2],
+              --      mab.map.fcs[fcount][3])
+  
+            end
+            
+            mab.map.fcs[fcount][11]=_G["rt_"..lastmat] or 3 --@FIXME hack, no material as of yet :(
+
       end
     end
   end
-  print("   finished... "..(os.clock()-start).."s") vtx=#mab.map.vtx; fcs=#mab.map.fcs; print(string.format("%d vertex, %d faces",vtx,fcs))
+  
+  vtx=#mab.map.vtx;fcs=#mab.map.fcs; --refresh with latest info
+  
+  print(string.format(
+  [[%d vertex, %d faces
+   finished... in %gs]],
+   vtx,
+   fcs,
+   (os.clock()-start)
+   ))
+
 end
