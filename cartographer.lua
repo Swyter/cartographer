@@ -7,6 +7,10 @@ mouse.x=0
 mouse.y=0
 mouse.xold=0
 
+    objX=ffi.new("double[1]",1);
+    objY=ffi.new("double[1]",1);
+    objZ=ffi.new("double[1]",1);
+    
 --@ Load cooler dependencies
 require "soil"
 require "mab-map"
@@ -87,7 +91,7 @@ lujgl.setIdleCallback(function()
     
     
     if key[265] then mab.map:saveobj("_out.obj") end --f8
-    if key[264] then mab.map:loadobj("_out.obj",true);
+    if key[264] then mab.map:loadobj("_out.obj");
                      gl.glDeleteLists(mapmesh,1);mapmesh=nil end --refresh cached map end --f7
                      
     if key[262] then mab.map:save("_saveme.txt",true) end --f5 
@@ -118,6 +122,25 @@ lujgl.setRenderCallback(function()
     glu.gluPerspective(60,lujgl.width / lujgl.height, 0.01, 1000)
     gl.glMatrixMode(gl.GL_MODELVIEW)
     
+    
+    
+    gl.glPushMatrix()
+    gl.glTranslated(objX[0],objY[0],objZ[0])
+    quad = glu.gluNewQuadric()
+    
+    glu.gluQuadricTexture(quad, true)
+    glu.gluQuadricOrientation(quad, glu.GLU_OUTSIDE)
+    
+    glu.gluSphere(
+      quad,
+      3,
+      50,
+      10
+    );
+    gl.glPopMatrix()
+    
+    
+    
     gl.glTranslatef(px,py,pz)
     gl.glRotatef(yrang,ry,0,0)  
     gl.glRotatef(xrang,0,rx,0)
@@ -127,7 +150,7 @@ lujgl.setRenderCallback(function()
     lujgl.glLight(gl.GL_LIGHT0, gl.GL_POSITION, 135, 135, 135, 135)
   
   --light gray and clean the screen
-    gl.glClearColor(.3,.3,.32,1)--(.18,.18,.22,1) probably this looks better
+    gl.glClearColor(.18,.18,.22,1)-- probably this looks better
     gl.glClear(bit.bor(gl.GL_COLOR_BUFFER_BIT, gl.GL_DEPTH_BUFFER_BIT))
   
   --Subtle fog
@@ -179,8 +202,9 @@ lujgl.setRenderCallback(function()
     gl.glDisable(gl.GL_LIGHT0)
   
     gl.glPushMatrix()
-    gl.glTranslated(boxx, boxy, boxz)
+    gl.glTranslated(objX[0],objY[0],objZ[0])
     gl.glRotated(lujgl.getTime()*10, rotx, roty, rotz)
+    gl.glScaled(100,100,100)
     gl.glColor3d(1,1,0)
     for i=0,5 do
       gl.glBegin(gl.GL_QUADS)
@@ -192,21 +216,35 @@ lujgl.setRenderCallback(function()
     end
     gl.glPopMatrix()
   
-    gl.glPushMatrix()
-    quad = glu.gluNewQuadric()
-    
-    glu.gluQuadricTexture(quad, true)
-    glu.gluQuadricOrientation(quad, glu.GLU_OUTSIDE)
-    
-    glu.gluSphere(
-      quad,
-      3,
-      50,
-      10
-    );
-    gl.glPopMatrix()
+
 
   --draw the markers
+  
+    --@2D unprojection
+    winX=ffi.new("float[1]",mouse.x);
+    winY=ffi.new("float[1]",lujgl.height-mouse.y);
+    winZ=ffi.new("float[1]",1);
+    gl.glReadPixels( winX[0], winY[0], 1,1, gl.GL_DEPTH_COMPONENT, gl.GL_FLOAT, winZ );
+    print(winZ[0])
+    
+    
+    viewport=ffi.new("int[4]",1);
+    modelview=ffi.new("double[16]",1);
+    projection=ffi.new("double[16]",1);
+    
+    
+    gl.glGetDoublev( gl.GL_MODELVIEW_MATRIX, modelview );
+	  gl.glGetDoublev( gl.GL_PROJECTION_MATRIX, projection );
+	  gl.glGetIntegerv( gl.GL_VIEWPORT, viewport );
+    
+
+    
+    glu.gluUnProject (winX[0], winY[0], winZ[0], modelview, projection, viewport, objX, objY, objZ)
+    --extern GLint gluUnProject (GLdouble winX, GLdouble winY, GLdouble winZ, const GLdouble *model, const GLdouble *proj, const GLint *view, GLdouble* objX, GLdouble* objY, GLdouble* objZ);
+    
+    --print(objX[0],objY[0],objZ[0])
+   --objY[0]=10
+  
   
   --draw 2d
     gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_FILL )
@@ -219,15 +257,12 @@ lujgl.setRenderCallback(function()
     
     lujgl.begin2D()
       gl.glColor4d(1,1,1,1)
-      mab.font:print(yrang.."--"..(mouse.xold-mouse.x),49,lujgl.height/2,1.4)
+      mab.font:print(mouse.x.."--"..lujgl.height-mouse.y,49,lujgl.height/2,1.4)
+      mab.font:print(string.format("x:%g y:%g z:%g",objX[0],objY[0],objZ[0]),49,lujgl.height/2-60,1)
     lujgl.end2D()
     
     gl.glDisable(gl.GL_TEXTURE_2D)
     
-    
-    --pixels=ffi.new("int[1]",0)
-    --gl.glReadPixels( mouse.x, lujgl.width-mouse.y, 10,10, gl.GL_DEPTH_COMPONENT, gl.GL_INT, pixels );
-
   --bugs ahoy?
     --lujgl.checkError()
   end
