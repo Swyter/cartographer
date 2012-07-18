@@ -228,7 +228,7 @@ function Split(str, delim, maxNb) --from <http://lua-users.org/wiki/SplitJoin> #
 end
 
 function mab.map:loadobj(file,reversed_mode)
-  print("@--Importing OBJ..."); local fs=0; local lastmat="plain"; local start=os.clock()
+  print("@--Importing OBJ..."); local lastmat="plain"; local start=os.clock(); local lSplit=Split local tonum=tonumber
   mab.map.vtx,mab.map.fcs={},{}
 
   for line in io.lines(file) do
@@ -237,17 +237,17 @@ function mab.map:loadobj(file,reversed_mode)
     local index=ltrim:sub(1,1)
     if index ~= "#" then --not a comment
     
-        local raw=Split(ltrim," ")
+        local raw=lSplit(ltrim," ")
         
         --@vertex
         ---------------------------
-        if     raw[1]=="v"      then
+        if raw[1]=="v" then
         
             if reversed_mode then raw[2],raw[3]=raw[3],raw[2]*-1; end
             mab.map.vtx[#mab.map.vtx+1]=vector.new(
-                                        tonumber(raw[2]),
-                                        tonumber(raw[3]),
-                                        tonumber(raw[4])
+                                        tonum(raw[2]),
+                                        tonum(raw[3]),
+                                        tonum(raw[4])
                                         )
                                         
         --@material
@@ -258,22 +258,22 @@ function mab.map:loadobj(file,reversed_mode)
         
         --@face
         ---------------------------
-        elseif raw[1]=="f"      then
+        elseif raw[1]=="f" then
         
-        fcount=(#mab.map.fcs+1)
-        mab.map.fcs[fcount]={}
-          
-            for i=2,4 do --for every section do this
+            fcount=(#mab.map.fcs+1)
+            mab.map.fcs[fcount]={}
             
-              local facesplit=Split(raw[i],'/');
+              for i=2,4 do --for every section do this
               
-              mab.map.fcs[fcount][i-1]=tonumber(facesplit[1])
-  
-            end
-            
+                local facesplit=lSplit(raw[i],'/');
+                
+                mab.map.fcs[fcount][i-1]=tonum(facesplit[1])
+    
+              end
+              
             mab.map.fcs[fcount][11]=_G["rt_"..lastmat] or 3 --@FIXME hack, no material as of yet :(
 
-      end
+        end
     end
   end
   
