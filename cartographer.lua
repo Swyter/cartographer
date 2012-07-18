@@ -7,9 +7,9 @@ mouse.x=0
 mouse.y=0
 mouse.xold=0
 
-    objX=ffi.new("double[1]",1);
-    objY=ffi.new("double[1]",1);
-    objZ=ffi.new("double[1]",1);
+objX=ffi.new("double[1]",1);
+objY=ffi.new("double[1]",1);
+objZ=ffi.new("double[1]",1);
     
 --@ Load cooler dependencies
 require "soil"
@@ -39,7 +39,7 @@ lujgl.initialize("cartographer", 800, 600)
 
 --@ load our font
 require "res.FONT_SWC"
-fontdds = soil.loadTexture("res\\FONT_SWC.dds")
+fontdds = soil.loadTexture("R:\\Juegos\\WB\\textures\\FONT.dds")
 --@ load our map
 mab.map:load("res")--"R:\\Juegos\\swconquest\\modules\\swconquest")
 
@@ -221,29 +221,24 @@ lujgl.setRenderCallback(function()
   --draw the markers
   
     --@2D unprojection
-    winX=ffi.new("float[1]",mouse.x);
-    winY=ffi.new("float[1]",lujgl.height-mouse.y);
-    winZ=ffi.new("float[1]",1);
+    local winX=ffi.new("float[1]",mouse.x);
+    local winY=ffi.new("float[1]",lujgl.height-mouse.y);
+    local winZ=ffi.new("float[1]",1);
+    
     gl.glReadPixels( winX[0], winY[0], 1,1, gl.GL_DEPTH_COMPONENT, gl.GL_FLOAT, winZ );
-    print(winZ[0])
-    
-    
-    viewport=ffi.new("int[4]",1);
-    modelview=ffi.new("double[16]",1);
-    projection=ffi.new("double[16]",1);
-    
-    
-    gl.glGetDoublev( gl.GL_MODELVIEW_MATRIX, modelview );
-	  gl.glGetDoublev( gl.GL_PROJECTION_MATRIX, projection );
-	  gl.glGetIntegerv( gl.GL_VIEWPORT, viewport );
     
 
+    local modelview=ffi.new("double[16]",1);
+    gl.glGetDoublev( gl.GL_MODELVIEW_MATRIX, modelview );
     
-    glu.gluUnProject (winX[0], winY[0], winZ[0], modelview, projection, viewport, objX, objY, objZ)
-    --extern GLint gluUnProject (GLdouble winX, GLdouble winY, GLdouble winZ, const GLdouble *model, const GLdouble *proj, const GLint *view, GLdouble* objX, GLdouble* objY, GLdouble* objZ);
+    local projection=ffi.new("double[16]",1);
+	  gl.glGetDoublev( gl.GL_PROJECTION_MATRIX, projection );
     
+    local viewport=ffi.new("int[4]",1);
+	  gl.glGetIntegerv( gl.GL_VIEWPORT, viewport );
+    
+    glu.gluUnProject (winX[0], winY[0], winZ[0], modelview, projection, viewport, objX, objY, objZ) 
     --print(objX[0],objY[0],objZ[0])
-   --objY[0]=10
   
   
   --draw 2d
