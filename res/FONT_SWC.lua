@@ -186,59 +186,41 @@ mab.font = {
   [255]={u=1015, v=75 , w=1072, h=141, preshift=-7, yadjust=63, postshift=43},
 }
 
-function Split(str, delim, maxNb) --from <http://lua-users.org/wiki/SplitJoin> #Function: Split a string with a pattern, Take Three
-    -- Eliminate bad cases...
-    if string.find(str, delim) == nil then
-        return { str }
-    end
-    if maxNb == nil or maxNb < 1 then
-        maxNb = 0    -- No limit
-    end
-    local result = {}
-    local pat = "(.-)" .. delim .. "()"
-    local nb = 0
-    local lastPos
-    for part, pos in string.gfind(str, pat) do
-        nb = nb + 1
-        result[nb] = part
-        lastPos = pos
-        if nb == maxNb then break end
-    end
-    -- Handle the last field
-    if nb ~= maxNb then
-        result[nb + 1] = string.sub(str, lastPos)
-    end
-    return result
-end
 
 function mab.font:load(filename)
+print("@--start loading font")
+start=os.clock()
+
+local strmatch=string.match
+local _xmlblock=function(l,pattern)
+  return tonumber(strmatch(l, pattern.."=\"(.-)\"") or 0) --non-greedy match
+end
+
   for l in io.lines(filename) do
-  
+ 
     if string.find(l,"<FontData") then
     
-    --print(l)
-      mab.font["width" ]=string.match(l, "width=\"(.-)\"")
-      mab.font["height"]=string.match(l, "height=\"(.-)\"")
+      mab.font["width" ]=_xmlblock(l,"width")
+      mab.font["height"]=_xmlblock(l,"height")
       
-      print("width:"..mab.font["width"],"height:"..mab.font["height"])
+      print("   width:" ..mab.font["width"],
+               "height:"..mab.font["height"])
     
     elseif string.find(l,"<character") then
-      ccode=tonumber(string.match(l, "code=\"(.-)\"")) or 0
-      print(ccode)
+      ccode=_xmlblock(l,"code")
+      mab.font[ccode]={}
      
-     mab.font[ccode]={}
-      mab.font[ccode].u=tonumber(string.match(l, "u=\"(.-)\"")) or 0
-      mab.font[ccode].v=tonumber(string.match(l, "v=\"(.-)\"")) or 0
-      mab.font[ccode].w=tonumber(string.match(l, "w=\"(.-)\"")) or 0
-      mab.font[ccode].h=tonumber(string.match(l, "h=\"(.-)\"")) or 0
-      mab.font[ccode].preshift = tonumber(string.match(l, "preshift=\"(.-)\"")) or 0
-      mab.font[ccode].yadjust  = tonumber(string.match(l, "yadjust=\"(.-)\"")) or 0
-      mab.font[ccode].postshift= tonumber(string.match(l, "postshift=\"(.-)\"")) or 0
-      
-      
-      print("ccode:"..ccode,mab.font[ccode].u,mab.font[ccode].v,mab.font[ccode].w,mab.font[ccode].h,mab.font[ccode].preshift,mab.font[ccode].postshift)
-   end
+      mab.font[ccode].u=_xmlblock(l,"u")
+      mab.font[ccode].v=_xmlblock(l,"v")
+      mab.font[ccode].w=_xmlblock(l,"w")
+      mab.font[ccode].h=_xmlblock(l,"h")
+      mab.font[ccode].preshift = _xmlblock(l,"preshift")
+      mab.font[ccode].yadjust  = _xmlblock(l,"yadjust")
+      mab.font[ccode].postshift= _xmlblock(l,"postshift")
+    end
   end
+  
+  print(string.format("   font loaded in %gs",os.clock()-start))
 end
 
 mab.font:load("R:\\Juegos\\Wb\\Data\\FONT_DATA.XML")
