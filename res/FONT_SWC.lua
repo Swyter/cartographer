@@ -205,7 +205,7 @@ end
     
       mab.font["width" ] =_xmlblock(l,"width")
       mab.font["height"] =_xmlblock(l,"height")
-      mab.font["padding"]=_xmlblock(l,"padding")/2 --we are going to apply it to every corner, so 5/5 and 5/5 in case its <10>
+      mab.font["padding"]=(_xmlblock(l,"padding") or 0)/2 --we are going to apply it to every corner, so 5/5 and 5/5 in case its <10>
       
       print("    width:"..mab.font["width"],
                "height:"..mab.font["height"],
@@ -279,16 +279,16 @@ function mab.font:char(c,x,y,s)
   
   --1
     gl.glTexCoord2d(u,h)--(0,0)
-    gl.glVertex2i(x, 0+y+yadj)
+    gl.glVertex2i(x*s, (0+y+yadj)*s)
   --2
     gl.glTexCoord2d(w,h)--(1,0)
-    gl.glVertex2i(sx+x, 0+y+yadj)
+    gl.glVertex2i((sx+x)*s, (0+y+yadj)*s)
   --3
     gl.glTexCoord2d(w,v)--(1,1)
-    gl.glVertex2i(sx+x, y+sy+yadj)
+    gl.glVertex2i((sx+x)*s, (y+sy+yadj)*s)
   --4
     gl.glTexCoord2d(u,v)--(0,1)
-    gl.glVertex2i(x, y+sy+yadj)
+    gl.glVertex2i(x*s, (y+sy+yadj)*s)
   --    v
   --   4|      3
   -- u--+-----+
@@ -298,5 +298,5 @@ function mab.font:char(c,x,y,s)
   --   1      |2
   --          h
   gl.glEnd()
-  return sx-(sx-mab.font[c].postshift)
+  return sx-(sx-mab.font[c].postshift)*s
 end

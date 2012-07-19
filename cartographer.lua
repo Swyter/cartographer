@@ -37,8 +37,11 @@ lujgl.initialize("cartographer", 800, 600)
 --@ load our font
   require "soil"
   require "res.FONT_SWC"
-  mab.font:load("R:\\Juegos\\Wb\\Data\\FONT_DATA.XML",
-                "R:\\Juegos\\WB\\textures\\FONT.dds")
+  mab.font:load(reg["wb"].."\\Data\\FONT_DATA.XML",
+                reg["wb"].."\\textures\\FONT.dds")
+                
+ -- mab.font:load("R:\\Juegos\\swconquest\\modules\\swconquest\\Module Data\\FONT_DATA.XML",
+ --               "R:\\Juegos\\swconquest\\modules\\swconquest\\Textures\\FONT_SWC.dds")
 
 --@ load our map
   require "mab-map"
@@ -247,8 +250,14 @@ lujgl.setRenderCallback(function()
     
     lujgl.begin2D()
       gl.glColor4d(1,1,1,1)
-      mab.font:print(mouse.x.."--"..lujgl.height-mouse.y,49,lujgl.height/2,1.4)
-      mab.font:print(string.format("x:%g y:%g z:%g",objX[0],objY[0],objZ[0]),49,lujgl.height/2-60,1)
+      mab.font:print(string.format("%d--%d",mouse.x, lujgl.height-mouse.y),
+                     55,lujgl.height/2-90,.6)
+                     
+      mab.font:print(string.format("x:%g y:%g z:%g",objX[0],objY[0],objZ[0]),
+                     49,lujgl.height/2-60,.7)
+      
+      mab.font:print("The house at the end of the street is red.",
+                     1,10,.4)
     lujgl.end2D()
     
   --bugs ahoy?
