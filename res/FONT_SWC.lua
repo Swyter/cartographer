@@ -198,13 +198,15 @@ end
 
   for l in io.lines(filename) do
  
-    if string.find(l,"<FontData") then
+    if string.find(l,"<FontData") then  --pseudoparser!, fingers crossed in case it doesn't use a standard format
     
       mab.font["width" ]=_xmlblock(l,"width")
       mab.font["height"]=_xmlblock(l,"height")
+      mab.font["padding"]=_xmlblock(l,"padding")/2 --we are going to apply it to every corner, so 5/5 and 5/5 in case its <10>
       
       print("   width:" ..mab.font["width"],
-               "height:"..mab.font["height"])
+               "height:"..mab.font["height"],
+               "padding:"..mab.font["padding"])
     
     elseif string.find(l,"<character") then
       ccode=_xmlblock(l,"code")
@@ -249,10 +251,10 @@ function mab.font:char(c,x,y,s)
 
   gl.glBegin(gl.GL_QUADS)
   
-  local u= (mab.font[c].u-5)/mab.font.width
-  local v= 1-((mab.font[c].v-5)/mab.font.height)
-  local w= (mab.font[c].w-5)/mab.font.width
-  local h= 1-((mab.font[c].h-5)/mab.font.height)
+  local u=    (mab.font[c].u-mab.font.padding)/mab.font.width
+  local v= 1-((mab.font[c].v-mab.font.padding)/mab.font.height)
+  local w=    (mab.font[c].w-mab.font.padding)/mab.font.width
+  local h= 1-((mab.font[c].h-mab.font.padding)/mab.font.height)
 
   --derivate the correct aspect ratio
   local sx, sy = mab.font[c].w-mab.font[c].u, mab.font[c].h-mab.font[c].v --width
