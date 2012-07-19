@@ -36,7 +36,7 @@ lujgl.initialize("cartographer", 800, 600)
 
 --@ load our font
   require "soil"
-  require "res.FONT_SWC"
+  require "mab-font"
   mab.font:load(reg["wb"].."\\Data\\FONT_DATA.XML",
                 reg["wb"].."\\textures\\FONT.dds")
                 
@@ -99,7 +99,8 @@ lujgl.setIdleCallback(function()
                      gl.glDeleteLists(mapmesh,1);mapmesh=nil end --refresh cached map end --f7
                      
     if key[262] then mab.map:save("_saveme.txt",true) end --f5 
-    
+    if key[263] then mab.map:load("res");
+                     gl.glDeleteLists(mapmesh,1);mapmesh=nil end --refresh cached map end --f6
     
     if mouse.lclick then print("dragmode!!",mouse.xold-mouse.x); xrang=xrang+(mouse.xold-mouse.x)/2; rx=1; end
     if mouse.lclick then print("dragmode!!",mouse.yold-mouse.y); yrang=yrang+(mouse.yold-mouse.y)/2; ry=1; end
@@ -276,8 +277,8 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
       or k=="s" or k==284
       or k=="d" or k==286
 
-      or k==265 or k==264  --f8 & f7
-      or k==262 then
+      or k==265 or k==264      --f8 & f7
+      or k==262 or k==263 then --f5 & f6
       
       key[k]=down end
 
