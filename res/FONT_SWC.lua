@@ -249,11 +249,11 @@ function mab.font:char(c,x,y,s)
 
   gl.glBegin(gl.GL_QUADS)
   
-  local u= mab.font[c].u/mab.font.width
-  local v= 1-(mab.font[c].v/mab.font.height)
-  local w= mab.font[c].w/mab.font.width
-  local h= 1-(mab.font[c].h/mab.font.height)
-  
+  local u= (mab.font[c].u-5)/mab.font.width
+  local v= 1-((mab.font[c].v-5)/mab.font.height)
+  local w= (mab.font[c].w-5)/mab.font.width
+  local h= 1-((mab.font[c].h-5)/mab.font.height)
+
   --derivate the correct aspect ratio
   local sx, sy = mab.font[c].w-mab.font[c].u, mab.font[c].h-mab.font[c].v --width
   
