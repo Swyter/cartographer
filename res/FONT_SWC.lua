@@ -186,9 +186,12 @@ mab.font = {
   [255]={u=1015, v=75 , w=1072, h=141, preshift=-7, yadjust=63, postshift=43},
 }
 
+  --
+ -- Loading functions
+--
 
-function mab.font:load(filename)
-print("@--start loading font")
+function mab.font:load(filename,filenamedds)
+print("@--start loading font xml")
 start=os.clock()
 
 local strmatch=string.match
@@ -200,13 +203,13 @@ end
  
     if string.find(l,"<FontData") then  --pseudoparser!, fingers crossed in case it doesn't use a standard format
     
-      mab.font["width" ]=_xmlblock(l,"width")
-      mab.font["height"]=_xmlblock(l,"height")
+      mab.font["width" ] =_xmlblock(l,"width")
+      mab.font["height"] =_xmlblock(l,"height")
       mab.font["padding"]=_xmlblock(l,"padding")/2 --we are going to apply it to every corner, so 5/5 and 5/5 in case its <10>
       
-      print("   width:" ..mab.font["width"],
+      print("    width:"..mab.font["width"],
                "height:"..mab.font["height"],
-               "padding:"..mab.font["padding"])
+              "padding:"..mab.font["padding"])
     
     elseif string.find(l,"<character") then
       ccode=_xmlblock(l,"code")
@@ -223,9 +226,13 @@ end
   end
   
   print(string.format("   font loaded in %gs",os.clock()-start))
+  
+  
+  
+  print("@--start loading font dds")
+  fontdds = soil.loadTexture(filenamedds)
+  
 end
-
-mab.font:load("R:\\Juegos\\Wb\\Data\\FONT_DATA.XML")
 
 
   --
@@ -233,20 +240,26 @@ mab.font:load("R:\\Juegos\\Wb\\Data\\FONT_DATA.XML")
 --
 
 function mab.font:print(phrase,x,y,s)
+  gl.glEnable(gl.GL_TEXTURE_2D)
+  gl.glBindTexture(gl.GL_TEXTURE_2D,fontdds)
+  
+  gl.glEnable(gl.GL_BLEND)
+  gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_SRC_COLOR)--outlines
+--gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_CONSTANT_ALPHA)--vertex colored solid
+
   x=x or 50
   y=y or 40
   s=s or 1--130
   phrase:gsub(".",
     function(c)
       ls = mab.font:char(c,x,y,s)
-      --print(x)
       x = x + ls
     end)
 
+  gl.glDisable(gl.GL_TEXTURE_2D)
 end
 
 function mab.font:char(c,x,y,s)
-  --print(c.." ->"..string.byte(c))
   c=string.byte(c)
 
   gl.glBegin(gl.GL_QUADS)

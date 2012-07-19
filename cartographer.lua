@@ -12,11 +12,8 @@ objY=ffi.new("double[1]",1);
 objZ=ffi.new("double[1]",1);
     
 --@ Load cooler dependencies
-require "soil"
-require "mab-map"
-require "mab-registry"
-
-reg=mab.registry:query()
+  require "mab-registry"
+  reg=mab.registry:query()
 
 local CubeVertices = {}
 CubeVertices.v = ffi.new("const float[8][3]", {
@@ -38,10 +35,14 @@ CubeVertices.f = ffi.new("const float[6][4]", {
 lujgl.initialize("cartographer", 800, 600)
 
 --@ load our font
-require "res.FONT_SWC"
-fontdds = soil.loadTexture("R:\\Juegos\\WB\\textures\\FONT.dds")
+  require "soil"
+  require "res.FONT_SWC"
+  mab.font:load("R:\\Juegos\\Wb\\Data\\FONT_DATA.XML",
+                "R:\\Juegos\\WB\\textures\\FONT.dds")
+
 --@ load our map
-mab.map:load("res")--"R:\\Juegos\\swconquest\\modules\\swconquest")
+  require "mab-map"
+  mab.map:load("res")--"R:\\Juegos\\swconquest\\modules\\swconquest")
 
 --@ opengl directives
   gl.glShadeModel(gl.GL_SMOOTH)
@@ -244,19 +245,11 @@ lujgl.setRenderCallback(function()
   --draw 2d
     gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_FILL )
     
-    gl.glEnable(gl.GL_BLEND)
-    gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_SRC_COLOR)--outlines
-   
-    gl.glEnable(gl.GL_TEXTURE_2D)
-    gl.glBindTexture(gl.GL_TEXTURE_2D,fontdds)
-    
     lujgl.begin2D()
       gl.glColor4d(1,1,1,1)
       mab.font:print(mouse.x.."--"..lujgl.height-mouse.y,49,lujgl.height/2,1.4)
       mab.font:print(string.format("x:%g y:%g z:%g",objX[0],objY[0],objZ[0]),49,lujgl.height/2-60,1)
     lujgl.end2D()
-    
-    gl.glDisable(gl.GL_TEXTURE_2D)
     
   --bugs ahoy?
     --lujgl.checkError()
