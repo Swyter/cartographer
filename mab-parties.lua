@@ -67,10 +67,6 @@ function mab.parties:load(filename)
   print(string.format("   %d parties loaded...",s))
 end
 
-mab.parties:load("R:\\Juegos\\swconquest\\modules\\swconquest-msys\\module_parties.py")
-
-print(mab.parties["coruscant"].name)
-
 function mab.parties:save(filename)
   print"not implemented yet"
 end

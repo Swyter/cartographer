@@ -45,8 +45,13 @@ lujgl.initialize("cartographer", 800, 600)
 
 --@ load our map
   require "mab-map"
-  mab.map:load("res")--"R:\\Juegos\\swconquest\\modules\\swconquest")
+  mab.map:load(reg["wb"].."\\modules\\native")--"R:\\Juegos\\swconquest\\modules\\swconquest")
+  
+--@ load our locations
+  require "mab-parties"
+  mab.parties:load("X:\\Firefox\\mb_warband_module_system_1153\\Module_system 1.153\\module_parties.py")
 
+  
 --@ opengl directives
   gl.glShadeModel(gl.GL_SMOOTH)
   gl.glEnable(gl.GL_AUTO_NORMAL)
@@ -223,7 +228,51 @@ lujgl.setRenderCallback(function()
   
 
 
-  --draw the markers
+    --@draw the markers
+   
+    for p,_ in pairs(mab.parties) do
+      if type(mab.parties[p])=="table" then
+          gl.glPushMatrix()
+          gl.glTranslated(mab.parties[p].pos[1]*-1,10,
+                          mab.parties[p].pos[2])
+                         
+          quad = glu.gluNewQuadric()
+          glu.gluQuadricOrientation(quad, glu.GLU_OUTSIDE)
+          
+          glu.gluSphere(
+            quad,
+            2,
+            4,
+            4
+          );
+          gl.glPopMatrix()
+          
+          local scrX=ffi.new("double[1]",1);
+          local scrY=ffi.new("double[1]",1);
+          local scrZ=ffi.new("double[1]",1);
+          
+          local modelview=ffi.new("double[16]",1);
+          gl.glGetDoublev( gl.GL_MODELVIEW_MATRIX, modelview );
+          
+          local projection=ffi.new("double[16]",1);
+          gl.glGetDoublev( gl.GL_PROJECTION_MATRIX, projection );
+          
+          local viewport=ffi.new("int[4]",1);
+          gl.glGetIntegerv( gl.GL_VIEWPORT, viewport );
+          glu.gluProject(mab.parties[p].pos[1]*-1, 10, mab.parties[p].pos[2], modelview, projection, viewport, scrX, scrY, scrZ);
+
+          
+          gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_FILL )
+          gl.glColor4d(1,1,1,.7)
+          lujgl.begin2D()
+          mab.font:print(mab.parties[p].name,
+                         scrX[0],scrY[0],1)
+          lujgl.end2D()
+      end
+    end
+    
+  
+  
   
     --@2D unprojection
     local winX=ffi.new("float[1]",mouse.x);
