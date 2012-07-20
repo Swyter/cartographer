@@ -244,8 +244,8 @@ function mab.font:print(phrase,x,y,s)
   gl.glBindTexture(gl.GL_TEXTURE_2D,fontdds)
   
   gl.glEnable(gl.GL_BLEND)
-  gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_SRC_COLOR)--outlines
---gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_CONSTANT_ALPHA)--vertex colored solid
+--gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_SRC_COLOR)--outlines
+  gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_CONSTANT_ALPHA)--vertex colored solid
 
   x=x or 50
   y=y or 40
@@ -279,16 +279,16 @@ function mab.font:char(c,x,y,s)
   
   --1
     gl.glTexCoord2d(u,h)--(0,0)
-    gl.glVertex2i(x*s, (0+y+yadj)*s)
+    gl.glVertex2i(x, (0+yadj*s)+y)
   --2
     gl.glTexCoord2d(w,h)--(1,0)
-    gl.glVertex2i((sx+x)*s, (0+y+yadj)*s)
+    gl.glVertex2i((sx*s)+x, (0+yadj*s)+y)
   --3
     gl.glTexCoord2d(w,v)--(1,1)
-    gl.glVertex2i((sx+x)*s, (y+sy+yadj)*s)
+    gl.glVertex2i((sx*s)+x, ((sy+yadj)*s)+y)
   --4
     gl.glTexCoord2d(u,v)--(0,1)
-    gl.glVertex2i(x*s, (y+sy+yadj)*s)
+    gl.glVertex2i(x, ((sy+yadj)*s)+y)
   --    v
   --   4|      3
   -- u--+-----+
@@ -298,5 +298,6 @@ function mab.font:char(c,x,y,s)
   --   1      |2
   --          h
   gl.glEnd()
-  return sx-(sx-mab.font[c].postshift)*s
+  sx=sx*s
+  return sx-(sx-(mab.font[c].postshift*s))
 end

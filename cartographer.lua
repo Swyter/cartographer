@@ -261,13 +261,17 @@ lujgl.setRenderCallback(function()
           gl.glGetIntegerv( gl.GL_VIEWPORT, viewport );
           glu.gluProject(mab.parties[p].pos[1]*-1, 10, mab.parties[p].pos[2], modelview, projection, viewport, scrX, scrY, scrZ);
 
-          
-          gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_FILL )
-          gl.glColor4d(1,1,1,.7)
-          lujgl.begin2D()
-          mab.font:print(mab.parties[p].name,
-                         scrX[0],scrY[0],1)
-          lujgl.end2D()
+          if scrZ[0]<.9999 then
+              gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_FILL )
+              gl.glColor4d(1,1,1,1)
+              lujgl.begin2D()
+              
+              mab.font:print(mab.parties[p].name,
+                             scrX[0],scrY[0],.5)
+
+              lujgl.end2D()
+              gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_LINE )
+          end
       end
     end
     
@@ -307,7 +311,7 @@ lujgl.setRenderCallback(function()
                      49,lujgl.height/2-60,.7)
       
       mab.font:print("The house at the end of the street is red.",
-                     1,10,.4)
+                     1,10,.2)
     lujgl.end2D()
     
   --bugs ahoy?
