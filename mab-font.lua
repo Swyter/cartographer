@@ -244,8 +244,8 @@ function mab.font:print(phrase,x,y,s)
   gl.glBindTexture(gl.GL_TEXTURE_2D,fontdds)
   
   gl.glEnable(gl.GL_BLEND)
---gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_SRC_COLOR)--outlines
-  gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_CONSTANT_ALPHA)--vertex colored solid
+  gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_SRC_COLOR)--outlines
+--gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_CONSTANT_ALPHA)--vertex colored solid
 
   x=x or 50
   y=y or 40
