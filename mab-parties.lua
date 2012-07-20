@@ -44,19 +44,22 @@ function mab.parties:load(filename)
           if index=="(" and not line:find("pf_disabled") then --avoid comments and filler entries
              
              tuple=ltrim:sub(2,ltrim:find("%).*")) --remove possible comments from the right side
-             tuple = tuple:gsub("\"", ""):gsub("%(", ""):gsub("%)", "") --remove all the: "()
+             tuple = tuple:gsub(" ", ""):gsub("\"", ""):gsub("%(", ""):gsub("%)", "") --remove all the: "()
 
+             --print(tuple)
              tuple = Split(tuple,",")
-              print(tuple[2]:gsub("_", " "))
-              s=s+1
-              
-              
-         -- thingie=split("\((.+)\)\,")--isolate tuple somehow
-         -- tuple=split(thingie,",")
-          
-         -- mab.parties[tuple[1]]={
-         -- name=tuple[2], pos={tuple[10][1],tuple[10][2]}, rot=tuple[12] or 0
-         -- }
+             --print(tuple[2]:gsub("_", " "))
+             s=s+1
+
+          print(tuple[2]:gsub("_", " "), tonumber(tuple[10]) or 0,tonumber(tuple[11]) or 0)
+          mab.parties[tuple[1]]={
+            name=tuple[2]:gsub("_", " "),
+            pos={
+                 tonumber(tuple[10]),
+                 tonumber(tuple[11])
+                },
+            rot=tonumber(tuple[15]) or 0
+          }
           end
         end
   end
@@ -65,6 +68,8 @@ function mab.parties:load(filename)
 end
 
 mab.parties:load("R:\\Juegos\\swconquest\\modules\\swconquest-msys\\module_parties.py")
+
+print(mab.parties["coruscant"].name)
 
 function mab.parties:save(filename)
   print"not implemented yet"
