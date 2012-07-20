@@ -41,11 +41,14 @@ function mab.parties:load(filename)
         local index=ltrim:sub(1,1)
 
         if index ~= "#" then
-          if index=="(" and not line:find("pf_disabled") then --avoid comments and filler entries
+          if index=="(" and not line:find("pf_disabled") and not line:find("pf_no_label") then --avoid comments and filler entries
              
              tuple=ltrim:sub(2,ltrim:find("%).*")) --remove possible comments from the right side
              tuple = tuple:gsub(" ", ""):gsub("\"", ""):gsub("%(", ""):gsub("%)", "") --remove all the: "()
 
+             
+             if tuple:find("pf_town") then
+             kind=1 else kind=2 end
              --print(tuple)
              tuple = Split(tuple,",")
              --print(tuple[2]:gsub("_", " "))
@@ -58,7 +61,8 @@ function mab.parties:load(filename)
                  tonumber(tuple[10]),
                  tonumber(tuple[11])
                 },
-            rot=tonumber(tuple[15]) or 0
+            rot=tonumber(tuple[15]) or 0,
+            kind=kind
           }
           end
         end

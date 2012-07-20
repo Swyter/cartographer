@@ -266,8 +266,15 @@ lujgl.setRenderCallback(function()
               gl.glColor4d(1,1,1,1)
               lujgl.begin2D()
               
+                  if mab.parties[p].kind==1 then
+                  scal=.66
+              elseif mab.parties[p].kind==2 then
+                  scal=.33
+              end
+              
+              
               mab.font:print(mab.parties[p].name,
-                             scrX[0],scrY[0],.5)
+                             scrX[0],scrY[0],scal)
 
               lujgl.end2D()
               gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_LINE )

@@ -273,7 +273,7 @@ function mab.font:char(c,x,y,s)
   local sx, sy = mab.font[c].w-mab.font[c].u, mab.font[c].h-mab.font[c].v --width
   
   --horizontal adjustments
-  local x = x+mab.font[c].preshift
+  local x = x+(mab.font[c].preshift*s)
   --vertical adjustments
   local yadj = mab.font[c].yadjust-sy
   
