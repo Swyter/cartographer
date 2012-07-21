@@ -49,8 +49,29 @@ lujgl.initialize("cartographer", 800, 600)
   
 --@ load our locations
   require "mab-parties"
-  mab.parties:load("X:\\Firefox\\mb_warband_module_system_1153\\Module_system 1.153\\module_parties.py")
+  mab.parties:load("X:\\Firefox\\mb_warband_module_system_1153\\Module_system 1.153\\module_parties.py")--"R:\\Juegos\\swconquest\\modules\\swconquest-msys\\module_parties.py")
 
+    
+--function round(num, idp)
+--  return tonumber(string.format("%d", num))
+--end
+
+  for p,_ in pairs(mab.parties) do
+  if type(mab.parties[p])=="table" then
+  
+   --for i=1,#mab.map.vtx do
+      --  if round(mab.map.vtx[i].x) == round(mab.parties[p].pos[1]) and
+      --     round(mab.map.vtx[i].z) == round(mab.parties[p].pos[2]) then
+      --     
+      --     mab.parties[p].pos[3] = mab.map.vtx[i].y
+      --    print("found "..mab.map.vtx[i].y.." for "..mab.parties[p].name)
+      --     break
+      --end
+   --end
+     
+     if not mab.parties[p].pos[3] then mab.parties[p].pos[3]=10 end
+  end
+  end
   
 --@ opengl directives
   gl.glShadeModel(gl.GL_SMOOTH)
@@ -233,7 +254,7 @@ lujgl.setRenderCallback(function()
     for p,_ in pairs(mab.parties) do
       if type(mab.parties[p])=="table" then
           gl.glPushMatrix()
-          gl.glTranslated(mab.parties[p].pos[1]*-1,10,
+          gl.glTranslated(mab.parties[p].pos[1]*-1,mab.parties[p].pos[3],
                           mab.parties[p].pos[2])
                          
           quad = glu.gluNewQuadric()
@@ -259,10 +280,12 @@ lujgl.setRenderCallback(function()
           
           local viewport=ffi.new("int[4]",1);
           gl.glGetIntegerv( gl.GL_VIEWPORT, viewport );
-          glu.gluProject(mab.parties[p].pos[1]*-1, 10, mab.parties[p].pos[2], modelview, projection, viewport, scrX, scrY, scrZ);
+          glu.gluProject(mab.parties[p].pos[1]*-1, mab.parties[p].pos[3], mab.parties[p].pos[2], modelview, projection, viewport, scrX, scrY, scrZ);
 
           if scrZ[0]<.9999 then
               gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_FILL )
+              gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_SRC_COLOR)--outlines
+              
               gl.glColor4d(1,1,1,1)
               lujgl.begin2D()
               
@@ -310,9 +333,10 @@ lujgl.setRenderCallback(function()
     gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_FILL )
     
     lujgl.begin2D()
-      gl.glColor4d(1,1,1,1)
+      gl.glColor4d(1,.9,1,.7)
+      gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_CONSTANT_ALPHA)--vertex colored solid
       mab.font:print(string.format("%d--%d",mouse.x, lujgl.height-mouse.y),
-                     55,lujgl.height/2-90,.6)
+                     49,lujgl.height/2-110,.6)
                      
       mab.font:print(string.format("x:%g y:%g z:%g",objX[0],objY[0],objZ[0]),
                      49,lujgl.height/2-60,.7)
