@@ -51,23 +51,18 @@ lujgl.initialize("cartographer", 800, 600)
   require "mab-parties"
   mab.parties:load("X:\\Firefox\\mb_warband_module_system_1153\\Module_system 1.153\\module_parties.py")--"R:\\Juegos\\swconquest\\modules\\swconquest-msys\\module_parties.py")
 
-    
---function round(num, idp)
---  return tonumber(string.format("%d", num))
---end
-
   for p,_ in pairs(mab.parties) do
   if type(mab.parties[p])=="table" then
-  
-   --for i=1,#mab.map.vtx do
-      --  if round(mab.map.vtx[i].x) == round(mab.parties[p].pos[1]) and
-      --     round(mab.map.vtx[i].z) == round(mab.parties[p].pos[2]) then
-      --     
-      --     mab.parties[p].pos[3] = mab.map.vtx[i].y
-      --    print("found "..mab.map.vtx[i].y.." for "..mab.parties[p].name)
-      --     break
-      --end
-   --end
+    
+   for i=1,#mab.map.fcs do
+        if (mab.map.vtx[mab.map.fcs[i][1]].x - mab.parties[p].pos[1]) < 2 and
+           (mab.map.vtx[mab.map.fcs[i][1]].z - mab.parties[p].pos[2]) < 2 then
+           
+           mab.parties[p].pos[3] = mab.map.vtx[mab.map.fcs[i][1]].y
+           --print("found "..mab.map.vtx[mab.map.fcs[i][1]].y.." for "..mab.parties[p].name)
+           break
+      end
+   end
      
      if not mab.parties[p].pos[3] then mab.parties[p].pos[3]=10 end
   end
