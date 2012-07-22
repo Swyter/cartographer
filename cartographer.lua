@@ -49,24 +49,57 @@ lujgl.initialize("cartographer", 800, 600)
   
 --@ load our locations
   require "mab-parties"
-  mab.parties:load("X:\\Firefox\\mb_warband_module_system_1153\\Module_system 1.153\\module_parties.py")--"R:\\Juegos\\swconquest\\modules\\swconquest-msys\\module_parties.py")
+  filledp = mab.parties:load("X:\\Firefox\\mb_warband_module_system_1153\\Module_system 1.153\\module_parties.py")--"R:\\Juegos\\swconquest\\modules\\swconquest-msys\\module_parties.py")
 
+  
+  abs=math.abs
   for p,_ in pairs(mab.parties) do
   if type(mab.parties[p])=="table" then
-    
+   
+   local closerx,closery=2,2
+   
    for i=1,#mab.map.fcs do
-        if (mab.map.vtx[mab.map.fcs[i][1]].x - mab.parties[p].pos[1]) < 2 and
-           (mab.map.vtx[mab.map.fcs[i][1]].z - mab.parties[p].pos[2]) < 2 then
+   
+   --compute barycenter
+   tricenterx=(mab.map.vtx[mab.map.fcs[i][1]].x+
+               mab.map.vtx[mab.map.fcs[i][2]].x+
+               mab.map.vtx[mab.map.fcs[i][3]].x)/3
+   tricentery=(mab.map.vtx[mab.map.fcs[i][1]].z+
+               mab.map.vtx[mab.map.fcs[i][2]].z+
+               mab.map.vtx[mab.map.fcs[i][3]].z)/3
+               
+   --print("tric:"..tricenterx,tricentery)
+   
+   local compx=abs(tricenterx - mab.parties[p].pos[1])
+   local compy=abs(tricentery - mab.parties[p].pos[2])
+
+   --print("comp:"..compx,compy)
+   --break
+   
+        if compx < closerx and
+           compy < closery then --closest triangle to the point
            
-           mab.parties[p].pos[3] = mab.map.vtx[mab.map.fcs[i][1]].y
+           --print(mab.parties[p].name,closerx,closery)
+           --print(compx,compy,"-->"..mab.map.vtx[mab.map.fcs[i][1]].y)
+           closerx,closery=compx,compy
+           
+          -- mab.parties[p].pos[1] = mab.map.vtx[mab.map.fcs[i][1]].x
+          -- mab.parties[p].pos[2] = mab.map.vtx[mab.map.fcs[i][1]].z
+           mab.parties[p].pos[3] =(mab.map.vtx[mab.map.fcs[i][1]].y+
+                                   mab.map.vtx[mab.map.fcs[i][2]].y+
+                                   mab.map.vtx[mab.map.fcs[i][3]].y)/3
            --print("found "..mab.map.vtx[mab.map.fcs[i][1]].y.." for "..mab.parties[p].name)
-           break
-      end
+           
+           filledp=filledp-1
+          -- break
+        end
    end
      
      if not mab.parties[p].pos[3] then mab.parties[p].pos[3]=10 end
   end
   end
+  
+  print("Are out ->"..filledp)
   
 --@ opengl directives
   gl.glShadeModel(gl.GL_SMOOTH)
@@ -249,7 +282,7 @@ lujgl.setRenderCallback(function()
     for p,_ in pairs(mab.parties) do
       if type(mab.parties[p])=="table" then
           gl.glPushMatrix()
-          gl.glTranslated(mab.parties[p].pos[1]*-1,mab.parties[p].pos[3],
+          gl.glTranslated(mab.parties[p].pos[1],mab.parties[p].pos[3],
                           mab.parties[p].pos[2])
                          
           quad = glu.gluNewQuadric()
@@ -275,7 +308,7 @@ lujgl.setRenderCallback(function()
           
           local viewport=ffi.new("int[4]",1);
           gl.glGetIntegerv( gl.GL_VIEWPORT, viewport );
-          glu.gluProject(mab.parties[p].pos[1]*-1, mab.parties[p].pos[3], mab.parties[p].pos[2], modelview, projection, viewport, scrX, scrY, scrZ);
+          glu.gluProject(mab.parties[p].pos[1], mab.parties[p].pos[3], mab.parties[p].pos[2], modelview, projection, viewport, scrX, scrY, scrZ);
 
           if scrZ[0]<.9999 then
               gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_FILL )

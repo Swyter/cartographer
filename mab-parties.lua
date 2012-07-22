@@ -54,11 +54,11 @@ function mab.parties:load(filename)
              --print(tuple[2]:gsub("_", " "))
              s=s+1
 
-          print(tuple[2]:gsub("_", " "), tonumber(tuple[10]) or 0,tonumber(tuple[11]) or 0)
+          --print(tuple[2]:gsub("_", " "), tonumber(tuple[10]) or 0,tonumber(tuple[11]) or 0)
           mab.parties[tuple[1]]={
             name=tuple[2]:gsub("_", " "),
             pos={
-                 tonumber(tuple[10]),
+                 tonumber(tuple[10])*-1, --invert X coordinates
                  tonumber(tuple[11])
                 },
             rot=tonumber(tuple[15]) or 0,
@@ -69,6 +69,7 @@ function mab.parties:load(filename)
   end
   
   print(string.format("   %d parties loaded...",s))
+  return s
 end
 
 function mab.parties:save(filename)
