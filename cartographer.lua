@@ -49,29 +49,31 @@ lujgl.initialize("cartographer", 800, 600)
   
 --@ load our locations
   require "mab-parties"
-  filledp = mab.parties:load("X:\\Firefox\\mb_warband_module_system_1153\\Module_system 1.153\\module_parties.py")--"R:\\Juegos\\swconquest\\modules\\swconquest-msys\\module_parties.py")
+  local filledp = mab.parties:load("X:\\Firefox\\mb_warband_module_system_1153\\Module_system 1.153\\module_parties.py")--"R:\\Juegos\\swconquest\\modules\\swconquest-msys\\module_parties.py")
 
-  
-  abs=math.abs
+  local uu=os.clock()
+  local abs=math.abs
   for p,_ in pairs(mab.parties) do
-  if type(mab.parties[p])=="table" then
+  
+  local currparty=mab.parties[p]
+  if type(currparty)=="table" then
    
    local closerx,closery=2,2
    
    for i=1,#mab.map.fcs do
    
    --compute barycenter
-   tricenterx=(mab.map.vtx[mab.map.fcs[i][1]].x+
-               mab.map.vtx[mab.map.fcs[i][2]].x+
-               mab.map.vtx[mab.map.fcs[i][3]].x)/3
-   tricentery=(mab.map.vtx[mab.map.fcs[i][1]].z+
-               mab.map.vtx[mab.map.fcs[i][2]].z+
-               mab.map.vtx[mab.map.fcs[i][3]].z)/3
+   local tricenterx=(mab.map.vtx[mab.map.fcs[i][1]].x+
+                     mab.map.vtx[mab.map.fcs[i][2]].x+
+                     mab.map.vtx[mab.map.fcs[i][3]].x)/3
+   local tricentery=(mab.map.vtx[mab.map.fcs[i][1]].z+
+                     mab.map.vtx[mab.map.fcs[i][2]].z+
+                     mab.map.vtx[mab.map.fcs[i][3]].z)/3
                
    --print("tric:"..tricenterx,tricentery)
    
-   local compx=abs(tricenterx - mab.parties[p].pos[1])
-   local compy=abs(tricentery - mab.parties[p].pos[2])
+   local compx=abs(tricenterx - currparty.pos[1])
+   local compy=abs(tricentery - currparty.pos[2])
 
    --print("comp:"..compx,compy)
    --break
@@ -90,8 +92,8 @@ lujgl.initialize("cartographer", 800, 600)
                                    mab.map.vtx[mab.map.fcs[i][3]].y)/3
            --print("found "..mab.map.vtx[mab.map.fcs[i][1]].y.." for "..mab.parties[p].name)
            
-           filledp=filledp-1
-          -- break
+           --filledp=filledp-1
+           --break
         end
    end
      
@@ -99,7 +101,7 @@ lujgl.initialize("cartographer", 800, 600)
   end
   end
   
-  print("Are out ->"..filledp)
+  print(string.format("   ground aligned in %gs, %d out",os.clock()-uu,filledp))
   
 --@ opengl directives
   gl.glShadeModel(gl.GL_SMOOTH)
