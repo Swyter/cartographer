@@ -93,7 +93,7 @@ lujgl.initialize("cartographer", 800, 600)
            --print("found "..mab.map.vtx[mab.map.fcs[i][1]].y.." for "..mab.parties[p].name)
            
            --filledp=filledp-1
-           --break
+           if closerx<1.8 and closery<1.5 then break end--aproximate just enough
         end
    end
      
