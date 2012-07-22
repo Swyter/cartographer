@@ -34,7 +34,7 @@ function Split(str, delim, maxNb) --from <http://lua-users.org/wiki/SplitJoin> #
 end
 
 function mab.parties:load(filename)
-  print("@--start parsing parties"); s=0
+  print("@--start parsing parties"); s=0; tt=os.clock()
   for line in io.lines(filename) do
   
         local ltrim=line:match("%S.*") or "#"
@@ -68,7 +68,7 @@ function mab.parties:load(filename)
         end
   end
   
-  print(string.format("   %d parties loaded...",s))
+  print(string.format("   %d parties loaded... %gs",s,os.clock()-tt))
   return s
 end
 
