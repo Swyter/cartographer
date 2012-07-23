@@ -67,9 +67,9 @@ function mab.font:print(phrase,x,y,s)
 --gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_SRC_COLOR)--outlines
 --gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_CONSTANT_ALPHA)--vertex colored solid
 
-  x=x or 50
-  y=y or 40
-  s=s or 1--130
+  local x=x or 50
+  local y=y or 40
+  local s=s or 1--130
   phrase:gsub(".",
     function(c)
       ls = mab.font:char(c,x,y,s)
