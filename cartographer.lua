@@ -157,11 +157,13 @@ lujgl.setIdleCallback(function()
     if key[262] then mab.map:save("_saveme.txt",true) end --f5 
     if key[263] then mab.map:load("res");
                      gl.glDeleteLists(mapmesh,1);mapmesh=nil end --refresh cached map end --f6
+                     
+    if key[266] then mab.parties:save("X:\\Firefox\\mb_warband_module_system_1153\\Module_system 1.153\\module_parties.py") end --f9
+    --if key[267] then mab.parties:load("res") end --f10
     
-    if mouse.lclick then print("dragmode!!",mouse.xold-mouse.x); xrang=xrang+(mouse.xold-mouse.x)/2; rx=1; end
-    if mouse.lclick then print("dragmode!!",mouse.yold-mouse.y); yrang=yrang+(mouse.yold-mouse.y)/2; ry=1; end
+    if mouse.lclick then print("xdragmode!!",mouse.xold-mouse.x); xrang=xrang+(mouse.xold-mouse.x)/2; rx=1; end
+    if mouse.lclick then print("ydragmode!!",mouse.yold-mouse.y); yrang=yrang+(mouse.yold-mouse.y)/2; ry=1; end
     if yrang<-90 then yrang=-90 end
-    if yrang<-90 then yrang=-90 end 
     
     mouse.xold=mouse.x
     mouse.yold=mouse.y
@@ -182,29 +184,11 @@ lujgl.setRenderCallback(function()
     gl.glLoadIdentity()
     glu.gluPerspective(60,lujgl.width / lujgl.height, 0.01, 1000)
     gl.glMatrixMode(gl.GL_MODELVIEW)
-    
-    
-    
-    gl.glPushMatrix()
-    gl.glTranslated(objX[0],objY[0],objZ[0])
-    quad = glu.gluNewQuadric()
-    
-    glu.gluQuadricTexture(quad, true)
-    glu.gluQuadricOrientation(quad, glu.GLU_OUTSIDE)
-    
-    glu.gluSphere(
-      quad,
-      3,
-      50,
-      10
-    );
-    gl.glPopMatrix()
-    
-    
+
     
     gl.glTranslatef(px,py,pz)
-    gl.glRotatef(yrang,ry,0,0)  
-    gl.glRotatef(xrang,0,rx,0)
+    gl.glRotatef(yrang,ry, 0, 0)
+    gl.glRotatef(xrang, 0,rx, 0)
 
 
     lujgl.glLight(gl.GL_LIGHT0, gl.GL_AMBIENT, 0.2, 0.2, 0.2)
@@ -392,7 +376,8 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
       or k=="d" or k==286
 
       or k==265 or k==264      --f8 & f7
-      or k==262 or k==263 then --f5 & f6
+      or k==262 or k==263      --f5 & f6
+      or k==266 or k==267 then --f9 & f10
       
       key[k]=down end
 

@@ -44,26 +44,22 @@ function mab.parties:load(filename)
           if index=="(" and not line:find("pf_disabled") and not line:find("pf_no_label") then --avoid comments and filler entries
              
              tuple=ltrim:sub(2,ltrim:find("%).*")) --remove possible comments from the right side
-             tuple = tuple:gsub(" ", ""):gsub("\"", ""):gsub("%(", ""):gsub("%)", "") --remove all the: "()
-
+             tuple=tuple:gsub(" ", ""):gsub("\"", ""):gsub("%(", ""):gsub("%)", "") --remove all the: "()
              
-             if tuple:find("pf_town") then
-             kind=1 else kind=2 end
-             --print(tuple)
+             if tuple:find("pf_town") then kind=1 else kind=2 end
+
              tuple = Split(tuple,",")
-             --print(tuple[2]:gsub("_", " "))
              s=s+1
 
-          --print(tuple[2]:gsub("_", " "), tonumber(tuple[10]) or 0,tonumber(tuple[11]) or 0)
-          mab.parties[tuple[1]]={
-            name=tuple[2]:gsub("_", " "),
-            pos={
-                 tonumber(tuple[10])*-1, --invert X coordinates
-                 tonumber(tuple[11])
-                },
-            rot=tonumber(tuple[15]) or 0,
-            kind=kind
-          }
+             mab.parties[tuple[1]]={
+               name=tuple[2]:gsub("_", " "),
+               pos={
+                    tonumber(tuple[10])*-1, --invert X coordinates
+                    tonumber(tuple[11])
+                   },
+               rot=tonumber(tuple[15]) or 0,
+               kind=kind
+             }
           end
         end
   end
@@ -73,5 +69,47 @@ function mab.parties:load(filename)
 end
 
 function mab.parties:save(filename)
-  print"not implemented yet"
+  print("@--saving modified parties"); tt=os.clock()
+  
+  local tline={}
+  
+  for line in io.lines(filename) do --read everything
+    tline[#tline+1]=line
+  end
+  
+  if io.output(io.open("_partysave.py","w")) then
+  for i=1,#tline do 
+
+        local ltrim=tline[i]:match("%S.*") or "#"
+        local index=ltrim:sub(1,1)
+
+        if index ~= "#" and index=="(" then --avoid comments and filler entries
+          
+            for pid in pairs(mab.parties) do        
+              if type(mab.parties[pid])=="table" and not
+                 mab.parties[pid].isbeenmod      and  --itirerate over all the avaliable, modified parties
+                 tline[i]:find(pid.."[\"']")     then --if matches in the line, bingo! try to replace coordinates by the new ones
+              
+                  print("found ref:"..pid--,
+                        --tline[i]:match("%((%S?%d[%.[%d]+]?)%S?,")
+                       )
+                  
+                  tline[i]=string.gsub(tline[i], mab.parties[pid].pos[1]*-1, "XX")
+                  tline[i]=string.gsub(tline[i], mab.parties[pid].pos[2], "YY")
+                  
+                  tline[i]=string.format("%s #[swycartographr] prev. coords: (%g, %g)",
+                           tline[i]..string.rep(" ",(200-tline[i]:len())),
+                           mab.parties[pid].pos[1],
+                           mab.parties[pid].pos[2]
+                           )
+              end
+            end
+            
+        end
+        
+        io.write(tline[i].."\n") --drop the line
+  end
+  end
+  
+  print("   done...")
 end
