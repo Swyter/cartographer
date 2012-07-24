@@ -32,7 +32,7 @@ objZ=ffi.new("double[1]",1);
 
 --@ load our map
   require "mab-map"
-  mab.map:load(reg["wb"].."\\modules\\native")--"R:\\Juegos\\swconquest\\modules\\swconquest")
+  mab.map:load(cartographer.conf.maptxt)--"R:\\Juegos\\swconquest\\modules\\swconquest")
   
 --@ load our locations
   require "mab-parties"
@@ -132,12 +132,12 @@ lujgl.setIdleCallback(function()
     if key["d"] or key[286] then print(">",px); px=px-3 end --reversed
     
     
-    if key[265] then mab.map:saveobj("_out.obj") end --f8
-    if key[264] then mab.map:loadobj("_out.obj");
+    if key[265] then mab.map:saveobj(cartographer.conf.mapobj) end --f8
+    if key[264] then mab.map:loadobj(cartographer.conf.mapobjout);
                      gl.glDeleteLists(mapmesh,1);mapmesh=nil end --refresh cached map end --f7
                      
-    if key[262] then mab.map:save("_saveme.txt",true) end --f5 
-    if key[263] then mab.map:load("res");
+    if key[262] then mab.map:save(cartographer.conf.maptxtout,true) end --f5 
+    if key[263] then mab.map:load(cartographer.conf.maptxt);
                      gl.glDeleteLists(mapmesh,1);mapmesh=nil end --refresh cached map end --f6
                      
     if key[266] then mab.parties:save(cartographer.conf.mparties) end --f9

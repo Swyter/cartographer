@@ -172,33 +172,34 @@ end
 
 function mab.map:saveobj(file,reversed_mode)
   print("@--Exporting OBJ..."); local start=os.clock(); local lastmat=-1;
-  io.output(io.open(file,"w"))
-  io.write([[
-  # Mount&Blade Map file
-  # Exported by swyter's cartographer
+  if io.output(io.open(file,"w")) then
+    io.write([[
+    # Mount&Blade Map file
+    # Exported by swyter's cartographer
 
-]])
-  
-  for s=1,vtx do
-    local curr=mab.map.vtx[s]; if reversed_mode then curr.y,curr.z=curr.z,(curr.y*-1); end
-    io.write(
-      string.format("v %g %g %g\n",curr.x,curr.y,curr.z) --floats
-    )
-  end
- 
-  for s=1,fcs do
-    local curr=mab.map.fcs[s]
+  ]])
     
-    if lastmat ~= tonumber(curr[11]) then --implemented material export
-      io.write(string.format("usemtl %s\n",mat[tonumber(curr[11])])); lastmat=tonumber(curr[11])
+    for s=1,vtx do
+      local curr=mab.map.vtx[s]; if reversed_mode then curr.y,curr.z=curr.z,(curr.y*-1); end
+      io.write(
+        string.format("v %g %g %g\n",curr.x,curr.y,curr.z) --floats
+      )
     end
-    
-    io.write(
-      string.format("f %d %d %d\n",curr[1],curr[2],curr[3]) --integers
-    )
+   
+    for s=1,fcs do
+      local curr=mab.map.fcs[s]
+      
+      if lastmat ~= tonumber(curr[11]) then --implemented material export
+        io.write(string.format("usemtl %s\n",mat[tonumber(curr[11])])); lastmat=tonumber(curr[11])
+      end
+      
+      io.write(
+        string.format("f %d %d %d\n",curr[1],curr[2],curr[3]) --integers
+      )
+    end
+    io.close()
+    print("   done... "..(os.clock()-start).."s")
   end
-  io.close()
-  print("   done... "..(os.clock()-start).."s")
 end
 
 
@@ -231,51 +232,52 @@ function mab.map:loadobj(file,reversed_mode)
   print("@--Importing OBJ..."); local lastmat="plain"; local start=os.clock(); local lSplit=Split local tonum=tonumber
   mab.map.vtx,mab.map.fcs={},{}
 
-  for line in io.lines(file) do
-  
-    local ltrim=line:match("%S.*") or "#"
-    local index=ltrim:sub(1,1)
-    if index ~= "#" then --not a comment
+  if io.open(file,"r") then
+    for line in io.lines(file) do
     
-        local raw=lSplit(ltrim," ")
-        
-        --@vertex
-        ---------------------------
-        if raw[1]=="v" then
-        
-            if reversed_mode then raw[2],raw[3]=raw[3],raw[2]*-1; end
-            mab.map.vtx[#mab.map.vtx+1]=vector.new(
-                                        tonum(raw[2]),
-                                        tonum(raw[3]),
-                                        tonum(raw[4])
-                                        )
-                                        
-        --@material
-        ---------------------------
-        elseif raw[1]=="usemtl" then
-        
-            lastmat=raw[2]
-        
-        --@face
-        ---------------------------
-        elseif raw[1]=="f" then
-        
-            fcount=(#mab.map.fcs+1)
-            mab.map.fcs[fcount]={}
-            
-              for i=2,4 do --for every section do this
+      local ltrim=line:match("%S.*") or "#"
+      local index=ltrim:sub(1,1)
+      if index ~= "#" then --not a comment
+      
+          local raw=lSplit(ltrim," ")
+          
+          --@vertex
+          ---------------------------
+          if raw[1]=="v" then
+          
+              if reversed_mode then raw[2],raw[3]=raw[3],raw[2]*-1; end
+              mab.map.vtx[#mab.map.vtx+1]=vector.new(
+                                          tonum(raw[2]),
+                                          tonum(raw[3]),
+                                          tonum(raw[4])
+                                          )
+                                          
+          --@material
+          ---------------------------
+          elseif raw[1]=="usemtl" then
+          
+              lastmat=raw[2]
+          
+          --@face
+          ---------------------------
+          elseif raw[1]=="f" then
+          
+              fcount=(#mab.map.fcs+1)
+              mab.map.fcs[fcount]={}
               
-                local facesplit=lSplit(raw[i],'/');
+                for i=2,4 do --for every section do this
                 
-                mab.map.fcs[fcount][i-1]=tonum(facesplit[1])
-    
-              end
-              
-            mab.map.fcs[fcount][11]=_G["rt_"..lastmat] or 3 --@FIXME hack, no material as of yet :(
+                  local facesplit=lSplit(raw[i],'/');
+                  
+                  mab.map.fcs[fcount][i-1]=tonum(facesplit[1])
+      
+                end
+                
+              mab.map.fcs[fcount][11]=_G["rt_"..lastmat] or 3 --@FIXME hack, no material as of yet :(
 
-        end
+          end
+      end
     end
-  end
   
   vtx=#mab.map.vtx;fcs=#mab.map.fcs; --refresh with latest info
   
@@ -286,5 +288,5 @@ function mab.map:loadobj(file,reversed_mode)
    fcs,
    (os.clock()-start)
    ))
-
+  end
 end
