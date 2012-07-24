@@ -161,6 +161,14 @@ lujgl.setIdleCallback(function()
     if key[266] then mab.parties:save("X:\\Firefox\\mb_warband_module_system_1153\\Module_system 1.153\\module_parties.py") end --f9
     --if key[267] then mab.parties:load("res") end --f10
     
+    
+    if mouse.rclick then print("pickingmode!!");
+    
+      mab.parties[picked].isbeenmod=true
+      mab.parties[picked].pos={objX[0],objZ[0],objY[0]}
+    
+    end
+    
     if mouse.lclick then print("xdragmode!!",mouse.xold-mouse.x); xrang=xrang+(mouse.xold-mouse.x)/2; rx=1; end
     if mouse.lclick then print("ydragmode!!",mouse.yold-mouse.y); yrang=yrang+(mouse.yold-mouse.y)/2; ry=1; end
     if yrang<-90 then yrang=-90 end
@@ -177,7 +185,7 @@ lujgl.setIdleCallback(function()
  end)
  
 lujgl.setRenderCallback(function()
-  gl.glShadeModel(gl.GL_SMOOTH)
+  --gl.glShadeModel(gl.GL_SMOOTH)
   --let's fix aspect ratio
     gl.glViewport(0, 0, lujgl.width, lujgl.height)
     gl.glMatrixMode(gl.GL_PROJECTION_MATRIX)
@@ -205,11 +213,11 @@ lujgl.setRenderCallback(function()
     gl.glHint(gl.GL_FOG_HINT, gl.GL_DONT_CARE)
     gl.glFogf(gl.GL_FOG_START, 100)
     gl.glFogf(gl.GL_FOG_END, 1000)
-    gl.glEnable(gl.GL_FOG)
+    --gl.glEnable(gl.GL_FOG)
     
   --draw the map
     gl.glDisable(gl.GL_BLEND)
-    gl.glEnable(gl.GL_LIGHT0)
+    --gl.glEnable(gl.GL_LIGHT0)
     gl.glPushMatrix()
 
     if not mapmesh or not gl.glIsList(mapmesh) then
@@ -243,34 +251,37 @@ lujgl.setRenderCallback(function()
     end
     gl.glPopMatrix()
     
-    gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_LINE )
+    --gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_LINE )
+    --[[
     gl.glDisable(gl.GL_LIGHT0)
   
     gl.glPushMatrix()
     gl.glTranslated(objX[0],objY[0],objZ[0])
     gl.glRotated(lujgl.getTime()*10, rotx, roty, rotz)
-    gl.glScaled(100,100,100)
+    gl.glScaled(1,1,1)
     gl.glColor3d(1,1,0)
     for i=0,5 do
       gl.glBegin(gl.GL_QUADS)
       gl.glNormal3fv(CubeVertices.n[i])
       for j=0,3 do
-        gl.glVertex3fv(CubeVertices.v[CubeVertices.f[i][j]])
+        gl.glVertex3fv(CubeVertices.v[CubeVertices.f[i][j])
       end
       gl.glEnd()
     end
     gl.glPopMatrix()
-  
+  ]]
 
 
     --@draw the markers
-   
-    for p,_ in pairs(mab.parties) do
-      if type(mab.parties[p])=="table" then
+    for p=1,#mab.parties do
+     -- if type(mab.parties[p])=="table" then 
           gl.glPushMatrix()
+          gl.glDisable(gl.GL_LIGHTING)
           gl.glTranslated(mab.parties[p].pos[1],mab.parties[p].pos[3],
                           mab.parties[p].pos[2])
-                         
+                          
+          gl.glColor3ub(p,255,255);
+          
           quad = glu.gluNewQuadric()
           glu.gluQuadricOrientation(quad, glu.GLU_OUTSIDE)
           
@@ -300,7 +311,7 @@ lujgl.setRenderCallback(function()
               gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_FILL )
               gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_SRC_COLOR)--outlines
               
-              gl.glColor4d(1,1,1,1)
+              --gl.glColor4d(1,1,1,1)
               lujgl.begin2D()
               
                   if mab.parties[p].kind==1 then
@@ -314,9 +325,9 @@ lujgl.setRenderCallback(function()
                              scrX[0],scrY[0],scal)
 
               lujgl.end2D()
-              gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_LINE )
+              --gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_LINE )
           end
-      end
+     -- end
     end
     
   
@@ -388,7 +399,34 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
     elseif ev=="mouse" then  -- mouse clicks
       local k,down,x,y=arg[1],arg[2],arg[3],arg[4]
     
-      if k==1 then mouse.rclick=down end
+      if k==1 then
+
+      
+      if down then
+            local winX=ffi.new("float[1]",mouse.x);
+            local winY=ffi.new("float[1]",lujgl.height-mouse.y);
+            local pickId=ffi.new("int[1]",1);
+            
+            gl.glReadPixels( winX[0], winY[0], 1,1, gl.GL_RED, gl.GL_UNSIGNED_BYTE, pickId );
+            
+            if mab.parties[pickId[0]] then
+              tty=mab.parties[pickId[0]].name
+             
+              picked=pickId[0]
+            
+              mouse.rclick=true
+            
+            else
+              tty="unknown"
+              picked=0
+            end
+            print("picked thingie "..tty)
+      elseif picked ~= 0 then
+            print("soltado "..tty)
+            mouse.rclick=false
+      end
+
+      end
       if k==0 then mouse.lclick=down end
       if k==2 then mouse.mclick=down end
       

@@ -1,12 +1,5 @@
 mab = mab or {}
 mab.parties = mab.parties or {}
---[[
-mab.parties = {
-      "taris"={name="Taris",    pos={15.66,90.63}, rot=135},
-  "coruscant"={name="Coruscant",pos={-30.5,34},    rot=135}
-}
-]]
-
 
 function Split(str, delim, maxNb) --from <http://lua-users.org/wiki/SplitJoin> #Function: Split a string with a pattern, Take Three
     -- Eliminate bad cases...
@@ -51,7 +44,8 @@ function mab.parties:load(filename)
              tuple = Split(tuple,",")
              s=s+1
 
-             mab.parties[tuple[1]]={
+             mab.parties[s]={
+               id=tuple[1],
                name=tuple[2]:gsub("_", " "),
                pos={
                     tonumber(tuple[10])*-1, --invert X coordinates
@@ -85,9 +79,8 @@ function mab.parties:save(filename)
 
         if index ~= "#" and index=="(" then --avoid comments and filler entries
           
-            for pid in pairs(mab.parties) do        
-              if type(mab.parties[pid])=="table" and not
-                 mab.parties[pid].isbeenmod      and  --itirerate over all the avaliable, modified parties
+            for pid=1,#mab.parties do        
+              if not mab.parties[pid].isbeenmod      and  --itirerate over all the avaliable, modified parties
                  tline[i]:find(pid.."[\"']")     then --if matches in the line, bingo! try to replace coordinates by the new ones
               
                   print("found ref:"..pid--,
@@ -95,11 +88,11 @@ function mab.parties:save(filename)
                        )
                   
                   tline[i]=string.gsub(tline[i], mab.parties[pid].pos[1]*-1, "XX")
-                  tline[i]=string.gsub(tline[i], mab.parties[pid].pos[2], "YY")
+                  tline[i]=string.gsub(tline[i], mab.parties[pid].pos[2],    "YY")
                   
                   tline[i]=string.format("%s #[swycartographr] prev. coords: (%g, %g)",
                            tline[i]..string.rep(" ",(200-tline[i]:len())),
-                           mab.parties[pid].pos[1],
+                           mab.parties[pid].pos[1]*-1,
                            mab.parties[pid].pos[2]
                            )
               end
