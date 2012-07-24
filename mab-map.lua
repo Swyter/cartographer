@@ -174,10 +174,10 @@ function mab.map:saveobj(file,reversed_mode)
   print("@--Exporting OBJ..."); local start=os.clock(); local lastmat=-1;
   if io.output(io.open(file,"w")) then
     io.write([[
-    # Mount&Blade Map file
-    # Exported by swyter's cartographer
+  # Mount&Blade Map file
+  # Exported by swyter's cartographer
 
-  ]])
+]])
     
     for s=1,vtx do
       local curr=mab.map.vtx[s]; if reversed_mode then curr.y,curr.z=curr.z,(curr.y*-1); end
