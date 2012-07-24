@@ -15,22 +15,6 @@ objZ=ffi.new("double[1]",1);
   require "mab-registry"
   reg=mab.registry:query()
 
-local CubeVertices = {}
-CubeVertices.v = ffi.new("const float[8][3]", {
-  {0,0,1}, {0,0,0}, {0,1,0}, {0,1,1},
-  {1,0,1}, {1,0,0}, {1,1,0}, {1,1,1}
-})
-
-CubeVertices.n = ffi.new("const float[6][3]", {
-  {-1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {1.0, 0.0, 0.0},
-  {0.0, -1.0, 0.0}, {0.0, 0.0, -1.0}, {0.0, 0.0, 1.0}
-})
-
-CubeVertices.f = ffi.new("const float[6][4]", { 
-  {0, 1, 2, 3}, {3, 2, 6, 7}, {7, 6, 5, 4},
-  {4, 5, 1, 0}, {5, 6, 2, 1}, {7, 4, 0, 3}
-})
-
 --@ init and stuff
 lujgl.initialize("cartographer", 800, 600)
 
@@ -108,14 +92,12 @@ lujgl.initialize("cartographer", 800, 600)
   gl.glEnable(gl.GL_AUTO_NORMAL)
   gl.glEnable(gl.GL_LINE_SMOOTH)
   gl.glEnable(gl.GL_POINT_SMOOTH)
+  gl.glEnable(gl.GL_CULL_FACE)
   
   gl.glHint(gl.GL_POLYGON_SMOOTH_HINT, gl.GL_NICEST)
-
-  gl.glEnable(gl.GL_CULL_FACE)
---gl.glEnable(gl.GL_NORMALIZE)
-  
   gl.glHint(gl.GL_PERSPECTIVE_CORRECTION_HINT,gl.GL_NICEST)
-
+  
+  
   gl.glMatrixMode(gl.GL_MODELVIEW)
 
   glu.gluLookAt(0,0,-5,
@@ -133,9 +115,6 @@ lujgl.initialize("cartographer", 800, 600)
 --gl.glEnable(gl.GL_BLEND)
 --gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_SRC_COLOR)--outlines
 --gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_CONSTANT_ALPHA)--vertex colored solid
-
-
---gl.glColorMaterial(gl.GL_FRONT, gl.GL_AMBIENT);
   
   local rotx, roty, rotz = 1/math.sqrt(2), 1/math.sqrt(2), 0
   local boxx, boxy, boxz = -0.5,-0.5,2
@@ -185,14 +164,12 @@ lujgl.setIdleCallback(function()
  end)
  
 lujgl.setRenderCallback(function()
-  --gl.glShadeModel(gl.GL_SMOOTH)
   --let's fix aspect ratio
     gl.glViewport(0, 0, lujgl.width, lujgl.height)
     gl.glMatrixMode(gl.GL_PROJECTION_MATRIX)
     gl.glLoadIdentity()
     glu.gluPerspective(60,lujgl.width / lujgl.height, 0.01, 1000)
     gl.glMatrixMode(gl.GL_MODELVIEW)
-
     
     gl.glTranslatef(px,py,pz)
     gl.glRotatef(yrang,ry, 0, 0)
@@ -217,7 +194,7 @@ lujgl.setRenderCallback(function()
     
   --draw the map
     gl.glDisable(gl.GL_BLEND)
-    --gl.glEnable(gl.GL_LIGHT0)
+    gl.glEnable(gl.GL_LIGHT0)
     gl.glPushMatrix()
 
     if not mapmesh or not gl.glIsList(mapmesh) then
@@ -250,27 +227,7 @@ lujgl.setRenderCallback(function()
        gl.glCallList(mapmesh)
     end
     gl.glPopMatrix()
-    
-    --gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_LINE )
-    --[[
-    gl.glDisable(gl.GL_LIGHT0)
-  
-    gl.glPushMatrix()
-    gl.glTranslated(objX[0],objY[0],objZ[0])
-    gl.glRotated(lujgl.getTime()*10, rotx, roty, rotz)
-    gl.glScaled(1,1,1)
-    gl.glColor3d(1,1,0)
-    for i=0,5 do
-      gl.glBegin(gl.GL_QUADS)
-      gl.glNormal3fv(CubeVertices.n[i])
-      for j=0,3 do
-        gl.glVertex3fv(CubeVertices.v[CubeVertices.f[i][j])
-      end
-      gl.glEnd()
-    end
-    gl.glPopMatrix()
-  ]]
-
+ 
     --@2D unprojection
     local winX=ffi.new("float[1]",mouse.x);
     local winY=ffi.new("float[1]",lujgl.height-mouse.y);
@@ -293,8 +250,9 @@ lujgl.setRenderCallback(function()
     
     
     --@draw the markers
+    
     for p=1,#mab.parties do
-     -- if type(mab.parties[p])=="table" then 
+          gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_LINE )
           gl.glPushMatrix()
           gl.glTranslated(mab.parties[p].pos[1],mab.parties[p].pos[3],
                           mab.parties[p].pos[2])
@@ -304,7 +262,7 @@ lujgl.setRenderCallback(function()
           
           glu.gluSphere(
             quad,
-            2,
+            1,
             4,
             4
           );
@@ -327,22 +285,20 @@ lujgl.setRenderCallback(function()
           if scrZ[0]<.9999 then
               gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_FILL )
               gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_SRC_COLOR)--outlines
+              gl.glColor4d(1,1,1,1)
               
-              --gl.glColor4d(1,1,1,1)
               lujgl.begin2D()
               
-                  if mab.parties[p].kind==1 then
-                  scal=.66
-              elseif mab.parties[p].kind==2 then
-                  scal=.33
-              end
-              
-              
-              mab.font:print(mab.parties[p].name,
-                             scrX[0],scrY[0],scal)
+                if mab.parties[p].kind==1 then
+                    scal=.66
+                elseif mab.parties[p].kind==2 then
+                    scal=.33
+                end
+                
+                mab.font:print(mab.parties[p].name,
+                               scrX[0],scrY[0],scal)
 
               lujgl.end2D()
-              --gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_LINE )
           end
      -- end
     end
@@ -421,7 +377,7 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
                 
                 glu.gluSphere(
                   quad,
-                  2,
+                  1,
                   4,
                   4
                 );
@@ -442,9 +398,9 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
               tty="unknown"
               picked=0
             end
-            print("picked thingie "..tty)
+            print("dragging "..tty)
       elseif picked ~= 0 then
-            print("soltado "..tty)
+            print("dropped "..tty)
             mouse.rclick=false
       end
 
