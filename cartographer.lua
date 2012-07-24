@@ -423,8 +423,6 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
                   (lujgl.height-mouse.y)-scrY[0]
               }
               
-              print(">>"..pickoffst[1],pickoffst[2])
-              
             else
               tty="unknown"
               picked=0
