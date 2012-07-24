@@ -213,7 +213,7 @@ lujgl.setRenderCallback(function()
     gl.glHint(gl.GL_FOG_HINT, gl.GL_DONT_CARE)
     gl.glFogf(gl.GL_FOG_START, 100)
     gl.glFogf(gl.GL_FOG_END, 1000)
-    --gl.glEnable(gl.GL_FOG)
+    gl.glEnable(gl.GL_FOG)
     
   --draw the map
     gl.glDisable(gl.GL_BLEND)
@@ -271,16 +271,33 @@ lujgl.setRenderCallback(function()
     gl.glPopMatrix()
   ]]
 
+    --@2D unprojection
+    local winX=ffi.new("float[1]",mouse.x);
+    local winY=ffi.new("float[1]",lujgl.height-mouse.y);
+    local winZ=ffi.new("float[1]",1);
+    
+    gl.glReadPixels( winX[0], winY[0], 1,1, gl.GL_DEPTH_COMPONENT, gl.GL_FLOAT, winZ );
+    
 
+    local modelview=ffi.new("double[16]",1);
+    gl.glGetDoublev( gl.GL_MODELVIEW_MATRIX, modelview );
+    
+    local projection=ffi.new("double[16]",1);
+	  gl.glGetDoublev( gl.GL_PROJECTION_MATRIX, projection );
+    
+    local viewport=ffi.new("int[4]",1);
+	  gl.glGetIntegerv( gl.GL_VIEWPORT, viewport );
+    
+    glu.gluUnProject (winX[0], winY[0], winZ[0], modelview, projection, viewport, objX, objY, objZ) 
+    --print(objX[0],objY[0],objZ[0])
+    
+    
     --@draw the markers
     for p=1,#mab.parties do
      -- if type(mab.parties[p])=="table" then 
           gl.glPushMatrix()
-          gl.glDisable(gl.GL_LIGHTING)
           gl.glTranslated(mab.parties[p].pos[1],mab.parties[p].pos[3],
                           mab.parties[p].pos[2])
-                          
-          gl.glColor3ub(p,255,255);
           
           quad = glu.gluNewQuadric()
           glu.gluQuadricOrientation(quad, glu.GLU_OUTSIDE)
@@ -329,30 +346,7 @@ lujgl.setRenderCallback(function()
           end
      -- end
     end
-    
-  
-  
-  
-    --@2D unprojection
-    local winX=ffi.new("float[1]",mouse.x);
-    local winY=ffi.new("float[1]",lujgl.height-mouse.y);
-    local winZ=ffi.new("float[1]",1);
-    
-    gl.glReadPixels( winX[0], winY[0], 1,1, gl.GL_DEPTH_COMPONENT, gl.GL_FLOAT, winZ );
-    
 
-    local modelview=ffi.new("double[16]",1);
-    gl.glGetDoublev( gl.GL_MODELVIEW_MATRIX, modelview );
-    
-    local projection=ffi.new("double[16]",1);
-	  gl.glGetDoublev( gl.GL_PROJECTION_MATRIX, projection );
-    
-    local viewport=ffi.new("int[4]",1);
-	  gl.glGetIntegerv( gl.GL_VIEWPORT, viewport );
-    
-    glu.gluUnProject (winX[0], winY[0], winZ[0], modelview, projection, viewport, objX, objY, objZ) 
-    --print(objX[0],objY[0],objZ[0])
-  
   
   --draw 2d
     gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_FILL )
@@ -407,7 +401,35 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
             local winY=ffi.new("float[1]",lujgl.height-mouse.y);
             local pickId=ffi.new("int[1]",1);
             
+            
+            --@draw the color coded marker
+            gl.glClearColor(0,0,0,1)
+            gl.glClear(bit.bor(gl.GL_COLOR_BUFFER_BIT, gl.GL_DEPTH_BUFFER_BIT))
+            gl.glDisable(gl.GL_LIGHTING)
+            gl.glDisable(gl.GL_FOG)
+            
+            for p=1,#mab.parties do
+                
+                gl.glPushMatrix()
+                gl.glTranslated(mab.parties[p].pos[1],mab.parties[p].pos[3],
+                                mab.parties[p].pos[2])
+                                
+                gl.glColor3ub(p,255,255);
+                
+                quad = glu.gluNewQuadric()
+                glu.gluQuadricOrientation(quad, glu.GLU_OUTSIDE)
+                
+                glu.gluSphere(
+                  quad,
+                  2,
+                  4,
+                  4
+                );
+                gl.glPopMatrix()
+            end
             gl.glReadPixels( winX[0], winY[0], 1,1, gl.GL_RED, gl.GL_UNSIGNED_BYTE, pickId );
+            gl.glEnable(gl.GL_LIGHTING)
+            gl.glEnable(gl.GL_FOG)
             
             if mab.parties[pickId[0]] then
               tty=mab.parties[pickId[0]].name
