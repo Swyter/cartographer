@@ -13,6 +13,20 @@
   Currently in early stage, this program allows to position world parties/cities
   in real-time. Originally created for the Star Wars Conquest mod <http://getconquest.net>
   
+  The instructions
+  ----------------
+  
+  {Shift} Switchs labeling between ids and names
+     {F5} Saves map.txt
+     {F6} Reloads map.txt
+     {F7} Imports Obj
+     {F8} Exports Obj
+     {F9} Saves edited parties
+     
+  Think of it as west: map
+                 east: obj
+           outer keys: save
+           inner keys: load
   
   Acknowledgements
   ----------------
