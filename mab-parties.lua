@@ -1,6 +1,10 @@
 mab = mab or {}
 mab.parties = mab.parties or {}
 
+  --
+ -- Helper functions
+--
+
 function Split(str, delim, maxNb) --from <http://lua-users.org/wiki/SplitJoin> #Function: Split a string with a pattern, Take Three
     -- Eliminate bad cases...
     if string.find(str, delim) == nil then
@@ -25,6 +29,15 @@ function Split(str, delim, maxNb) --from <http://lua-users.org/wiki/SplitJoin> #
     end
     return result
 end
+function Round(num, idp) --from <http://lua-users.org/wiki/SimpleRound> #Function: Igor Skoric (i.skoric@student.tugraz.at)
+    local mult = 10^(idp or 0)
+    if num >= 0 then return math.floor(num * mult + 0.5) / mult
+    else return math.ceil(num * mult - 0.5) / mult end
+end
+
+  --
+ -- M&B Party methods
+--
 
 function mab.parties:load(filename)
   print("@--start parsing parties"); s=0; tt=os.clock()
@@ -71,7 +84,7 @@ function mab.parties:save(filename)
     tline[#tline+1]=line
   end
   
-  if io.output(io.open("_partysave.py","w")) then
+  if io.output(io.open(filename,"w")) then
   for i=1,#tline do 
 
         local ltrim=tline[i]:match("%S.*") or "#"
@@ -80,21 +93,21 @@ function mab.parties:save(filename)
         if index ~= "#" and index=="(" then --avoid comments and filler entries
           
             for pid=1,#mab.parties do        
-              if not mab.parties[pid].isbeenmod      and  --itirerate over all the avaliable, modified parties
-                 tline[i]:find(pid.."[\"']")     then --if matches in the line, bingo! try to replace coordinates by the new ones
+              if mab.parties[pid].isbeenmod                   and  --itirerate over all the avaliable, modified parties
+                 tline[i]:find(mab.parties[pid].id.."[\"']")  then --if matches in the line, bingo! try to replace coordinates by the new ones
               
-                  print("found ref:"..pid--,
-                        --tline[i]:match("%((%S?%d[%.[%d]+]?)%S?,")
-                       )
-                  
-                  tline[i]=string.gsub(tline[i], mab.parties[pid].pos[1]*-1, "XX")
-                  tline[i]=string.gsub(tline[i], mab.parties[pid].pos[2],    "YY")
+                  print( mab.parties[pid].name.." has been modified  -->  ",
+                        mab.parties[pid].pos[1]*-1,mab.parties[pid].pos[2])
+                 
+                  tline[i]=string.gsub(tline[i], mab.parties[pid].oldpos[1]*-1, Round(mab.parties[pid].pos[1], 2)) --XX
+                  tline[i]=string.gsub(tline[i], mab.parties[pid].oldpos[2],    Round(mab.parties[pid].pos[2], 2)) --YY
                   
                   tline[i]=string.format("%s #[swycartographr] prev. coords: (%g, %g)",
-                           tline[i]..string.rep(" ",(200-tline[i]:len())),
-                           mab.parties[pid].pos[1]*-1,
-                           mab.parties[pid].pos[2]
+                           tline[i]..string.rep(" ",(140-tline[i]:len())),
+                           mab.parties[pid].oldpos[1]*-1,
+                           mab.parties[pid].oldpos[2]
                            )
+                  break
               end
             end
             
