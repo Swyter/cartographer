@@ -218,7 +218,7 @@ lujgl.setRenderCallback(function()
           gl.glNormal3d(nm.x,nm.y,nm.z)
           
           x=tonumber(mab.map.fcs[i][11])
-          gl.glColor3f(unpack(mab.map.terrain[x]))
+          gl.glColor3f(unpack(mab.map.terrain[x] or {1,0,1}))
           
           for j=1,3 do
             local vt=mab.map.vtx[mab.map.fcs[i][j]]
