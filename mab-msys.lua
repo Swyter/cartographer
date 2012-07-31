@@ -3,8 +3,12 @@ mab.msys=mab.msys or {}
 
 local fmt = string.format
 
-function mab.msys:getmodulefolder(file)
-    local  msysf = cartographer.conf.msysparties:sub(1,-19)
+function mab.msys:getmsysfolder()
+  return cartographer.conf.msysparties:sub(1,-19)
+end
+
+function mab.msys:getmodulefolder()
+    local  msysf = mab.msys:getmsysfolder()
     local   file = msysf.."/module_info.py"
     local gotcha = ""
     
@@ -26,19 +30,16 @@ function mab.msys:getmodulefolder(file)
                    ..msysf --relative to us, but dirty
                    .."\\"
                    ..gotcha
-            
-            print(gotcha,".............")
-
           end
           
           gotcha=mab.msys:sanitizepath(gotcha) --sanitize the general ugliness
           break
+          
         end
       end
     end
     end
-    
-    print (gotcha)
+
     return gotcha
 end
 
@@ -47,19 +48,16 @@ function mab.msys:sanitizepath(path)
 
   --reorient separators
   path=path:gsub("/", "\\")
-  print(path)
   
   --remove possible doubles
   path=path:gsub("\\\\", "\\")
-  print(path)
   
   --remove relativeness
   local relatpattern = "\\[^\\..]+\\%.%."
   
   repeat
     path=path:gsub(relatpattern, "") --something like    R:\Repositories\swycartographer\res\msys\..\mod
-    print(path)                      --gets converted to R:\Repositories\swycartographer\res\mod
-  until
+  until                              --gets converted to R:\Repositories\swycartographer\res\mod
     not path:find(relatpattern)
   
   return path
