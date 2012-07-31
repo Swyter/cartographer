@@ -99,7 +99,7 @@ function mab.parties:save(filename)
                   print( mab.parties[pid].name.." has been modified  -->  ",
                         mab.parties[pid].pos[1]*-1,mab.parties[pid].pos[2])
                  
-                  tline[i]=string.gsub(tline[i], mab.parties[pid].oldpos[1]*-1, Round(mab.parties[pid].pos[1], 2)) --XX
+                  tline[i]=string.gsub(tline[i], mab.parties[pid].oldpos[1]*-1, Round(mab.parties[pid].pos[1]*-1, 2)) --XX
                   tline[i]=string.gsub(tline[i], mab.parties[pid].oldpos[2],    Round(mab.parties[pid].pos[2], 2)) --YY
                   
                   tline[i]=string.format("%s #[swycartographr] prev. coords: (%g, %g)",

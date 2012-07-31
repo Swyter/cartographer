@@ -142,11 +142,11 @@ lujgl.setIdleCallback(function()
     if key[264] then mab.map:loadobj(cartographer.conf.mapobjout);
                      gl.glDeleteLists(mapmesh,1);mapmesh=nil end --refresh cached map end --f7
                      
-    if key[262] then mab.map:save(cartographer.conf.maptxtout,true) end --f5 
-    if key[263] then mab.map:load(cartographer.conf.maptxt);
+    if key[262] then mab.map:save(mod.."\\map_out.txt",true) end --f5 
+    if key[263] then mab.map:load(mod);
                      gl.glDeleteLists(mapmesh,1);mapmesh=nil end --refresh cached map end --f6
                      
-    if key[266] then mab.parties:save(cartographer.conf.mparties) end --f9
+    if key[266] then mab.parties:save(msys.."\\module_parties.py") end --f9
     --if key[267] then mab.parties:load("res") end --f10
     
     
