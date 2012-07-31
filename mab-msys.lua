@@ -4,9 +4,9 @@ mab.msys=mab.msys or {}
 local fmt = string.format
 
 function mab.msys:getmodulefolder(file)
-    local msysf =cartographer.conf.msysparties:sub(1,-19)
-    local file  =msysf.."/module_info.py"
-    local gotcha=""
+    local  msysf = cartographer.conf.msysparties:sub(1,-19)
+    local   file = msysf.."/module_info.py"
+    local gotcha = ""
     
     if io.open(file,"r") then
     for line in io.lines(file) do
@@ -19,13 +19,19 @@ function mab.msys:getmodulefolder(file)
           gotcha=ltrim:match("=[ \t]*[\"'](.*)[\"']%S*") --can be translated in regex like this: =_"<path>"_
           if gotcha and
              gotcha:len()>1 and
-             gotcha:sub(2,1)~=":" then --relative, if not C:\, R:\ and company
+             gotcha:sub(2,1)~=":" then --if relative, if not C:\, R:\ and company
             
-             gotcha=msysf.."\\"..gotcha --relative to us, but dirty
+            gotcha=mab.msys:currentdir() --cartographer path
+                   .."\\"
+                   ..msysf --relative to us, but dirty
+                   .."\\"
+                   ..gotcha
+            
+            print(gotcha,".............")
 
           end
           
-          gotcha=mab.msys:sanitizepath(gotcha)
+          gotcha=mab.msys:sanitizepath(gotcha) --sanitize the general ugliness
           break
         end
       end
@@ -43,19 +49,19 @@ function mab.msys:sanitizepath(path)
   path=path:gsub("/", "\\")
   print(path)
   
-  --add current dir
-  path=mab.msys:currentdir().."\\"..path
-  print(path)
-  
   --remove possible doubles
   path=path:gsub("\\\\", "\\")
   print(path)
   
   --remove relativeness
+  local relatpattern = "\\[^\\..]+\\%.%."
+  
   repeat
-    path=path:gsub("\\[^\\..]+\\%.%.", "") --something like    R:\Repositories\swycartographer\res\msys\..\mod
-    print(path)                            --gets converted to R:\Repositories\swycartographer\res\mod
-  until path:find("\\[^\\..]+\\%.%.")==nil
+    path=path:gsub(relatpattern, "") --something like    R:\Repositories\swycartographer\res\msys\..\mod
+    print(path)                      --gets converted to R:\Repositories\swycartographer\res\mod
+  until
+    not path:find(relatpattern)
+  
   return path
 end
 
