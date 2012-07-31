@@ -19,7 +19,10 @@ objZ=ffi.new("double[1]",1);
   cartographer={}; dofile("_configureme.ini") --new easy peasy config file
   
   require "mab-msys"
-  mod=mab.msys:getmodulefolder()
+  msys=mab.msys:getmsysfolder()
+   mod=mab.msys:getmodulefolder()
+  print(string.format("Msys folder at <%s>",msys))
+  print(string.format("Module folder at <%s>",mod))
   
 --@ init and stuff
   lujgl.initialize("cartographer", 800, 600)
@@ -27,19 +30,19 @@ objZ=ffi.new("double[1]",1);
 --@ load our font
   require "soil"
   require "mab-font"
-  mab.font:load(cartographer.conf.fontpath.."\\Data\\FONT_DATA.XML",
-                cartographer.conf.fontpath.."\\textures\\FONT.dds")
+  mab.font:load(mod.."\\Data\\FONT_DATA.XML",
+                mod.."\\textures\\FONT.dds")
                 
  -- mab.font:load("R:\\Juegos\\swconquest\\modules\\swconquest\\Module Data\\FONT_DATA.XML",
  --               "R:\\Juegos\\swconquest\\modules\\swconquest\\Textures\\FONT_SWC.dds")
 
 --@ load our map
   require "mab-map"
-  mab.map:load(cartographer.conf.maptxt)--"R:\\Juegos\\swconquest\\modules\\swconquest")
+  mab.map:load(mod)--"R:\\Juegos\\swconquest\\modules\\swconquest")
   
 --@ load our locations
   require "mab-parties"
-  local filledp = mab.parties:load(cartographer.conf.mparties)--"R:\\Juegos\\swconquest\\modules\\swconquest-msys\\module_parties.py")
+  local filledp = mab.parties:load(msys.."\\module_parties.py")--"R:\\Juegos\\swconquest\\modules\\swconquest-msys\\module_parties.py")
 
   local uu=os.clock()
   local abs=math.abs
