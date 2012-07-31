@@ -94,7 +94,7 @@ function mab.parties:save(filename)
           
             for pid=1,#mab.parties do        
               if mab.parties[pid].isbeenmod                   and  --itirerate over all the avaliable, modified parties
-                 tline[i]:find(mab.parties[pid].id.."[\"']")  then --if matches in the line, bingo! try to replace coordinates by the new ones
+                 tline[i]:find("[\"']"..mab.parties[pid].id.."[\"']")  then --if matches in the line, bingo! try to replace coordinates by the new ones
               
                   print( mab.parties[pid].name.." has been modified  -->  ",
                         mab.parties[pid].pos[1]*-1,mab.parties[pid].pos[2])
