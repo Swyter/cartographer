@@ -18,6 +18,9 @@ objZ=ffi.new("double[1]",1);
   
   cartographer={}; dofile("_configureme.ini") --new easy peasy config file
   
+  require "mab-msys"
+  mod=mab.msys:getmodulefolder()
+  
 --@ init and stuff
   lujgl.initialize("cartographer", 800, 600)
 
