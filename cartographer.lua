@@ -132,10 +132,10 @@ objZ=ffi.new("double[1]",1);
 lujgl.setIdleCallback(function()
 
   --manage non-blocking input
-    if key["w"] or key[283] then print("^",pz); pz=pz+3 end
-    if key["a"] or key[285] then print("<",px); px=px+3 end --reversed
-    if key["s"] or key[284] then print("v",pz); pz=pz-3 end
-    if key["d"] or key[286] then print(">",px); px=px-3 end --reversed
+    if key["w"] or key[283] then pz=pz+3 end
+    if key["a"] or key[285] then px=px+3 end --reversed
+    if key["s"] or key[284] then pz=pz-3 end
+    if key["d"] or key[286] then px=px-3 end --reversed
     
     
     if key[265] then mab.map:saveobj(cartographer.conf.mapobj) end --f8
@@ -162,8 +162,8 @@ lujgl.setIdleCallback(function()
 
     end
     
-    if mouse.lclick then print("xdragmode!!",mouse.xold-mouse.x); xrang=xrang+(mouse.xold-mouse.x)/2; rx=1; end
-    if mouse.lclick then print("ydragmode!!",mouse.yold-mouse.y); yrang=yrang+(mouse.yold-mouse.y)/2; ry=1; end
+    if mouse.lclick then xrang=xrang+(mouse.xold-mouse.x)/2; rx=1; end
+    if mouse.lclick then yrang=yrang+(mouse.yold-mouse.y)/2; ry=1; end
     if yrang<-90 then yrang=-90 end
     
     mouse.xold=mouse.x
@@ -340,7 +340,7 @@ lujgl.setRenderCallback(function()
   )
   
 lujgl.setEventCallback(function(ev,...) local arg={...}
-    print("Event", ev, ...)
+    --print("Event", ev, ...)
     
     if ev=="key" then        -- keyboard presses
       local down,k=arg[1],arg[2]
