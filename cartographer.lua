@@ -1,7 +1,8 @@
 local lujgl = require "lujgl"
 local gl, glu, ffi = lujgl.gl, lujgl.glu, require "ffi"
 
-local key,mouse,px,py,pz,rx,ry,rz, xrang,yrang={},{},0,0,-5,0,0,0, 0,0
+local key,mouse, px, py, pz  ,rx,ry,rz, xrang,yrang=
+       {},   {}, -3, -9,-74  ,38,80,90, 182.5, 56.5
 
 mouse.x=0
 mouse.y=0
@@ -16,7 +17,7 @@ objZ=ffi.new("double[1]",1);
   require "mab-registry"
   reg=mab.registry:query()
   
-  cartographer={}; dofile("_configureme.ini") --new easy peasy config file
+  cartographer={}; dofile("cartographer.conf.ini") --new easy peasy config file
   
   require "mab-msys"
   msys=mab.msys:getmsysfolder()
@@ -150,7 +151,7 @@ lujgl.setIdleCallback(function()
     --if key[267] then mab.parties:load("res") end --f10
     
     
-    if mouse.rclick then print("pickingmode!!");
+    if mouse.rclick then
     
       mab.parties[picked].isbeenmod=true
       
