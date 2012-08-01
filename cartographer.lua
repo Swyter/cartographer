@@ -139,8 +139,8 @@ lujgl.setIdleCallback(function()
     if key["d"] or key[286] then px=px-3 end --reversed
     
     
-    if key[265] then mab.map:saveobj(cartographer.conf.mapobj) end --f8
-    if key[264] then mab.map:loadobj(cartographer.conf.mapobjout);
+    if key[265] then mab.map:saveobj(mod.."\\map.obj") end --f8
+    if key[264] then mab.map:loadobj(mod.."\\map_out.obj");
                      gl.glDeleteLists(mapmesh,1);mapmesh=nil end --refresh cached map end --f7
                      
     if key[262] then mab.map:save(mod.."\\map_out.txt",true) end --f5 
