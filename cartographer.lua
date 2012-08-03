@@ -181,10 +181,11 @@ lujgl.setIdleCallback(function()
 lujgl.setRenderCallback(function()
   --let's fix aspect ratio
     gl.glViewport(0, 0, lujgl.width, lujgl.height)
-    gl.glMatrixMode(gl.GL_PROJECTION_MATRIX)
+    gl.glMatrixMode(gl.GL_PROJECTION)
     gl.glLoadIdentity()
     glu.gluPerspective(60,lujgl.width / lujgl.height, 0.01, 1000)
     gl.glMatrixMode(gl.GL_MODELVIEW)
+    gl.glLoadIdentity()
     
     gl.glTranslatef(px,py,pz)
     gl.glRotatef(yrang,ry, 0, 0)
@@ -336,7 +337,7 @@ lujgl.setRenderCallback(function()
     lujgl.end2D()
     
   --bugs ahoy?
-    --lujgl.checkError()
+    lujgl.checkError()
   end
   )
   
