@@ -324,7 +324,8 @@ lujgl.setRenderCallback(function()
     gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_FILL )
     
     lujgl.begin2D()
-      gl.glColor4d(1,.9,1,.7)
+      local highlight=.7 and mouse.rclick or .3
+      gl.glColor4d(1,.9,1,highlight)
       gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_CONSTANT_ALPHA)--vertex colored solid
       mab.font:print(string.format("%d--%d",mouse.x, lujgl.height-mouse.y),
                      49,lujgl.height/2-110,.6)
