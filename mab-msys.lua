@@ -23,15 +23,19 @@ function mab.msys:getmodulefolder()
           gotcha=ltrim:match("=[ \t]*[\"'](.*)[\"']%S*") --can be translated in regex like this: =_"<path>"_
           if gotcha and
              gotcha:len()>1 and
-             gotcha:sub(2,1)~=":" then --if relative, if not C:\, R:\ and company
+             gotcha:sub(2,2)~=":" then --if relative, if not C:\, R:\ and company
             
-            gotcha=mab.msys:currentdir() --cartographer path
-                   .."\\"
-                   ..msysf --relative to us, but dirty
+            
+            if msysf:sub(2,2)~=":" then --msys relative to cartographer
+              gotcha=mab.msys:currentdir() --cartographer path
+                     .."\\"
+                     ..msysf
+            end
+            
+            gotcha=msysf --relative to msys, but dirty
                    .."\\"
                    ..gotcha
           end
-          
           gotcha=mab.msys:sanitizepath(gotcha) --sanitize the general ugliness
           break
           
