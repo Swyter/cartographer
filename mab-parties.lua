@@ -58,14 +58,14 @@ function mab.parties:load(filename)
              s=s+1
 
              mab.parties[s]={
-               id=tuple[1],
-               name=tuple[2]:gsub("_", " "),
+                id=tuple[1] or "<error>",
+              name=tuple[2] and tuple[2]:gsub("_", " ") or "<error>",
                pos={
-                    tonumber(tuple[10])*-1, --invert X coordinates
-                    tonumber(tuple[11])
+                    tonumber(tuple[10]) or 0 *-1, --invert X coordinates
+                    tonumber(tuple[11]) or 0
                    },
                rot=tonumber(tuple[15]) or 0,
-               kind=kind
+              kind=kind
              }
           end
         end
