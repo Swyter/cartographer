@@ -98,7 +98,8 @@ lujgl.setIdleCallback(function()
                      gl.glDeleteLists(mapmesh,1);mapmesh=nil end --refresh cached map end --f6
                      
     if key[266] then mab.parties:save(msys.."\\module_parties.py") end --f9
-    --if key[267] then mab.parties:load("res") end --f10
+    if key[267] then mab.parties:load(msys.."\\module_parties.py")     --f10
+                     mab.parties:groundalign() end
     
     
     if mouse.rclick then
@@ -223,9 +224,10 @@ lujgl.setRenderCallback(function()
           gl.glTranslated(mab.parties[p].pos[1],mab.parties[p].pos[3],
                           mab.parties[p].pos[2])
           
+          gl.glColor4d(.8,.8,.8,.8)
+          
           quad = glu.gluNewQuadric()
           glu.gluQuadricOrientation(quad, glu.GLU_OUTSIDE)
-          
           glu.gluSphere(
             quad,
             1,
