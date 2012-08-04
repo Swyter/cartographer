@@ -64,19 +64,12 @@ objZ=ffi.new("double[1]",1);
                 0,1,1)
 
   gl.glEnable(gl.GL_DEPTH_TEST)
-  gl.glDepthFunc(gl.GL_LEQUAL)
+  gl.glDepthFunc(gl.GL_LESS)
 
   gl.glEnable(gl.GL_COLOR_MATERIAL)
   
   gl.glEnable(gl.GL_LIGHTING)
   gl.glEnable(gl.GL_LIGHT0)
-
---gl.glEnable(gl.GL_BLEND)
---gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_SRC_COLOR)--outlines
---gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_CONSTANT_ALPHA)--vertex colored solid
-  
-  local rotx, roty, rotz = 1/math.sqrt(2), 1/math.sqrt(2), 0
-  local boxx, boxy, boxz = -0.5,-0.5,2
 
 --@ we like callbacks
 lujgl.setIdleCallback(function()
@@ -114,8 +107,8 @@ lujgl.setIdleCallback(function()
 
     end
     
-    if mouse.lclick then xrang=xrang+(mouse.xold-mouse.x)/2; rx=1; end
-    if mouse.lclick then yrang=yrang+(mouse.yold-mouse.y)/2; ry=1; end
+    if mouse.lclick then xrang=xrang+(mouse.xold-mouse.x)/2; rx=1
+                         yrang=yrang+(mouse.yold-mouse.y)/2; ry=1; end
     if yrang<-90 then yrang=-90 end
     
     mouse.xold=mouse.x
@@ -134,18 +127,19 @@ lujgl.setRenderCallback(function()
     gl.glViewport(0, 0, lujgl.width, lujgl.height)
     gl.glMatrixMode(gl.GL_PROJECTION)
     gl.glLoadIdentity()
+    
     glu.gluPerspective(60,lujgl.width / lujgl.height, 0.01, 1000)
     gl.glMatrixMode(gl.GL_MODELVIEW)
     gl.glLoadIdentity()
     
     gl.glTranslatef(px,py,pz)
+    
     gl.glRotatef(yrang,ry, 0, 0)
     gl.glRotatef(xrang, 0,rx, 0)
+    
+    lujgl.glLight(gl.GL_LIGHT0, gl.GL_AMBIENT, 0.1, 0.12, 0.19)
+    lujgl.glLight(gl.GL_LIGHT0, gl.GL_POSITION, 10, 1, 1, 0)   
 
-
-    lujgl.glLight(gl.GL_LIGHT0, gl.GL_AMBIENT, 0.2, 0.2, 0.2)
-    lujgl.glLight(gl.GL_LIGHT0, gl.GL_POSITION, 135, 135, 135, 135)
-  
   --light gray and clean the screen
     gl.glClearColor(.18,.18,.22,1)-- probably this looks better
     gl.glClear(bit.bor(gl.GL_COLOR_BUFFER_BIT, gl.GL_DEPTH_BUFFER_BIT))
@@ -162,7 +156,6 @@ lujgl.setRenderCallback(function()
   --draw the map
     gl.glDisable(gl.GL_BLEND)
     gl.glEnable(gl.GL_LIGHT0)
-    --gl.glPushMatrix()
 
     if not mapmesh or not gl.glIsList(mapmesh) then
     print"(i)no cache avaliable, rebuilding displaylist"; local start=os.clock()
@@ -178,7 +171,8 @@ lujgl.setRenderCallback(function()
           gl.glColor3f(unpack(mab.map.terrain[x] or {1,0,1}))
           
           for j=1,3 do
-            local nm=mab.map.vtn[mab.map.fcs[i][j]]
+            local nm=faceted and mab.map.fcn[i]
+                              or mab.map.vtn[mab.map.fcs[i][j]]
             gl.glNormal3d(nm.x,nm.y,nm.z)
             local vt=mab.map.vtx[mab.map.fcs[i][j]]
             gl.glVertex3d(vt.x,vt.y,vt.z)
@@ -193,8 +187,7 @@ lujgl.setRenderCallback(function()
     else
        gl.glCallList(mapmesh)
     end
-    --gl.glPopMatrix()
- 
+
     --@2D unprojection
     local winX=ffi.new("float[1]",              mouse.x -pickoffst[1]);
     local winY=ffi.new("float[1]",(lujgl.height-mouse.y)-pickoffst[2]);
@@ -217,7 +210,8 @@ lujgl.setRenderCallback(function()
     
     
     --@draw the markers
-    
+    gl.glEnable(gl.GL_BLEND)
+    gl.glDisable(gl.GL_FOG)
     for p=1,#mab.parties do
           gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_LINE )
           gl.glPushMatrix()
@@ -312,6 +306,9 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
       or k==266 or k==267 then --f9 & f10
       
       key[k]=down end
+      
+      
+      if k==293 and down then faceted = not faceted; print("faceted is",faceted); mapmesh=nil end --tab switchs between faceted display modes
 
     elseif ev=="motion" then -- mouse movement
       mouse.x=arg[1]
@@ -333,6 +330,7 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
             gl.glClearColor(0,0,0,1)
             gl.glClear(bit.bor(gl.GL_COLOR_BUFFER_BIT, gl.GL_DEPTH_BUFFER_BIT))
             gl.glDisable(gl.GL_LIGHTING)
+            gl.glDisable(gl.GL_LIGHT0)
             gl.glDisable(gl.GL_FOG)
             
             for p=1,#mab.parties do
@@ -344,7 +342,6 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
                 gl.glColor3ub(p,255,255);
                 
                 quad = glu.gluNewQuadric()
-                glu.gluQuadricOrientation(quad, glu.GLU_OUTSIDE)
                 
                 glu.gluSphere(
                   quad,

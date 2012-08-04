@@ -304,25 +304,18 @@ function mab.map:softnormal()
     vtxi[vtb][#vtxi[vtb]+1]=i
     vtxi[vtc][#vtxi[vtc]+1]=i
     
-    
     --compute per-face normals using cross-product
     mab.map.fcn[i]=mab.map:computenrm(mab.map.fcs[i])
   end
   
-  print(">>",unpack(vtxi[1]))
-  
   for i=1,#vtxi do --average between all the per-face normals to get a smooth aproximation
     if vtxi[i] and #vtxi[i] > 0 then
-    thingie=vector.new(0,0,0)
-    --print("no",#vtxi[i],i)
+    local thingie=vector.new(0,0,0)
       for u=1, #vtxi[i] do
-          --print(mab.map.fcn[vtxi[i][u]])
-          thingie.x=thingie.x+mab.map.fcn[vtxi[i][u]].x
-          thingie.y=thingie.y+mab.map.fcn[vtxi[i][u]].y
-          thingie.z=thingie.z+mab.map.fcn[vtxi[i][u]].z
+          local currface=vtxi[i][u]
+          thingie=thingie+mab.map.fcn[currface]
       end
       mab.map.vtn[i]=thingie/#vtxi[i]
-      --print(mab.map.vtn[i])
     end
   end
 end
