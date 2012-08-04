@@ -102,7 +102,6 @@ function mab.map:load(path)
   for i=2,vtx+1 do
      s=s+1
      local r=raw[i]
-
      mab.map.vtx[s]=vector.new(tonumber(r[1])*-1,tonumber(r[3]),tonumber(r[2])) --reversed y/z
   end
  
@@ -288,5 +287,42 @@ function mab.map:loadobj(file,reversed_mode)
    fcs,
    (os.clock()-start)
    ))
+  end
+end
+
+function mab.map:softnormal()
+  local vtxi={}
+  mab.map.fcn,mab.map.vtn={},{}
+  for i=1,fcs do --get a list of triangle membership for any vertex
+    local vta,vtb,vtc=mab.map.fcs[i][1],mab.map.fcs[i][2],mab.map.fcs[i][3]
+
+    vtxi[vta]=vtxi[vta] or {}
+    vtxi[vtb]=vtxi[vtb] or {}
+    vtxi[vtc]=vtxi[vtc] or {}
+    
+    vtxi[vta][#vtxi[vta]+1]=i
+    vtxi[vtb][#vtxi[vtb]+1]=i
+    vtxi[vtc][#vtxi[vtc]+1]=i
+    
+    
+    --compute per-face normals using cross-product
+    mab.map.fcn[i]=mab.map:computenrm(mab.map.fcs[i])
+  end
+  
+  print(">>",unpack(vtxi[1]))
+  
+  for i=1,#vtxi do --average between all the per-face normals to get a smooth aproximation
+    if vtxi[i] and #vtxi[i] > 0 then
+    thingie=vector.new(0,0,0)
+    --print("no",#vtxi[i],i)
+      for u=1, #vtxi[i] do
+          --print(mab.map.fcn[vtxi[i][u]])
+          thingie.x=thingie.x+mab.map.fcn[vtxi[i][u]].x
+          thingie.y=thingie.y+mab.map.fcn[vtxi[i][u]].y
+          thingie.z=thingie.z+mab.map.fcn[vtxi[i][u]].z
+      end
+      mab.map.vtn[i]=thingie/#vtxi[i]
+      --print(mab.map.vtn[i])
+    end
   end
 end
