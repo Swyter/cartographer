@@ -4,7 +4,16 @@ mab.msys=mab.msys or {}
 local fmt = string.format
 
 function mab.msys:getmsysfolder()
-  return cartographer.conf.msysparties:sub(1,-19)
+
+  msysf=cartographer.conf.msysparties:sub(1,-19)
+
+  if msysf:sub(2,2)~=":" then --msys relative to cartographer
+    msysf=mab.msys:currentdir() --cartographer path
+        .."\\"
+        ..msysf
+  end
+
+  return mab.msys:sanitizepath(msysf)
 end
 
 function mab.msys:getmodulefolder()
@@ -25,16 +34,10 @@ function mab.msys:getmodulefolder()
              gotcha:len()>1 and
              gotcha:sub(2,2)~=":" then --if relative, if not C:\, R:\ and company
             
-            
-            if msysf:sub(2,2)~=":" then --msys relative to cartographer
-              gotcha=mab.msys:currentdir() --cartographer path
-                     .."\\"
-                     ..msysf
-            end
-            
             gotcha=msysf --relative to msys, but dirty
-                   .."\\"
-                   ..gotcha
+                .."\\"
+                ..gotcha
+                   
           end
           gotcha=mab.msys:sanitizepath(gotcha) --sanitize the general ugliness
           break
@@ -63,7 +66,10 @@ function mab.msys:sanitizepath(path)
     path=path:gsub(relatpattern, "") --something like    R:\Repositories\swycartographer\res\msys\..\mod
   until                              --gets converted to R:\Repositories\swycartographer\res\mod
     not path:find(relatpattern)
-  
+    
+  --remove trailing slash
+  path=path:sub(-1,-1)=="\\" and path:sub(0,-2) or path
+
   return path
 end
 

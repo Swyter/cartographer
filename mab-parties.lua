@@ -119,3 +119,57 @@ function mab.parties:save(filename)
   
   print("   done...")
 end
+
+function mab.parties:groundalign()
+  local uu=os.clock()
+  local abs=math.abs
+  for p,_ in pairs(mab.parties) do
+  
+  local currparty=mab.parties[p]
+  if type(currparty)=="table" then
+   
+   local closerx,closery=2,2
+   
+   for i=1,#mab.map.fcs do
+   
+   --compute barycenter
+   local tricenterx=(mab.map.vtx[mab.map.fcs[i][1]].x+
+                     mab.map.vtx[mab.map.fcs[i][2]].x+
+                     mab.map.vtx[mab.map.fcs[i][3]].x)/3
+   local tricentery=(mab.map.vtx[mab.map.fcs[i][1]].z+
+                     mab.map.vtx[mab.map.fcs[i][2]].z+
+                     mab.map.vtx[mab.map.fcs[i][3]].z)/3
+               
+   --print("tric:"..tricenterx,tricentery)
+   
+   local compx=abs(tricenterx - currparty.pos[1])
+   local compy=abs(tricentery - currparty.pos[2])
+
+   --print("comp:"..compx,compy)
+   --break
+   
+        if compx < closerx and
+           compy < closery then --closest triangle to the point
+           
+           --print(mab.parties[p].name,closerx,closery)
+           --print(compx,compy,"-->"..mab.map.vtx[mab.map.fcs[i][1]].y)
+           closerx,closery=compx,compy
+           
+          -- mab.parties[p].pos[1] = mab.map.vtx[mab.map.fcs[i][1]].x
+          -- mab.parties[p].pos[2] = mab.map.vtx[mab.map.fcs[i][1]].z
+           mab.parties[p].pos[3] =(mab.map.vtx[mab.map.fcs[i][1]].y+
+                                   mab.map.vtx[mab.map.fcs[i][2]].y+
+                                   mab.map.vtx[mab.map.fcs[i][3]].y)/3
+           --print("found "..mab.map.vtx[mab.map.fcs[i][1]].y.." for "..mab.parties[p].name)
+           
+           --filledp=filledp-1
+           if closerx<1.8 and closery<1.5 then break end--aproximate just enough
+        end
+   end
+     
+     if not mab.parties[p].pos[3] then mab.parties[p].pos[3]=10 end
+  end
+  end
+  
+  print(string.format("   ground aligned in %gs, %d out",os.clock()-uu,#mab.parties))
+end
