@@ -50,6 +50,9 @@ function mab.msys:getmodulefolder()
     return gotcha
 end
 
+  --
+ -- Helper functions
+--
 
 function mab.msys:sanitizepath(path)
 
