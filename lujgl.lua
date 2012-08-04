@@ -7849,6 +7849,9 @@ function LuJGL.initialize(name, w, h)
 	glfw.glfwGetWindowSize(size_buffer, size_buffer + 1)
 	LuJGL.width = size_buffer[0]
 	LuJGL.height = size_buffer[1]
+  
+  LuJGL.width  = LuJGL.width <1 and 1 or LuJGL.width
+  LuJGL.height = LuJGL.height<1 and 1 or LuJGL.height
 	
 	glfw.glfwSetWindowTitle(name)
 	
@@ -7863,6 +7866,9 @@ function LuJGL.initialize(name, w, h)
     glfw.glfwGetWindowSize(size_buffer, size_buffer + 1)
   	LuJGL.width = size_buffer[0]
     LuJGL.height = size_buffer[1]
+    
+    LuJGL.width  = LuJGL.width <1 and 1 or LuJGL.width
+    LuJGL.height = LuJGL.height<1 and 1 or LuJGL.height
   
 		call_callback(render_cb)
 	end))
