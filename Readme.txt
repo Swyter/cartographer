@@ -17,6 +17,7 @@
   ----------------
   
   {Shift} Switchs labeling between ids and names
+    {Tab} Switchs visually between faceted and smooth terrain
      {F5} Saves map.txt
      {F6} Reloads map.txt
      {F7} Imports Obj
