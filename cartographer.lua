@@ -43,59 +43,8 @@ objZ=ffi.new("double[1]",1);
   
 --@ load our locations
   require "mab-parties"
-  local filledp = mab.parties:load(msys.."\\module_parties.py")--"R:\\Juegos\\swconquest\\modules\\swconquest-msys\\module_parties.py")
-
-  local uu=os.clock()
-  local abs=math.abs
-  for p,_ in pairs(mab.parties) do
-  
-  local currparty=mab.parties[p]
-  if type(currparty)=="table" then
-   
-   local closerx,closery=2,2
-   
-   for i=1,#mab.map.fcs do
-   
-   --compute barycenter
-   local tricenterx=(mab.map.vtx[mab.map.fcs[i][1]].x+
-                     mab.map.vtx[mab.map.fcs[i][2]].x+
-                     mab.map.vtx[mab.map.fcs[i][3]].x)/3
-   local tricentery=(mab.map.vtx[mab.map.fcs[i][1]].z+
-                     mab.map.vtx[mab.map.fcs[i][2]].z+
-                     mab.map.vtx[mab.map.fcs[i][3]].z)/3
-               
-   --print("tric:"..tricenterx,tricentery)
-   
-   local compx=abs(tricenterx - currparty.pos[1])
-   local compy=abs(tricentery - currparty.pos[2])
-
-   --print("comp:"..compx,compy)
-   --break
-   
-        if compx < closerx and
-           compy < closery then --closest triangle to the point
-           
-           --print(mab.parties[p].name,closerx,closery)
-           --print(compx,compy,"-->"..mab.map.vtx[mab.map.fcs[i][1]].y)
-           closerx,closery=compx,compy
-           
-          -- mab.parties[p].pos[1] = mab.map.vtx[mab.map.fcs[i][1]].x
-          -- mab.parties[p].pos[2] = mab.map.vtx[mab.map.fcs[i][1]].z
-           mab.parties[p].pos[3] =(mab.map.vtx[mab.map.fcs[i][1]].y+
-                                   mab.map.vtx[mab.map.fcs[i][2]].y+
-                                   mab.map.vtx[mab.map.fcs[i][3]].y)/3
-           --print("found "..mab.map.vtx[mab.map.fcs[i][1]].y.." for "..mab.parties[p].name)
-           
-           --filledp=filledp-1
-           if closerx<1.8 and closery<1.5 then break end--aproximate just enough
-        end
-   end
-     
-     if not mab.parties[p].pos[3] then mab.parties[p].pos[3]=10 end
-  end
-  end
-  
-  print(string.format("   ground aligned in %gs, %d out",os.clock()-uu,filledp))
+  mab.parties:load(msys.."\\module_parties.py")--"R:\\Juegos\\swconquest\\modules\\swconquest-msys\\module_parties.py")
+  mab.parties:groundalign()
   
 --@ opengl directives
   gl.glShadeModel(gl.GL_SMOOTH)
@@ -139,9 +88,10 @@ lujgl.setIdleCallback(function()
     if key["d"] or key[286] then px=px-3 end --reversed
     
     
-    if key[265] then mab.map:saveobj(mod.."\\map.obj") end --f8
-    if key[264] then mab.map:loadobj(mod.."\\map_out.obj");
-                     gl.glDeleteLists(mapmesh,1);mapmesh=nil end --refresh cached map end --f7
+    if key[265] then mab.map:saveobj("map.obj") end --f8
+    if key[264] then mab.map:loadobj("map_out.obj");
+                     gl.glDeleteLists(mapmesh,1);mapmesh=nil
+                     mab.parties:groundalign() end --refresh cached map end --f7
                      
     if key[262] then mab.map:save(mod.."\\map_out.txt",true) end --f5 
     if key[263] then mab.map:load(mod);
@@ -211,7 +161,7 @@ lujgl.setRenderCallback(function()
   --draw the map
     gl.glDisable(gl.GL_BLEND)
     gl.glEnable(gl.GL_LIGHT0)
-    gl.glPushMatrix()
+    --gl.glPushMatrix()
 
     if not mapmesh or not gl.glIsList(mapmesh) then
     print"(i)no cache avaliable, rebuilding displaylist"; local start=os.clock()
@@ -242,7 +192,7 @@ lujgl.setRenderCallback(function()
     else
        gl.glCallList(mapmesh)
     end
-    gl.glPopMatrix()
+    --gl.glPopMatrix()
  
     --@2D unprojection
     local winX=ffi.new("float[1]",              mouse.x -pickoffst[1]);
