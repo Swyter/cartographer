@@ -1,5 +1,8 @@
 local lujgl = require "lujgl"
-local gl, glu, ffi = lujgl.gl, lujgl.glu, require "ffi"
+local ffi = require "ffi"
+
+local gl, glu = lujgl.gl, lujgl.glu
+
 
 local key,mouse, px, py, pz  ,rx,ry,rz, xrang,yrang=
        {},   {}, -3, -9,-74  ,38,80,90, 182.5, 56.5
@@ -14,6 +17,8 @@ objY=ffi.new("double[1]",1);
 objZ=ffi.new("double[1]",1);
     
 --@ Load cooler dependencies
+  require "winapi"
+  
   require "mab-registry"
   reg=mab.registry:query()
   
@@ -27,6 +32,7 @@ objZ=ffi.new("double[1]",1);
   
 --@ init and stuff
   lujgl.initialize("cartographer", 800, 600)
+  handle=winapi:GetHandle("","GLFW27")
 
 --@ load our font
   require "soil"
@@ -81,10 +87,21 @@ lujgl.setIdleCallback(function()
     if key["d"] or key[286] then px=px-3 end --reversed
     
     
-    if key[265] then mab.map:saveobj("map.obj") end --f8
-    if key[264] then mab.map:loadobj("map_out.obj");
-                     gl.glDeleteLists(mapmesh,1);mapmesh=nil
-                     mab.parties:groundalign() end --refresh cached map end --f7
+    if key[265] then local objpath=winapi:SaveDialog(handle) --f8
+                        if objpath then
+                          print(string.format("saving OBJ to <%s>",objpath))
+                          mab.map:saveobj(objpath)
+                        end
+                     end
+    if key[264] then local objpath=winapi:OpenDialog(handle) --refresh cached map end --f7
+                      if objpath then
+                        print(string.format("loading OBJ from <%s>",objpath))
+                        mab.map:loadobj(objpath,false)
+                        
+                        gl.glDeleteLists(mapmesh,1);mapmesh=nil
+                        mab.parties:groundalign()
+                      end
+                     end 
                      
     if key[262] then mab.map:save(mod.."\\map_out.txt",true) end --f5 
     if key[263] then mab.map:load(mod);
@@ -132,8 +149,8 @@ lujgl.setRenderCallback(function()
     gl.glMatrixMode(gl.GL_MODELVIEW)
     gl.glLoadIdentity()
     
-    gl.glTranslatef(px,py,pz)
     
+    gl.glTranslatef(px,py,pz)
     gl.glRotatef(yrang,ry, 0, 0)
     gl.glRotatef(xrang, 0,rx, 0)
     
@@ -206,8 +223,6 @@ lujgl.setRenderCallback(function()
 	  gl.glGetIntegerv( gl.GL_VIEWPORT, viewport );
     
     glu.gluUnProject (winX[0], winY[0], winZ[0], modelview, projection, viewport, objX, objY, objZ) 
-    --print(objX[0],objY[0],objZ[0])
-    
     
     --@draw the markers
     gl.glEnable(gl.GL_BLEND)
@@ -387,10 +402,14 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
             end
             print("dragging "..tty)
       elseif picked ~= 0 then
-            print("dropped "..tty)
+            print("dropped "..(tty or "bug"))
             mouse.rclick=false
             pickoffst={0,0}
       end
+  
+  --draw 2d
+    gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_FILL )
+    gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_CONSTANT_ALPHA)--vertex colored solid
 
       end
       if k==0 then mouse.lclick=down end

@@ -61,8 +61,8 @@ function mab.parties:load(filename)
                 id=tuple[1] or "<error>",
               name=tuple[2] and tuple[2]:gsub("_", " ") or "<error>",
                pos={
-                    tonumber(tuple[10]) or 0 *-1, --invert X coordinates
-                    tonumber(tuple[11]) or 0
+                    (tonumber(tuple[10])*-1) or 0, --invert X coordinates
+                     tonumber(tuple[11])     or 0
                    },
                rot=tonumber(tuple[15]) or 0,
               kind=kind
@@ -97,16 +97,25 @@ function mab.parties:save(filename)
                  tline[i]:find("[\"']"..mab.parties[pid].id.."[\"']")  then --if matches in the line, bingo! try to replace coordinates by the new ones
               
                   print( mab.parties[pid].name.." has been modified  -->  ",
-                        mab.parties[pid].pos[1]*-1,mab.parties[pid].pos[2])
+                         mab.parties[pid].pos[1]*-1,mab.parties[pid].pos[2])
                  
-                  tline[i]=string.gsub(tline[i], mab.parties[pid].oldpos[1]*-1, Round(mab.parties[pid].pos[1]*-1, 2)) --XX
-                  tline[i]=string.gsub(tline[i], mab.parties[pid].oldpos[2],    Round(mab.parties[pid].pos[2], 2)) --YY
+                  tline[i]=string.gsub(tline[i], "%([ \t]*"..(mab.parties[pid].oldpos[1]*-1).."[ \t]*,",  
+                  function(pickedbit)
+                    return pickedbit:gsub(mab.parties[pid].oldpos[1]*-1,Round(mab.parties[pid].pos[1], 2)*-1)
+                  end,1) --XX
+                  
+                  tline[i]=string.gsub(tline[i], ",[ \t]*".. mab.parties[pid].oldpos[2]    .."[ \t]*%)", 
+                  function(pickedbit)
+                    return pickedbit:gsub(mab.parties[pid].oldpos[2],Round(mab.parties[pid].pos[2], 2))
+                  end,1) --YY
                   
                   tline[i]=string.format("%s #[swycartographr] prev. coords: (%g, %g)",
                            tline[i]..string.rep(" ",(140-tline[i]:len())),
                            mab.parties[pid].oldpos[1]*-1,
                            mab.parties[pid].oldpos[2]
                            )
+                           
+                  mab.parties[pid].isbeenmod=false
                   break
               end
             end
@@ -114,7 +123,7 @@ function mab.parties:save(filename)
         end
         
         io.write(tline[i].."\n") --drop the line
-  end
+  end   io.close()
   end
   
   print("   done...")
