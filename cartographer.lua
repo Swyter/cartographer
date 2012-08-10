@@ -344,8 +344,10 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
             --@draw the color coded marker
             gl.glClearColor(0,0,0,1)
             gl.glClear(bit.bor(gl.GL_COLOR_BUFFER_BIT, gl.GL_DEPTH_BUFFER_BIT))
+            gl.glDisable(gl.GL_AUTO_NORMAL)
             gl.glDisable(gl.GL_LIGHTING)
             gl.glDisable(gl.GL_LIGHT0)
+            gl.glDisable(gl.GL_BLEND)
             gl.glDisable(gl.GL_FOG)
             
             for p=1,#mab.parties do
@@ -369,7 +371,7 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
             gl.glReadPixels( winX[0], winY[0], 1,1, gl.GL_RED, gl.GL_UNSIGNED_BYTE, pickId );
             gl.glEnable(gl.GL_LIGHTING)
             gl.glEnable(gl.GL_FOG)
-            
+            gl.glVertex2s(1,1); -- /gDEBugger GL/ backbuffer breakpoint, if you're wondering :)
             if mab.parties[pickId[0]] then
               tty=mab.parties[pickId[0]].name
              
@@ -429,6 +431,9 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
        --rang=mouse.wheel_absl
       end
       
+    elseif ev=="close" then --closing down
+      gl.glDeleteTextures(1,ffi.new("const unsigned int[1]",fontdds)) -- get rid of the bitmap font and unload the 
+      gl.glDeleteLists(mapmesh,1)                                     -- map mesh. that fixes those ugly GPU memory leaks
     end
 
   end
