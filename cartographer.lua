@@ -24,6 +24,8 @@ objZ=ffi.new("double[1]",1);
   
   cartographer={}; dofile("cartographer.conf.ini") --new easy peasy config file
   
+  cartographer.conf.msysparties="R:\\Juegos\\swconquest\\modules\\swconquest-msys\\module_parties.py"
+  
   require "mab-msys"
   msys=mab.msys:getmsysfolder()
    mod=mab.msys:getmodulefolder()
@@ -37,11 +39,11 @@ objZ=ffi.new("double[1]",1);
 --@ load our font
   require "soil"
   require "mab-font"
-  mab.font:load(mod.."\\Data\\FONT_DATA.XML",
-                mod.."\\textures\\FONT.dds")
+  --mab.font:load(mod.."\\Data\\FONT_DATA.XML",
+  --              mod.."\\textures\\FONT.dds")
                 
- -- mab.font:load("R:\\Juegos\\swconquest\\modules\\swconquest\\Module Data\\FONT_DATA.XML",
- --               "R:\\Juegos\\swconquest\\modules\\swconquest\\Textures\\FONT_SWC.dds")
+ mab.font:load("R:\\Juegos\\swconquest\\modules\\swconquest\\Module Data\\FONT_DATA.XML",
+                "R:\\Juegos\\swconquest\\modules\\swconquest\\Textures\\FONT_SWC.dds")
 
 --@ load our map
   require "mab-map"
@@ -77,13 +79,16 @@ objZ=ffi.new("double[1]",1);
   gl.glEnable(gl.GL_LIGHTING)
   gl.glEnable(gl.GL_LIGHT0)
 
+--@load ref texture
+  swyref = soil.loadTexture("R:\\Juegos\\swconquest\\modules\\swconquest\\Extras\\galacticmap_mockup.png")
+  
 --@ we like callbacks
 lujgl.setIdleCallback(function()
 
   --manage non-blocking input
-    if key["w"] or key[283] then pz=pz+3 end
+    if key["w"] or key[283] then py=py-3 end
     if key["a"] or key[285] then px=px+3 end --reversed
-    if key["s"] or key[284] then pz=pz-3 end
+    if key["s"] or key[284] then py=py+3 end
     if key["d"] or key[286] then px=px-3 end --reversed
     
     
@@ -168,11 +173,51 @@ lujgl.setRenderCallback(function()
     gl.glHint(gl.GL_FOG_HINT, gl.GL_DONT_CARE)
     gl.glFogf(gl.GL_FOG_START, 100)
     gl.glFogf(gl.GL_FOG_END, 1000)
-    gl.glEnable(gl.GL_FOG)
+    --gl.glEnable(gl.GL_FOG)
     
-  --draw the map
+    
+  --render bg ref
+    gl.glDisable(gl.GL_AUTO_NORMAL)
+    gl.glDisable(gl.GL_LIGHTING)
+    gl.glDisable(gl.GL_LIGHT0)
     gl.glDisable(gl.GL_BLEND)
-    gl.glEnable(gl.GL_LIGHT0)
+    gl.glDisable(gl.GL_FOG)
+  gl.glDisable(gl.GL_BLEND)
+  gl.glEnable(gl.GL_TEXTURE_2D)
+  gl.glBindTexture(gl.GL_TEXTURE_2D,swyref)
+  gl.glColor4f(1,1,1,1)
+  
+  gl.glBegin(gl.GL_QUADS)
+  local dist=150*2
+  local da, db=dist/2,-(dist/2)
+  
+      --1
+        gl.glTexCoord2d(1,0)--(0,0)
+        gl.glVertex3i(db,-1,db)
+      --2
+        gl.glTexCoord2d(1,1)--(1,0)
+        gl.glVertex3i(db,-1,da)
+      --3
+        gl.glTexCoord2d(0,1)--(1,1)
+        gl.glVertex3i(da,-1,da)
+      --4
+        gl.glTexCoord2d(0,0)--(0,1)
+        gl.glVertex3i(da,-1,db)
+      --    v
+      --   4|      3
+      -- u--+-----+
+      --    |     |
+      --    |     |
+      --    +-----+--w
+      --   1      |2
+      --          h
+  gl.glEnd()   
+  
+  
+  --draw the map
+    gl.glEnable(gl.GL_BLEND)
+    gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
+    --gl.glEnable(gl.GL_LIGHT0)
 
     if not mapmesh or not gl.glIsList(mapmesh) then
     print"(i)no cache avaliable, rebuilding displaylist"; local start=os.clock()
@@ -185,7 +230,7 @@ lujgl.setRenderCallback(function()
           gl.glBegin(gl.GL_TRIANGLE_STRIP)
           
           x=tonumber(mab.map.fcs[i][11])
-          gl.glColor3f(unpack(mab.map.terrain[x] or {1,0,1}))
+          gl.glColor4f(0,0,0,0)
           
           for j=1,3 do
             local nm=faceted and mab.map.fcn[i]
@@ -262,14 +307,15 @@ lujgl.setRenderCallback(function()
           if scrZ[0]<.9999 then
               gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_FILL )
               gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_SRC_COLOR)--outlines
-              gl.glColor4d(1,1,1,1)
+              --gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_CONSTANT_ALPHA)--vertex colored solid
+              gl.glColor4d(.3,1,.3,1)
               
               lujgl.begin2D()
               
                 if mab.parties[p].kind==1 then
-                    scal=.66
+                    scal=.35
                 elseif mab.parties[p].kind==2 then
-                    scal=.33
+                    scal=.25
                 end
                 
                 mab.font:print( ( (key[287] or key[288]) and mab.parties[p].id or mab.parties[p].name), --switch between party name and id by pressing the shift keys...
@@ -298,6 +344,8 @@ lujgl.setRenderCallback(function()
                      1,10,.2)
     lujgl.end2D()
     
+
+  
   --bugs ahoy?
     lujgl.checkError()
   end
@@ -426,7 +474,7 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
       mouse.wheel_absl=arg[2]
       
       if mouse.wheel_absl then --mab scroll like effect
-       py=py+mouse.wheel_locl
+       pz=pz+mouse.wheel_locl
        --rx=rx+mouse.wheel_locl
        --rang=mouse.wheel_absl
       end
