@@ -119,6 +119,11 @@ function mab.map:load(path)
   print("   ended filling arrays "..(os.clock()-x).."s")
   raw={}; collectgarbage("collect")--discard raw material, let the garbage collector do its job
   
+  if mab.map:aretheaxisreversed() then
+    for i=1,#mab.map.vtx do --go across all the faces in the map
+      mab.map.vtx[i].y, mab.map.vtx[i].z = mab.map.vtx[i].z, mab.map.vtx[i].y*-1
+    end
+  end
 end
 
 function mab.map:save(file,reversed_mode)
@@ -244,7 +249,7 @@ function mab.map:loadobj(file,reversed_mode)
           ---------------------------
           if raw[1]=="v" then
           
-              if reversed_mode then raw[2],raw[3]=raw[3],raw[2]*-1; end
+              --if reversed_mode then raw[2],raw[3]=raw[3],raw[2]*-1; end
               mab.map.vtx[#mab.map.vtx+1]=vector.new(
                                           tonum(raw[2]),
                                           tonum(raw[3]),
@@ -288,6 +293,12 @@ function mab.map:loadobj(file,reversed_mode)
    (os.clock()-start)
    ))
   end
+  
+  if mab.map:aretheaxisreversed() then
+    for i=1,#mab.map.vtx do --go across all the faces in the map
+      mab.map.vtx[i].y, mab.map.vtx[i].z = mab.map.vtx[i].z, mab.map.vtx[i].y*-1
+    end
+  end
 end
 
 function mab.map:softnormal()
@@ -317,5 +328,23 @@ function mab.map:softnormal()
       end
       mab.map.vtn[i]=thingie/#vtxi[i]
     end
+  end
+end
+
+
+function mab.map:aretheaxisreversed()
+  if mab.map.vtx and mab.map.fcs then --if we have map
+  local max=math.max
+  local ly,lz=0,0
+  
+    for i=1,#mab.map.fcs do --go across all the faces in the map and compare y/z of the second vertex
+      ly=max(ly,mab.map.vtx[mab.map.fcs[i][2]].y)
+      lz=max(lz,mab.map.vtx[mab.map.fcs[i][2]].z)
+    end
+    
+    --if lz wins then the imported model has less height(ly) than width(lz), and probably, if we're dealing with
+    --a non-weirdo map that means the axis are inverted because of different y/z handeness, at least in my head.
+    print("ly:"..ly,"lz:"..lz,(ly>lz and "ly" or "lz").." wins!", (ly>lz and "reversing y/z coordinates" or "keeping coordinate system"))
+    return (ly>lz and true or false) --ly is evil! >:(
   end
 end
