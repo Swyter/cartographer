@@ -69,11 +69,11 @@ mab.map.terrain={
     [(rt_bridge)]           ={  1,   0,   0  },
     [(rt_river)]            ={  0,   0,  .5  },
     [(rt_desert)]           ={ .7,  .8,  .6  },
-    [(rt_mountain_forest)]  ={ .5,  .6,  .4  },
+    [(rt_mountain_forest)]  ={ .4,  .7,  .3  },
     [(rt_steppe_forest)]    ={ .4,  .5,  .4  },
     [(rt_forest)]           ={ .5,  .6,  .4  },
     [(rt_snow_forest)]      ={ .8,  .8,  .8  },
-    [(rt_desert_forest)]    ={ .5,  .6,  .4  }
+    [(rt_desert_forest)]    ={ .6,  .7,  .5  }
 }
 
 
@@ -181,6 +181,9 @@ function mab.map:saveobj(file,reversed_mode)
   # Mount&Blade Map file
   # Exported by swyter's cartographer
 
+mtllib swycartographer.mtl
+o strategicmap
+
 ]])
     
     for s=1,vtx do
@@ -194,7 +197,7 @@ function mab.map:saveobj(file,reversed_mode)
       local curr=mab.map.fcs[s]
       
       if lastmat ~= tonumber(curr[11]) then --implemented material export
-        io.write(string.format("usemtl %s\n",mat[tonumber(curr[11])])); lastmat=tonumber(curr[11])
+        io.write(string.format("g %s\nusemtl %s\n",mat[tonumber(curr[11])],mat[tonumber(curr[11])])); lastmat=tonumber(curr[11])
       end
       
       io.write(
@@ -202,7 +205,37 @@ function mab.map:saveobj(file,reversed_mode)
       )
     end
     io.close()
+    mab.map:savemtl(file)
     print("   done... "..(os.clock()-start).."s")
+  end
+end
+
+function mab.map:savemtl(file)
+  file=file:gsub("\\[^\\]+$", "\\swycartographer.mtl")
+  print(file)
+  
+  if io.output(io.open(file,"w")) then
+  
+    for s=0,#mab.map.terrain do
+    if mat[s] then
+      local r,g,b=unpack(mab.map.terrain[s])
+      
+      io.write(
+        string.format("newmtl %s\n"
+       ..'Ns 100.0\n'
+       ..'d 1.0\n'
+       ..'illum 2\n'
+       ..'Kd %g %g %g\n'
+       ..'Ka 0.5 0.5 0.5\n'
+       ..'Ks 0.3 0.3 0.5\n'
+       ..'Ke 0.0 0.0 0.0\n'
+       ..'\n'
+        ,mat[s],r,g,b) --floats
+      )
+    end
+    end
+    io.close()
+    
   end
 end
 
