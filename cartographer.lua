@@ -103,9 +103,12 @@ lujgl.setIdleCallback(function()
                       end
                      end 
                      
-    if key[262] then mab.map:save(mod.."\\map_out.txt",true) end --f5 
-    if key[263] then mab.map:load(mod);
-                     gl.glDeleteLists(mapmesh,1);mapmesh=nil end --refresh cached map end --f6
+    if key[262] then mab.map:save(mod.."\\map.txt",true) end --f5
+    if key[263] then if winapi:messagebox() then --f6
+                       mab.map:load(mod);
+                       gl.glDeleteLists(mapmesh,1);mapmesh=nil
+                     end
+                    end--refresh cached map end
                      
     if key[266] then mab.parties:save(msys.."\\module_parties.py") end --f9
     if key[267] then mab.parties:load(msys.."\\module_parties.py")     --f10
@@ -294,8 +297,9 @@ lujgl.setRenderCallback(function()
       mab.font:print(string.format("x:%g y:%g z:%g",-objX[0],objZ[0],objY[0]),
                      49,lujgl.height/2-60,.7)
       
-      mab.font:print("The house at the end of the street is red.",
-                     1,10,.2)
+      gl.glColor4d(.3,1,1,((lujgl.height-(mouse.y-60))/lujgl.height)*2) --cool fadeoff when cursor is close :)
+      mab.font:print("{F5} Saves map.txt {F6} Reloads map.txt {F7} Imports Obj {F8} Exports Obj {F9} Saves edited parties {F10} Reloads module_parties.py",
+                     1,10,.3)
     lujgl.end2D()
     
   --bugs ahoy?

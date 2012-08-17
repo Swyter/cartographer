@@ -149,3 +149,54 @@ function winapi:GetHandle(title,class)
                             lpszWindow)
 
 end
+  ffi.cdef[[
+  static const int MB_ICONQUESTION         = 32;
+  static const int MB_OK                   = 0;
+  static const int MB_ABORTRETRYIGNORE     = 2;
+  static const int MB_APPLMODAL            = 0;
+  static const int MB_DEFAULT_DESKTOP_ONLY = 0x20000;
+  static const int MB_HELP                 = 0x4000;
+  static const int MB_RIGHT                = 0x80000;
+  static const int MB_RTLREADING           = 0x100000;
+  static const int MB_TOPMOST              = 0x40000;
+  static const int MB_DEFBUTTON1           = 0;
+  static const int MB_DEFBUTTON2           = 256;
+  static const int MB_DEFBUTTON3           = 512;
+  static const int MB_DEFBUTTON4           = 0x300;
+  static const int MB_ICONINFORMATION      = 64;
+  static const int MB_ICONSTOP             = 16;
+  static const int MB_OKCANCEL             = 1;
+  static const int MB_RETRYCANCEL          = 5;
+
+
+  static const int MB_YESNO                = 4;
+
+
+  static const int IDABORT                 = 3;
+  static const int IDCANCEL                = 2;
+  static const int IDCLOSE                 = 8;
+  static const int IDHELP                  = 9;
+  static const int IDIGNORE                = 5;
+  static const int IDNO                    = 7;
+  static const int IDOK                    = 1;
+  static const int IDRETRY                 = 4;
+  static const int IDYES                   = 6;
+  
+  typedef unsigned int UINT;
+  int MessageBoxA(HWND,LPCSTR,LPCSTR,UINT);
+  ]]
+  --user=ffi.load("user32")
+function winapi:messagebox(text)
+  local gg=user.MessageBoxA(handle,
+                            "Are you really sure you want to reload the map file?\r\nAll the unsaved changes will be lost, forever.",
+                            "Oops!",
+                            bit.bor(user.MB_TOPMOST, user.MB_ICONQUESTION, user.MB_YESNO, user.MB_DEFBUTTON2, user.MB_APPLMODAL)
+                           )
+  --print("=>>>>>>>>>>>>>>>>> "..gg)
+  
+  if gg == user.IDYES then
+   return true
+  else
+   return false
+  end
+end
