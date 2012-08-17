@@ -18,14 +18,18 @@
   
   {Shift} Switchs labeling between ids and names
     {Tab} Switchs visually between faceted and smooth terrain
+    
      {F5} Saves map.txt
      {F6} Reloads map.txt
      {F7} Imports Obj
      {F8} Exports Obj
+     
      {F9} Saves edited parties
+    {F10} Reloads module_parties.py
      
   Think of it as west: map
-                 east: obj
+                  mid: obj
+                 east: parties
            outer keys: save
            inner keys: load
   
