@@ -5,7 +5,7 @@ local gl, glu = lujgl.gl, lujgl.glu
 
 
 local key,mouse, px, py, pz  ,rx,ry,rz, xrang,yrang=
-       {},   {}, -3, -9,-74  ,38,80,90, 182.5, 56.5
+       {},   {}, -3, -9,-74  ,38,80,90, 180,  90
 
 mouse.x=0
 mouse.y=0
@@ -24,7 +24,7 @@ objZ=ffi.new("double[1]",1);
   
   cartographer={}; dofile("cartographer.conf.ini") --new easy peasy config file
   
-  cartographer.conf.msysparties="R:\\Juegos\\swconquest\\modules\\swconquest-msys\\module_parties.py"
+  cartographer.conf.msysparties="R:\\Juegos\\swconquest\\modules\\swconquest-branch-msys\\module_parties.py"
   
   require "mab-msys"
   msys=mab.msys:getmsysfolder()
@@ -42,8 +42,8 @@ objZ=ffi.new("double[1]",1);
   --mab.font:load(mod.."\\Data\\FONT_DATA.XML",
   --              mod.."\\textures\\FONT.dds")
                 
- mab.font:load("R:\\Juegos\\swconquest\\modules\\swconquest\\Module Data\\FONT_DATA.XML",
-                "R:\\Juegos\\swconquest\\modules\\swconquest\\Textures\\FONT_SWC.dds")
+ mab.font:load("R:\\Juegos\\swconquest\\modules\\swconquest-branch\\Module Data\\FONT_DATA.XML",
+               "R:\\Juegos\\swconquest\\modules\\swconquest-branch\\Textures\\FONT_SWC.dds")
 
 --@ load our map
   require "mab-map"
@@ -129,8 +129,13 @@ lujgl.setIdleCallback(function()
 
     end
     
-    if mouse.lclick then xrang=xrang+(mouse.xold-mouse.x)/2; rx=1
-                         yrang=yrang+(mouse.yold-mouse.y)/2; ry=1; end
+    
+    if mouse.lclick then px=px-(mouse.xold-mouse.x)/4;
+                         py=py+(mouse.yold-mouse.y)/4; end
+    
+    
+    --if mouse.lclick then xrang=xrang+(mouse.xold-mouse.x)/2; rx=1
+    --                     yrang=yrang+(mouse.yold-mouse.y)/2; ry=1; end
     if yrang<-90 then yrang=-90 end
     
     mouse.xold=mouse.x
@@ -230,8 +235,12 @@ lujgl.setRenderCallback(function()
           gl.glBegin(gl.GL_TRIANGLE_STRIP)
           
           x=tonumber(mab.map.fcs[i][11])
-          gl.glColor4f(0,0,0,0)
           
+          if x == rt_forest then
+            gl.glColor4f(1,0,0,.5)
+          else
+            gl.glColor4f(0,0,0,0)
+          end
           for j=1,3 do
             local nm=faceted and mab.map.fcn[i]
                               or mab.map.vtn[mab.map.fcs[i][j]]
@@ -270,7 +279,7 @@ lujgl.setRenderCallback(function()
     glu.gluUnProject (winX[0], winY[0], winZ[0], modelview, projection, viewport, objX, objY, objZ) 
     
     --@draw the markers
-    gl.glEnable(gl.GL_BLEND)
+    gl.glDisable(gl.GL_BLEND)
     gl.glDisable(gl.GL_FOG)
     for p=1,#mab.parties do
           gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_LINE )
@@ -278,7 +287,7 @@ lujgl.setRenderCallback(function()
           gl.glTranslated(mab.parties[p].pos[1],mab.parties[p].pos[3],
                           mab.parties[p].pos[2])
           
-          gl.glColor4d(.8,.8,.8,.8)
+          gl.glColor4d(.8,1,.8,1)
           
           quad = glu.gluNewQuadric()
           glu.gluQuadricOrientation(quad, glu.GLU_OUTSIDE)
@@ -304,7 +313,7 @@ lujgl.setRenderCallback(function()
           gl.glGetIntegerv( gl.GL_VIEWPORT, viewport );
           glu.gluProject(mab.parties[p].pos[1], mab.parties[p].pos[3], mab.parties[p].pos[2], modelview, projection, viewport, scrX, scrY, scrZ);
 
-          if scrZ[0]<.9999 then
+          if scrZ[0]<1.9999 then
               gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_FILL )
               gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_SRC_COLOR)--outlines
               --gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_CONSTANT_ALPHA)--vertex colored solid
@@ -315,7 +324,7 @@ lujgl.setRenderCallback(function()
                 if mab.parties[p].kind==1 then
                     scal=.35
                 elseif mab.parties[p].kind==2 then
-                    scal=.25
+                    scal=.23
                 end
                 
                 mab.font:print( ( (key[287] or key[288]) and mab.parties[p].id or mab.parties[p].name), --switch between party name and id by pressing the shift keys...
@@ -331,17 +340,16 @@ lujgl.setRenderCallback(function()
     gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_FILL )
     
     lujgl.begin2D()
-      local highlight=.7 and mouse.rclick or .3
-      gl.glColor4d(1,.9,1,highlight)
+      gl.glColor4d(1,.9,1,.01)
       gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_CONSTANT_ALPHA)--vertex colored solid
       mab.font:print(string.format("%d--%d",mouse.x, lujgl.height-mouse.y),
                      49,lujgl.height/2-110,.6)
-                     
-      mab.font:print(string.format("x:%g y:%g z:%g",-objX[0],objZ[0],objY[0]),
-                     49,lujgl.height/2-60,.7)
       
-      mab.font:print("The house at the end of the street is red.",
-                     1,10,.2)
+      local highlight=.7 and mouse.rclick or .2
+      gl.glColor4d(1,.9,1,highlight)
+      mab.font:print(string.format("x:%g y:%g",-objX[0],objZ[0]),
+                     49,lujgl.height/6-60,.7)
+      
     lujgl.end2D()
     
 
