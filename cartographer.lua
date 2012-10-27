@@ -42,8 +42,8 @@ objZ=ffi.new("double[1]",1);
   --mab.font:load(mod.."\\Data\\FONT_DATA.XML",
   --              mod.."\\textures\\FONT.dds")
                 
- mab.font:load("R:\\Juegos\\swconquest\\modules\\swconquest-branch\\Module Data\\FONT_DATA.XML",
-               "R:\\Juegos\\swconquest\\modules\\swconquest-branch\\Textures\\FONT_SWC.dds")
+ mab.font:load("R:\\Juegos\\swconquest\\modules\\swconquest-branch\\Font\\FONT_DATA.XML",
+               "R:\\Juegos\\swconquest\\modules\\swconquest-branch\\Font\\FONT_SWC.dds")
 
 --@ load our map
   require "mab-map"
