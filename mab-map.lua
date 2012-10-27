@@ -173,6 +173,21 @@ function mab.map:computenrm(triangle)
      return U:cross(V):normalized()
 end
 
+function mab.map:computearea(triangle)
+     local a,b,c=
+     mab.map.vtx[triangle[1]],
+     mab.map.vtx[triangle[2]],
+     mab.map.vtx[triangle[3]]
+     
+     local sqrt=math.sqrt
+    
+     local D1=(a-b):len() --magnitudes
+     local D2=(b-c):len()
+     local D3=(c-a):len()
+     
+     local H = (D1 + D2 + D3) * 0.5
+     return sqrt(H * (H - D1) * (H - D2) * (H - D3))
+end
 
 function mab.map:saveobj(file,reversed_mode)
   print("@--Exporting OBJ..."); local start=os.clock(); local lastmat=-1;
@@ -336,7 +351,8 @@ end
 
 function mab.map:softnormal()
   local vtxi={}
-  mab.map.fcn,mab.map.vtn={},{}
+  mab.map.fcn,mab.map.cfa,mab.map.vtn={},{},{}
+  
   for i=1,fcs do --get a list of triangle membership for any vertex
     local vta,vtb,vtc=mab.map.fcs[i][1],mab.map.fcs[i][2],mab.map.fcs[i][3]
 
@@ -348,8 +364,11 @@ function mab.map:softnormal()
     vtxi[vtb][#vtxi[vtb]+1]=i
     vtxi[vtc][#vtxi[vtc]+1]=i
     
-    --compute per-face normals using cross-product
+    --compute per-face normals using cross-product, don't ask me why putting this in its own loop halves the processing time, cool optimizations!
     mab.map.fcn[i]=mab.map:computenrm(mab.map.fcs[i])
+    --compute area of this triangle/face, so we can average proportionally depending on sizes <http://www.bytehazard.com/code/vertnorm.html>
+    mab.map.cfa[i]=mab.map:computearea(mab.map.fcs[i])
+    
   end
   
   for i=1,#vtxi do --average between all the per-face normals to get a smooth aproximation
@@ -357,9 +376,9 @@ function mab.map:softnormal()
     local thingie=vector.new(0,0,0)
       for u=1, #vtxi[i] do
           local currface=vtxi[i][u]
-          thingie=thingie+mab.map.fcn[currface]
+          thingie=thingie+mab.map.fcn[currface]*mab.map.cfa[currface] --small polygons will have little influence, large polygons have large influence
       end
-      mab.map.vtn[i]=thingie/#vtxi[i]
+      mab.map.vtn[i]=(thingie/#vtxi[i]):normalized()
     end
   end
 end
@@ -368,11 +387,12 @@ end
 function mab.map:aretheaxisreversed()
   if mab.map.vtx and mab.map.fcs then --if we have map
   local max=math.max
+  local abs=math.abs
   local ly,lz=0,0
   
     for i=1,#mab.map.fcs do --go across all the faces in the map and compare y/z of the second vertex
-      ly=max(ly,mab.map.vtx[mab.map.fcs[i][2]].y)
-      lz=max(lz,mab.map.vtx[mab.map.fcs[i][2]].z)
+      ly=max(ly,abs(mab.map.vtx[mab.map.fcs[i][2]].y))
+      lz=max(lz,abs(mab.map.vtx[mab.map.fcs[i][2]].z))
     end
     
     --if lz wins then the imported model has less height(ly) than width(lz), and probably, if we're dealing with
