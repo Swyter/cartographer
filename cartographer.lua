@@ -81,12 +81,23 @@ objZ=ffi.new("double[1]",1);
 lujgl.setIdleCallback(function()
 
   --manage non-blocking input
-    if key["w"] or key[283] then pz=pz+3 end
-    if key["a"] or key[285] then px=px+3 end --reversed
-    if key["s"] or key[284] then pz=pz-3 end
-    if key["d"] or key[286] then px=px-3 end --reversed
+    sin,cos,rad,abs=math.sin,math.cos,math.rad,math.abs
     
+    --x3 speed multiplier when CTRL is pressed together with the arrow keys
+    --there's an additional boost when the camera is high over the terrain
+    local multiplier = (key[289] and 3 or 1) * (abs(py)/20);
     
+    --rebuild the direction vector from the /yaw/ angle (in degrees) using trigonometry
+    if key["w"] or key[283] then pz=pz+cos(rad(xrang)) * multiplier
+                                 px=px-sin(rad(xrang)) * multiplier end
+    if key["s"] or key[284] then pz=pz-cos(rad(xrang)) * multiplier
+                                 px=px+sin(rad(xrang)) * multiplier end
+                                 
+    if key["a"] or key[285] then pz=pz+cos(rad(xrang-90)) * multiplier
+                                 px=px-sin(rad(xrang-90)) * multiplier end --reversed
+    if key["d"] or key[286] then pz=pz-cos(rad(xrang-90)) * multiplier
+                                 px=px+sin(rad(xrang-90)) * multiplier end --reversed
+                                 
     if key[265] then local objpath=winapi:SaveDialog(handle) --f8
                         if objpath then
                           print(string.format("saving OBJ to <%s>",objpath))
@@ -152,10 +163,10 @@ lujgl.setRenderCallback(function()
     gl.glMatrixMode(gl.GL_MODELVIEW)
     gl.glLoadIdentity()
     
-    
-    gl.glTranslatef(px,py,pz)
+  --/pitch/ rotation -> /yaw/ rotation -> translation
     gl.glRotatef(yrang,ry, 0, 0)
     gl.glRotatef(xrang, 0,rx, 0)
+    gl.glTranslatef(px,py,pz)
     
     lujgl.glLight(gl.GL_LIGHT0, gl.GL_AMBIENT, 0.1, 0.12, 0.19)
     lujgl.glLight(gl.GL_LIGHT0, gl.GL_POSITION, 10, 1, 1, 0)   
@@ -322,13 +333,14 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
 
       or k==265 or k==264      --f8 & f7
       or k==262 or k==263      --f5 & f6
-      or k==266 or k==267 then --f9 & f10
+      or k==266 or k==267      --f9 & f10
+      or k==289 then           --Ctrl
       
       key[k]=down end
       
+      --tab switchs between faceted display modes
+      if k==293 and down then faceted = not faceted; print("faceted is",faceted); mapmesh=nil end
       
-      if k==293 and down then faceted = not faceted; print("faceted is",faceted); mapmesh=nil end --tab switchs between faceted display modes
-
     elseif ev=="motion" then -- mouse movement
       mouse.x=arg[1]
       mouse.y=arg[2]
