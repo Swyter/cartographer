@@ -17,6 +17,7 @@
   ----------------
   
   {Shift} Switchs labeling between ids and names
+   {Ctrl} x3 Speed multiplier when using the direction keys
     {Tab} Switchs visually between faceted and smooth terrain
     
      {F5} Saves map.txt
