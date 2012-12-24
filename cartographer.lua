@@ -231,10 +231,10 @@ lujgl.setRenderCallback(function()
     gl.glGetDoublev( gl.GL_MODELVIEW_MATRIX, modelview );
     
     local projection=ffi.new("double[16]",1);
-	  gl.glGetDoublev( gl.GL_PROJECTION_MATRIX, projection );
+    gl.glGetDoublev( gl.GL_PROJECTION_MATRIX, projection );
     
     local viewport=ffi.new("int[4]",1);
-	  gl.glGetIntegerv( gl.GL_VIEWPORT, viewport );
+    gl.glGetIntegerv( gl.GL_VIEWPORT, viewport );
     
     glu.gluUnProject (winX[0], winY[0], winZ[0], modelview, projection, viewport, objX, objY, objZ) 
     
@@ -243,6 +243,8 @@ lujgl.setRenderCallback(function()
     gl.glDisable(gl.GL_FOG)
     for p=1,#mab.parties do
           gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_LINE )
+          gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE)--vertex colored solid
+          
           gl.glPushMatrix()
           gl.glTranslated(mab.parties[p].pos[1],mab.parties[p].pos[3],
                           mab.parties[p].pos[2])
