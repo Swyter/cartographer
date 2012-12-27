@@ -1,20 +1,21 @@
 local lujgl = require "lujgl"
-local ffi = require "ffi"
+local ffi   = require "ffi"
 
 local gl, glu = lujgl.gl, lujgl.glu
 
 
-local key,mouse, px, py, pz  ,rx,ry,rz, xrang,yrang=
-       {},   {}, -3, -9,-74  ,38,80,90, 182.5, 56.5
+local key, mouse,  px, py, pz,   rx, ry, rz,   xrang, yrang=
+       {},    {}, -31,-43,-14,   38, 80, 90,     242,    32
+ 
 
 mouse.x=0
 mouse.y=0
 mouse.xold=0
 pickoffst={0,0}
 
-objX=ffi.new("double[1]",1);
-objY=ffi.new("double[1]",1);
-objZ=ffi.new("double[1]",1);
+objX=ffi.new("double[1]");
+objY=ffi.new("double[1]");
+objZ=ffi.new("double[1]");
     
 --@ Load cooler dependencies
   require "winapi"
