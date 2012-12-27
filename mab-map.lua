@@ -173,6 +173,8 @@ function mab.map:computenrm(triangle)
      return U:cross(V):normalized()
 end
 
+--Pretty much everything here has been converted to lua using Martijn's math snippets, if you are reading this; thanks!
+--http://www.bytehazard.com/code/math.html
 function mab.map:computearea(triangle)
      local a,b,c=
      mab.map.vtx[triangle[1]],
