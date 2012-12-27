@@ -6,7 +6,6 @@ local gl, glu = lujgl.gl, lujgl.glu
 
 local key, mouse,  px, py, pz,   rx, ry, rz,   xrang, yrang=
        {},    {}, -31,-43,-14,   38, 80, 90,     242,    32
- 
 
 mouse.x=0
 mouse.y=0
@@ -86,7 +85,7 @@ lujgl.setIdleCallback(function()
     
     --x3 speed multiplier when CTRL is pressed together with the arrow keys
     --there's an additional boost when the camera is high over the terrain
-    local multiplier = (key[289] and 3 or 1) * (abs(py)/20);
+    local multiplier = (key[289] and 3 or 1) * (abs(py)/20); if multiplier==0 then multiplier=1 end
     
     --rebuild the direction vector from the /yaw/ angle (in degrees) using trigonometry
     if key["w"] or key[283] then pz=pz+cos(rad(xrang)) * multiplier
@@ -398,17 +397,17 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
               mouse.rclick=true
               
               --@ Avoid bumpy picks
-              local scrX=ffi.new("double[1]",1);
-              local scrY=ffi.new("double[1]",1);
-              local scrZ=ffi.new("double[1]",1);
+              local scrX=ffi.new("double[1]");
+              local scrY=ffi.new("double[1]")
+              local scrZ=ffi.new("double[1]");
               
-              local modelview=ffi.new("double[16]",1);
+              local modelview=ffi.new("double[16]");
               gl.glGetDoublev( gl.GL_MODELVIEW_MATRIX, modelview );
               
-              local projection=ffi.new("double[16]",1);
+              local projection=ffi.new("double[16]");
               gl.glGetDoublev( gl.GL_PROJECTION_MATRIX, projection );
               
-              local viewport=ffi.new("int[4]",1);
+              local viewport=ffi.new("int[4]");
               gl.glGetIntegerv( gl.GL_VIEWPORT, viewport );
               glu.gluProject(mab.parties[pickId[0]].pos[1], mab.parties[pickId[0]].pos[3], mab.parties[pickId[0]].pos[2], modelview, projection, viewport, scrX, scrY, scrZ);
               
