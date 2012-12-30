@@ -1,6 +1,8 @@
 mab = mab or {}
 mab.parties = mab.parties or {}
 
+local ffi,vector=require"ffi",require"vectors"
+
   --
  -- Helper functions
 --
@@ -47,9 +49,9 @@ function mab.parties:load(filename)
         local index=ltrim:sub(1,1)
 
         if index ~= "#" then
-          if index=="(" and not line:find("pf_disabled") and not line:find("pf_no_label") then --avoid comments and filler entries
+          if index=="(" and not line:find("pf_disabled") then --avoid comments and filler entries
              
-             tuple=ltrim:sub(2,ltrim:find("%).*")) --remove possible comments from the right side
+             tuple=ltrim:gsub(",%s*#.+", "") --remove possible comments from the right side
              tuple=tuple:gsub(" ", ""):gsub("\"", ""):gsub("%(", ""):gsub("%)", "") --remove all the: "()
              
              if tuple:find("pf_town") then kind=1 else kind=2 end
@@ -60,13 +62,15 @@ function mab.parties:load(filename)
              mab.parties[s]={
                 id=tuple[1] or "<error>",
               name=tuple[2] and tuple[2]:gsub("_", " ") or "<error>",
-               pos={
+               pos=vector.new(
                     (tonumber(tuple[10])*-1) or 0, --invert X coordinates
                      tonumber(tuple[11])     or 0
-                   },
-               rot=tonumber(tuple[15]) or 0,
+                   ),
+               rot=tonumber(tuple[13]) or 0,
               kind=kind
              }
+             
+            print("rot:"..mab.parties[s].rot,tuple[13])
           end
         end
   end
@@ -93,29 +97,44 @@ function mab.parties:save(filename)
         if index ~= "#" and index=="(" then --avoid comments and filler entries
           
             for pid=1,#mab.parties do        
-              if mab.parties[pid].isbeenmod                   and  --itirerate over all the avaliable, modified parties
+              if mab.parties[pid].isbeenmod                            and  --itirerate over all the avaliable, modified parties
                  tline[i]:find("[\"']"..mab.parties[pid].id.."[\"']")  then --if matches in the line, bingo! try to replace coordinates by the new ones
               
                   print( mab.parties[pid].name.." has been modified  -->  ",
-                         mab.parties[pid].pos[1]*-1,mab.parties[pid].pos[2])
+                         mab.parties[pid].pos.x*-1,mab.parties[pid].pos.y)
                  
-                  tline[i]=string.gsub(tline[i], "%([ \t]*"..(mab.parties[pid].oldpos[1]*-1).."[ \t]*,",  
+                  tline[i]=string.gsub(tline[i], "%([ \t]*"..(mab.parties[pid].oldpos.x*-1).."[ \t]*,",    -- (NN,
                   function(pickedbit)
-                    return pickedbit:gsub(mab.parties[pid].oldpos[1]*-1,Round(mab.parties[pid].pos[1], 2)*-1)
+                    return pickedbit:gsub(mab.parties[pid].oldpos.x*-1,Round(mab.parties[pid].pos.x, 2)*-1)
                   end,1) --XX
                   
-                  tline[i]=string.gsub(tline[i], ",[ \t]*".. mab.parties[pid].oldpos[2]    .."[ \t]*%)", 
+                  tline[i]=string.gsub(tline[i], ",[ \t]*".. mab.parties[pid].oldpos.y    .."[ \t]*%)",    -- ,NN)
                   function(pickedbit)
-                    return pickedbit:gsub(mab.parties[pid].oldpos[2],Round(mab.parties[pid].pos[2], 2))
+                    return pickedbit:gsub(mab.parties[pid].oldpos.y,Round(mab.parties[pid].pos.y, 2))
                   end,1) --YY
                   
-                  tline[i]=string.format("%s #[swycartographr] prev. coords: (%g, %g)",
+                if mab.parties[pid].oldrot then
+                --round up to integer first, this is important
+                mab.parties[pid].rot=math.ceil(mab.parties[pid].rot)
+                
+                print("oldrot:"..mab.parties[pid].oldrot,"rot:"..mab.parties[pid].rot)
+                  tline[i]=string.gsub(tline[i], "%],[ \t]*".. mab.parties[pid].oldrot    .."[ \t]*%),",   -- ],NN),
+                  function(pickedbit)
+                    print(pickedbit)
+                    return pickedbit:gsub(mab.parties[pid].oldrot, mab.parties[pid].rot)
+                  end,1) --ROT
+
+                end
+                  
+                  tline[i]=string.format("%s #[swycartographr] prev. coords: (%g, %g)%s",
                            tline[i]..string.rep(" ",(140-tline[i]:len())),
-                           mab.parties[pid].oldpos[1]*-1,
-                           mab.parties[pid].oldpos[2]
+                           mab.parties[pid].oldpos.x*-1,
+                           mab.parties[pid].oldpos.y,
+                           (mab.parties[pid].oldrot==nil and "" or " rot: "..mab.parties[pid].oldrot)
                            )
                            
                   mab.parties[pid].isbeenmod=false
+                  mab.parties[pid].oldrot=nil
                   break
               end
             end
@@ -129,43 +148,57 @@ function mab.parties:save(filename)
   print("   done...")
 end
 
+function mab.map.heightforpoint(triangle, point)
+     local v1,v2,v3=
+     mab.map.vtx[triangle[1]],
+     mab.map.vtx[triangle[2]],
+     mab.map.vtx[triangle[3]]
+    
+     local x,z=point.x,point.z
+
+     local q = (v2.x - v1.x) * (v3.z - v1.z) - (v3.x - v1.x) * (v2.z - v1.z);
+     if (q == 0) then return v1.y; end
+     local q = 1.0 / q;
+     local u = q * ((v2.x - x) * (v3.z - z) - (v3.x - x) * (v2.z - z));
+     local v = q * ((v3.x - x) * (v1.z - z) - (v1.x - x) * (v3.z - z));
+     local w = q * ((v1.x - x) * (v2.z - z) - (v2.x - x) * (v1.z - z));
+     return (u * v1.y) + (v * v2.y) + (w * v3.y);
+end
+
+ffi.cdef("struct kd_elem{ uint8_t tri; double x,y; }")
+
 function mab.parties:groundalign()
-  local abs,uu=math.abs,os.clock()
-  for p,_ in pairs(mab.parties) do
+   local abs,uu=math.abs, os.clock()
+   local vtx,fcs=mab.map.vtx, mab.map.fcs
+   
+   local ffi,kd,kdtree=require("ffi"), require("kdtree"), {}
   
-  local currparty=mab.parties[p]
-  if type(currparty)=="table" then
-   
-   local closerx,closery=2,2
-   
-   for i=1,#mab.map.fcs do
+   --build the kdtree
+   for i=1,#fcs do
    
      --compute barycenter
-     local tricenterx=(mab.map.vtx[mab.map.fcs[i][1]].x+
-                       mab.map.vtx[mab.map.fcs[i][2]].x+
-                       mab.map.vtx[mab.map.fcs[i][3]].x)/3
-     local tricentery=(mab.map.vtx[mab.map.fcs[i][1]].z+
-                       mab.map.vtx[mab.map.fcs[i][2]].z+
-                       mab.map.vtx[mab.map.fcs[i][3]].z)/3
-     
-     local compx=abs(tricenterx - currparty.pos[1])
-     local compy=abs(tricentery - currparty.pos[2])
-
-     
-          if compx < closerx and
-             compy < closery then --closest triangle to the point
-             
-             closerx,closery=compx,compy
-             mab.parties[p].pos[3] =(mab.map.vtx[mab.map.fcs[i][1]].y+
-                                     mab.map.vtx[mab.map.fcs[i][2]].y+
-                                     mab.map.vtx[mab.map.fcs[i][3]].y)/3
-
-             if closerx<1.8 and closery<1.5 then break end--aproximate just enough
-          end
-   end
-     
-      if not mab.parties[p].pos[3] then mab.parties[p].pos[3]=10 end
+     local tricenterx=(vtx[fcs[i][1]].x+
+                       vtx[fcs[i][2]].x+
+                       vtx[fcs[i][3]].x)/3
+     local tricentery=(vtx[fcs[i][1]].z+
+                       vtx[fcs[i][2]].z+
+                       vtx[fcs[i][3]].z)/3
+     table.insert(kdtree, ffi.new("struct kd_elem",{tri=i,x=tricenterx,y=tricentery}))
   end
+  
+  --here is where the magic happens
+  kd.tree_create(kdtree,0)
+
+  --itinerate across all the existing settlements
+  for p,_ in pairs(mab.parties) do
+    if type(mab.parties[p]) == "table" then
+    --find the closest triangle
+    local tri=kd.tree_find(kdtree, mab.parties[p].pos)
+    local hei=mab.map.heightforpoint(fcs[tri], mab.parties[p].pos) or 100
+    
+    --set the height
+    mab.parties[p].pos.z=hei
+    end
   end
   
   print(string.format("   ground aligned in %gs",os.clock()-uu))

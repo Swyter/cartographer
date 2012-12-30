@@ -1,5 +1,6 @@
-local lujgl = require "lujgl"
-local ffi   = require "ffi"
+local vector = require "vectors"
+local lujgl  = require "lujgl"
+local ffi    = require "ffi"
 
 local gl, glu = lujgl.gl, lujgl.glu
 
@@ -126,16 +127,35 @@ lujgl.setIdleCallback(function()
                      mab.parties:groundalign() end
     
     
-    if mouse.rclick then
-    
-      mab.parties[picked].isbeenmod=true
+    if mab.parties[picked] then
+      --rotate mode
+      if key['r'] then
       
-      if not mab.parties[picked].oldpos then --save if for good measure
-        mab.parties[picked].oldpos = mab.parties[picked].pos
-      end
+        mab.parties[picked].isbeenmod=true
       
-      mab.parties[picked].pos={objX[0],objZ[0],objY[0]}
+        if not mab.parties[picked].oldrot then --save if for good measure
+          mab.parties[picked].oldrot = mab.parties[picked].rot
+          print("oldrot:"..mab.parties[picked].oldrot,"rot:"..mab.parties[picked].rot)
+        end
 
+        mab.parties[picked].rot = mab.parties[picked].rot + (mouse.xold-mouse.x)/2
+        
+        if mab.parties[picked].rot > 360 then mab.parties[picked].rot=0
+    elseif mab.parties[picked].rot < 0   then mab.parties[picked].rot=360 end --clamp between 0<>360 deg
+
+      --drag mode
+      elseif mouse.rclick or key['g'] then
+      
+        mab.parties[picked].isbeenmod=true
+        
+        if not mab.parties[picked].oldpos then --save if for good measure
+          mab.parties[picked].oldpos = mab.parties[picked].pos
+        end
+        
+        --fill the new value so it will be drawn in the next frame
+        mab.parties[picked].pos=vector.new(objX[0],objZ[0],objY[0])
+
+      end
     end
     
     if mouse.lclick then xrang=xrang+(mouse.xold-mouse.x)/2; rx=1
@@ -246,10 +266,28 @@ lujgl.setRenderCallback(function()
           gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE)--vertex colored solid
           
           gl.glPushMatrix()
-          gl.glTranslated(mab.parties[p].pos[1],mab.parties[p].pos[3],
-                          mab.parties[p].pos[2])
+          gl.glTranslated(mab.parties[p].pos.x, mab.parties[p].pos.z,
+                          mab.parties[p].pos.y)
+          gl.glRotatef(mab.parties[p].rot, 0, 1, 0)
           
           gl.glColor4d(.8,.8,.8,.8)
+          
+          --cross marker and yellow tinting when selected
+          if picked==p then
+              gl.glColor4d(.6,.2,0,.7)  --subtly orangey
+              gl.glBegin(gl.GL_LINES)
+                gl.glVertex3d(0, 1,0)   --vertical
+                gl.glVertex3d(0,-1,0)
+                
+                gl.glVertex3d( 1,0,0)   --x
+                gl.glVertex3d(-1,0,0)
+                
+                gl.glVertex3d(0,0, 1.2) --y (pointing to the north a bit)
+                gl.glVertex3d(0,0,-1)
+              gl.glEnd()
+              
+              gl.glColor4d(1,.6,0,1)   --hot yellow
+          end
           
           quad = glu.gluNewQuadric()
           glu.gluQuadricOrientation(quad, glu.GLU_OUTSIDE)
@@ -259,6 +297,7 @@ lujgl.setRenderCallback(function()
             4,
             4
           );
+          
           gl.glPopMatrix()
           
           local scrX=ffi.new("double[1]",1);
@@ -273,7 +312,7 @@ lujgl.setRenderCallback(function()
           
           local viewport=ffi.new("int[4]",1);
           gl.glGetIntegerv( gl.GL_VIEWPORT, viewport );
-          glu.gluProject(mab.parties[p].pos[1], mab.parties[p].pos[3], mab.parties[p].pos[2], modelview, projection, viewport, scrX, scrY, scrZ);
+          glu.gluProject(mab.parties[p].pos.x, mab.parties[p].pos.z, mab.parties[p].pos.y, modelview, projection, viewport, scrX, scrY, scrZ);
 
           if scrZ[0]<.9999 then
               gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_FILL )
@@ -311,7 +350,12 @@ lujgl.setRenderCallback(function()
                      49,lujgl.height/2-60,.7)
       
       gl.glColor4d(.3,1,1,((lujgl.height-(mouse.y-60))/lujgl.height)*2) --cool fadeoff when cursor is close :)
-      mab.font:print("{F5} Saves map.txt {F6} Reloads map.txt {F7} Imports Obj {F8} Exports Obj {F9} Saves edited parties {F10} Reloads module_parties.py",
+      mab.font:print("{F5} Saves map.txt "..
+                     "{F6} Reloads map.txt "..
+                     "{F7} Imports Obj "..
+                     "{F8} Exports Obj "..
+                     "{F9} Saves edited parties "..
+                     "{F10} Reloads module_parties.py",
                      1,10,.3)
     lujgl.end2D()
     
@@ -336,7 +380,8 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
       or k==265 or k==264      --f8 & f7
       or k==262 or k==263      --f5 & f6
       or k==266 or k==267      --f9 & f10
-      or k==289 then           --Ctrl
+      or k==289                --Ctrl
+      or k=="r" or k=="g" then --R for rotation and G for ground
       
       key[k]=down end
       
@@ -349,11 +394,8 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
     
     elseif ev=="mouse" then  -- mouse clicks
       local k,down,x,y=arg[1],arg[2],arg[3],arg[4]
-    
-      if k==1 then
-
       
-      if down then
+      if k==1 and down then
             local winX=ffi.new("float[1]",mouse.x);
             local winY=ffi.new("float[1]",lujgl.height-mouse.y);
             local pickId=ffi.new("int[1]",1);
@@ -371,8 +413,9 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
             for p=1,#mab.parties do
                 
                 gl.glPushMatrix()
-                gl.glTranslated(mab.parties[p].pos[1],mab.parties[p].pos[3],
-                                mab.parties[p].pos[2])
+                gl.glTranslated(mab.parties[p].pos.x, mab.parties[p].pos.z,
+                                mab.parties[p].pos.y)
+                gl.glRotatef(mab.parties[p].rot, 0, 1, 0)
                                 
                 gl.glColor3ub(p,255,255);
                 
@@ -409,7 +452,7 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
               
               local viewport=ffi.new("int[4]");
               gl.glGetIntegerv( gl.GL_VIEWPORT, viewport );
-              glu.gluProject(mab.parties[pickId[0]].pos[1], mab.parties[pickId[0]].pos[3], mab.parties[pickId[0]].pos[2], modelview, projection, viewport, scrX, scrY, scrZ);
+              glu.gluProject(mab.parties[pickId[0]].pos.x, mab.parties[pickId[0]].pos.z, mab.parties[pickId[0]].pos.y, modelview, projection, viewport, scrX, scrY, scrZ);
               
               pickoffst={
                                 mouse.x -scrX[0],
@@ -421,16 +464,10 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
               picked=0
             end
             print("dragging "..tty)
-      elseif picked ~= 0 then
+      elseif k==1 and picked ~= 0 then
             print("dropped "..(tty or "bug"))
             mouse.rclick=false
             pickoffst={0,0}
-      end
-  
-  --draw 2d
-    gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_FILL )
-    gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_CONSTANT_ALPHA)--vertex colored solid
-
       end
       if k==0 then mouse.lclick=down end
       if k==2 then mouse.mclick=down end
