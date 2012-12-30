@@ -1,6 +1,8 @@
 mab = mab or {}
 mab.parties = mab.parties or {}
 
+local ffi,vector=require"ffi",require"vectors"
+
   --
  -- Helper functions
 --
@@ -60,11 +62,11 @@ function mab.parties:load(filename)
              mab.parties[s]={
                 id=tuple[1] or "<error>",
               name=tuple[2] and tuple[2]:gsub("_", " ") or "<error>",
-               pos={
+               pos=vector.new(
                     (tonumber(tuple[10])*-1) or 0, --invert X coordinates
                      tonumber(tuple[11])     or 0
-                   },
-               rot=tonumber(tuple[15]) or 0,
+                   ),
+               rot=tonumber(tuple[13]) or 0,
               kind=kind
              }
           end
@@ -97,25 +99,38 @@ function mab.parties:save(filename)
                  tline[i]:find("[\"']"..mab.parties[pid].id.."[\"']")  then --if matches in the line, bingo! try to replace coordinates by the new ones
               
                   print( mab.parties[pid].name.." has been modified  -->  ",
-                         mab.parties[pid].pos[1]*-1,mab.parties[pid].pos[2])
+                         mab.parties[pid].pos.x*-1,mab.parties[pid].pos.y)
                  
-                  tline[i]=string.gsub(tline[i], "%([ \t]*"..(mab.parties[pid].oldpos[1]*-1).."[ \t]*,",  
+                  tline[i]=string.gsub(tline[i], "%([ \t]*"..(mab.parties[pid].oldpos.x*-1).."[ \t]*,",    -- (NN,
                   function(pickedbit)
-                    return pickedbit:gsub(mab.parties[pid].oldpos[1]*-1,Round(mab.parties[pid].pos[1], 2)*-1)
+                    return pickedbit:gsub(mab.parties[pid].oldpos.x*-1,Round(mab.parties[pid].pos.x, 2)*-1)
                   end,1) --XX
                   
-                  tline[i]=string.gsub(tline[i], ",[ \t]*".. mab.parties[pid].oldpos[2]    .."[ \t]*%)", 
+                  tline[i]=string.gsub(tline[i], ",[ \t]*".. mab.parties[pid].oldpos.y    .."[ \t]*%)",    -- ,NN)
                   function(pickedbit)
-                    return pickedbit:gsub(mab.parties[pid].oldpos[2],Round(mab.parties[pid].pos[2], 2))
+                    return pickedbit:gsub(mab.parties[pid].oldpos.y,Round(mab.parties[pid].pos.y, 2))
                   end,1) --YY
                   
-                  tline[i]=string.format("%s #[swycartographr] prev. coords: (%g, %g)",
+                if mab.parties[pid].oldrot then
+                  --round up to integer first, this is important
+                  mab.parties[pid].rot=math.ceil(mab.parties[pid].rot)
+                  
+                  tline[i]=string.gsub(tline[i], "%],[ \t]*".. mab.parties[pid].oldrot    .."[ \t]*%),",   -- ],NN),
+                  function(pickedbit)
+                    return pickedbit:gsub(mab.parties[pid].oldrot, mab.parties[pid].rot)
+                  end,1) --ROT
+
+                end
+                  
+                  tline[i]=string.format("%s #[swycartographr] prev. coords: (%g, %g)%s",
                            tline[i]..string.rep(" ",(140-tline[i]:len())),
-                           mab.parties[pid].oldpos[1]*-1,
-                           mab.parties[pid].oldpos[2]
+                           mab.parties[pid].oldpos.x*-1,
+                           mab.parties[pid].oldpos.y,
+                           (mab.parties[pid].oldrot==nil and "" or " rot: "..mab.parties[pid].oldrot)
                            )
                            
                   mab.parties[pid].isbeenmod=false
+                  mab.parties[pid].oldrot=nil
                   break
               end
             end
@@ -148,15 +163,15 @@ function mab.parties:groundalign()
                        mab.map.vtx[mab.map.fcs[i][2]].z+
                        mab.map.vtx[mab.map.fcs[i][3]].z)/3
      
-     local compx=abs(tricenterx - currparty.pos[1])
-     local compy=abs(tricentery - currparty.pos[2])
+     local compx=abs(tricenterx - currparty.pos.x)
+     local compy=abs(tricentery - currparty.pos.y)
 
      
           if compx < closerx and
              compy < closery then --closest triangle to the point
              
              closerx,closery=compx,compy
-             mab.parties[p].pos[3] =(mab.map.vtx[mab.map.fcs[i][1]].y+
+             mab.parties[p].pos.z = (mab.map.vtx[mab.map.fcs[i][1]].y+
                                      mab.map.vtx[mab.map.fcs[i][2]].y+
                                      mab.map.vtx[mab.map.fcs[i][3]].y)/3
 
@@ -164,7 +179,7 @@ function mab.parties:groundalign()
           end
    end
      
-      if not mab.parties[p].pos[3] then mab.parties[p].pos[3]=10 end
+      if not mab.parties[p].pos.z then mab.parties[p].pos.z=10 end
   end
   end
   
