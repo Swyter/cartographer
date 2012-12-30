@@ -38,8 +38,13 @@ objZ=ffi.new("double[1]");
 --@ load our font
   require "soil"
   require "mab-font"
-  mab.font:load(mod.."\\Data\\FONT_DATA.XML",
-                mod.."\\textures\\FONT.dds")
+  
+  function check(f)
+    if not io.open(f,"r") then return false else io.close() return f end
+  end
+  
+  mab.font:load(check(mod.."\\Data\\FONT_DATA.XML") or mod.."\\..\\..\\Data\\FONT_DATA.XML",
+                check(mod.."\\textures\\FONT.dds")  or mod.."\\..\\..\\textures\\FONT.dds")
                 
  -- mab.font:load("R:\\Juegos\\swconquest\\modules\\swconquest\\Module Data\\FONT_DATA.XML",
  --               "R:\\Juegos\\swconquest\\modules\\swconquest\\Textures\\FONT_SWC.dds")
