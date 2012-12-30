@@ -135,7 +135,6 @@ lujgl.setIdleCallback(function()
       
         if not mab.parties[picked].oldrot then --save if for good measure
           mab.parties[picked].oldrot = mab.parties[picked].rot
-          print("oldrot:"..mab.parties[picked].oldrot,"rot:"..mab.parties[picked].rot)
         end
 
         mab.parties[picked].rot = mab.parties[picked].rot + (mouse.xold-mouse.x)/2

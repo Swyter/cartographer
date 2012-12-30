@@ -69,8 +69,6 @@ function mab.parties:load(filename)
                rot=tonumber(tuple[13]) or 0,
               kind=kind
              }
-             
-            print("rot:"..mab.parties[s].rot,tuple[13])
           end
         end
   end
@@ -114,13 +112,11 @@ function mab.parties:save(filename)
                   end,1) --YY
                   
                 if mab.parties[pid].oldrot then
-                --round up to integer first, this is important
-                mab.parties[pid].rot=math.ceil(mab.parties[pid].rot)
-                
-                print("oldrot:"..mab.parties[pid].oldrot,"rot:"..mab.parties[pid].rot)
+                  --round up to integer first, this is important
+                  mab.parties[pid].rot=math.ceil(mab.parties[pid].rot)
+                  
                   tline[i]=string.gsub(tline[i], "%],[ \t]*".. mab.parties[pid].oldrot    .."[ \t]*%),",   -- ],NN),
                   function(pickedbit)
-                    print(pickedbit)
                     return pickedbit:gsub(mab.parties[pid].oldrot, mab.parties[pid].rot)
                   end,1) --ROT
 
