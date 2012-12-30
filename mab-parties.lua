@@ -47,9 +47,9 @@ function mab.parties:load(filename)
         local index=ltrim:sub(1,1)
 
         if index ~= "#" then
-          if index=="(" and not line:find("pf_disabled") and not line:find("pf_no_label") then --avoid comments and filler entries
+          if index=="(" and not line:find("pf_disabled") then --avoid comments and filler entries
              
-             tuple=ltrim:sub(2,ltrim:find("%).*")) --remove possible comments from the right side
+             tuple=ltrim:gsub(",%s*#.+", "") --remove possible comments from the right side
              tuple=tuple:gsub(" ", ""):gsub("\"", ""):gsub("%(", ""):gsub("%)", "") --remove all the: "()
              
              if tuple:find("pf_town") then kind=1 else kind=2 end
@@ -93,7 +93,7 @@ function mab.parties:save(filename)
         if index ~= "#" and index=="(" then --avoid comments and filler entries
           
             for pid=1,#mab.parties do        
-              if mab.parties[pid].isbeenmod                   and  --itirerate over all the avaliable, modified parties
+              if mab.parties[pid].isbeenmod                            and  --itirerate over all the avaliable, modified parties
                  tline[i]:find("[\"']"..mab.parties[pid].id.."[\"']")  then --if matches in the line, bingo! try to replace coordinates by the new ones
               
                   print( mab.parties[pid].name.." has been modified  -->  ",
