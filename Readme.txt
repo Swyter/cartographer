@@ -16,6 +16,14 @@
   The instructions
   ----------------
   
+  Keep pressing the left mouse button while moving to rotate the camera first-person style,
+  drag and select settlements with the right mouse button.
+  
+  Adjust your vertical distance from the terrain with the help of your mouse wheel.
+  
+  Use /R/ to rotate a previously selected settlement, alternatively you can also use /G/
+  to move it directly to the current cursor position for better accuracy.
+  
   {Shift} Switchs labeling between ids and names
    {Ctrl} x3 Speed multiplier when using the direction keys
     {Tab} Switchs visually between faceted and smooth terrain
