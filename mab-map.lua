@@ -71,7 +71,7 @@ mab.map.terrain={
     [(rt_desert)]           ={ .7,  .8,  .6  },
     [(rt_mountain_forest)]  ={ .4,  .7,  .3  },
     [(rt_steppe_forest)]    ={ .4,  .5,  .4  },
-    [(rt_forest)]           ={ .5,  .6,  .4  },
+    [(rt_forest)]           ={ .3,  .6,  .3  },
     [(rt_snow_forest)]      ={ .8,  .8,  .8  },
     [(rt_desert_forest)]    ={ .6,  .7,  .5  }
 }
