@@ -14,7 +14,7 @@ rt_steppe_forest        = 10
 rt_forest               = 11
 rt_snow_forest          = 12
 rt_desert_forest        = 13
-
+rt_deep_water           = 15 --unofficial
 
 mat={
 [0]                ="water",
@@ -30,6 +30,7 @@ mat={
 [11]               ="forest",
 [12]          ="snow_forest",
 [13]        ="desert_forest",
+[15]           ="deep_water" --unofficial
 }
 
 --[[ From the OBJ exporter <http://www.mbrepository.com/file.php?id=2220>
@@ -73,7 +74,8 @@ mab.map.terrain={
     [(rt_steppe_forest)]    ={ .4,  .5,  .4  },
     [(rt_forest)]           ={ .3,  .6,  .3  },
     [(rt_snow_forest)]      ={ .8,  .8,  .8  },
-    [(rt_desert_forest)]    ={ .6,  .7,  .5  }
+    [(rt_desert_forest)]    ={ .6,  .7,  .5  },
+    [(rt_deep_water)]       ={  0,   0,  .2  }
 }
 
 
@@ -212,9 +214,15 @@ o strategicmap
    
     for s=1,fcs do
       local curr=mab.map.fcs[s]
+      local cmat=tonumber(curr[11])
       
-      if lastmat ~= tonumber(curr[11]) then --implemented material export
-        io.write(string.format("g %s\nusemtl %s\n",mat[tonumber(curr[11])],mat[tonumber(curr[11])])); lastmat=tonumber(curr[11])
+      --sanitize input, check for weird things
+      assert(mat[cmat],"[!] Uh oh, undefined material: "..cmat)
+      
+      if lastmat ~= cmat then --implemented material export
+        io.write(
+          string.format("g %s\nusemtl %s\n",mat[cmat],mat[cmat])
+        ); lastmat=cmat
       end
       
       io.write(
@@ -233,7 +241,7 @@ function mab.map:savemtl(file)
   
   if io.output(io.open(file,"w")) then
   
-    for s=0,#mab.map.terrain do
+    for s,_ in pairs(mab.map.terrain) do
     if mat[s] then
       local r,g,b=unpack(mab.map.terrain[s])
       
