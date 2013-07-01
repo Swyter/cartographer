@@ -402,7 +402,7 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
       if k==1 and down then
             local winX=ffi.new("float[1]",mouse.x);
             local winY=ffi.new("float[1]",lujgl.height-mouse.y);
-            local pickId=ffi.new("int[1]",1);
+            local pickId=ffi.new("GLubyte[1]",1);
             
             
             --@draw the color coded marker
@@ -417,11 +417,12 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
             for p=1,#mab.parties do
                 
                 gl.glPushMatrix()
-                gl.glTranslated(mab.parties[p].pos.x, mab.parties[p].pos.z,
+                gl.glTranslated(mab.parties[p].pos.x,
+                                mab.parties[p].pos.z,
                                 mab.parties[p].pos.y)
                 gl.glRotatef(mab.parties[p].rot, 0, 1, 0)
                                 
-                gl.glColor3ub(p,255,255);
+                gl.glColor3ubv(ffi.new("GLubyte[1]",p));
                 
                 quad = glu.gluNewQuadric()
                 
@@ -433,7 +434,7 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
                 );
                 gl.glPopMatrix()
             end
-            gl.glReadPixels( winX[0], winY[0], 1,1, gl.GL_RED, gl.GL_UNSIGNED_BYTE, pickId );
+            gl.glReadPixels( winX[0], winY[0], 1,1, gl.GL_RGB, gl.GL_UNSIGNED_BYTE, pickId );
             gl.glEnable(gl.GL_LIGHTING)
             gl.glEnable(gl.GL_FOG)
             gl.glVertex2s(1,1); -- /gDEBugger GL/ backbuffer breakpoint, if you're wondering :)
@@ -456,12 +457,16 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
               
               local viewport=ffi.new("int[4]");
               gl.glGetIntegerv( gl.GL_VIEWPORT, viewport );
-              glu.gluProject(mab.parties[pickId[0]].pos.x, mab.parties[pickId[0]].pos.z, mab.parties[pickId[0]].pos.y, modelview, projection, viewport, scrX, scrY, scrZ);
+              glu.gluProject(mab.parties[picked].pos.x,
+                             mab.parties[picked].pos.z,
+                             mab.parties[picked].pos.y, modelview, projection, viewport, scrX, scrY, scrZ);
               
               pickoffst={
                                 mouse.x -scrX[0],
                   (lujgl.height-mouse.y)-scrY[0]
               }
+              
+              --lujgl.glfw.glfwSwapBuffers()
               
             else
               tty="unknown"
