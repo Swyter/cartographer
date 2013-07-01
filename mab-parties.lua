@@ -121,13 +121,14 @@ function mab.parties:save(filename)
                   end,1) --ROT
 
                 end
-                  
-                  tline[i]=string.format("%s #[swycartographr] prev. coords: (%g, %g)%s",
-                           tline[i]..string.rep(" ",(140-tline[i]:len())),
-                           mab.parties[pid].oldpos.x*-1,
-                           mab.parties[pid].oldpos.y,
-                           (mab.parties[pid].oldrot==nil and "" or " rot: "..mab.parties[pid].oldrot)
-                           )
+
+                  tline[i]=cartographer.conf.sprevcoords~=false and --only show/print if the config says so! :-)
+                           string.format("%s #[swycartographr] prev. coords: (%g, %g)%s",
+                                tline[i]..string.rep(" ",(140-tline[i]:len())),
+                                mab.parties[pid].oldpos.x*-1,
+                                mab.parties[pid].oldpos.y,
+                               (mab.parties[pid].oldrot==nil and "" or " rot: "..mab.parties[pid].oldrot)
+                           ) or tline[i];
                            
                   mab.parties[pid].isbeenmod=false
                   mab.parties[pid].oldrot=nil
