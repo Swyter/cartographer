@@ -23,6 +23,8 @@ end
  
     if string.find(l,"<FontData") then  --pseudoparser!, fingers crossed in case it doesn't use a standard format
     
+      mab.font["font_scale"] =_xmlblock(l,"font_scale")
+      
       mab.font["width" ] =_xmlblock(l,"width")
       mab.font["height"] =_xmlblock(l,"height")
       mab.font["padding"]=(_xmlblock(l,"padding") or 0)/2 --we are going to apply it to every corner, so 5/5 and 5/5 in case its <10>
@@ -70,6 +72,8 @@ function mab.font:print(phrase,x,y,s)
   local x=x or 50
   local y=y or 40
   local s=s or 1--130
+        s=s*(mab.font["font_scale"]/100)
+        
   phrase:gsub(".",
     function(c)
       ls = mab.font:char(c,x,y,s)
