@@ -402,11 +402,11 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
       if k==1 and down then
             local winX=ffi.new("float[1]",mouse.x);
             local winY=ffi.new("float[1]",lujgl.height-mouse.y);
-            local pickId=ffi.new("GLubyte[1]",1);
+            local pickId=ffi.new("GLubyte[4]",1);
             
             
             --@draw the color coded marker
-            gl.glClearColor(0,0,0,1)
+            gl.glClearColor(0,0,0,0)
             gl.glClear(bit.bor(gl.GL_COLOR_BUFFER_BIT, gl.GL_DEPTH_BUFFER_BIT))
             gl.glDisable(gl.GL_AUTO_NORMAL)
             gl.glDisable(gl.GL_LIGHTING)
@@ -422,7 +422,18 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
                                 mab.parties[p].pos.y)
                 gl.glRotatef(mab.parties[p].rot, 0, 1, 0)
                                 
-                gl.glColor3ubv(ffi.new("GLubyte[1]",p));
+                local bit=require "bit";
+                --encode the party id as follows
+                --(p & 0xff000000 >> 24,
+                -- p & 0xff0000   >> 16,
+                -- p & 0xff00     >>  8,
+                -- p & 0xff)
+                
+                --p= p*7000000
+                gl.glColor4ub(bit.rshift(bit.band(p,0xff000000),8*3),
+                              bit.rshift(bit.band(p,0x00ff0000),8*2),
+                              bit.rshift(bit.band(p,0x0000ff00),8),
+                                         bit.band(p,0x000000ff));
                 
                 quad = glu.gluNewQuadric()
                 
@@ -434,14 +445,24 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
                 );
                 gl.glPopMatrix()
             end
-            gl.glReadPixels( winX[0], winY[0], 1,1, gl.GL_RGB, gl.GL_UNSIGNED_BYTE, pickId );
+            gl.glReadPixels( winX[0], winY[0], 1,1, gl.GL_RGBA, gl.GL_UNSIGNED_BYTE, pickId );
+            --print(pickId[0],pickId[1],pickId[2],pickId[3])
+            
+            pickId_dec=bit.bor(bit.lshift(pickId[0],8*3),
+                               bit.lshift(pickId[1],8*2),
+                               bit.lshift(pickId[2],8),
+                                          pickId[3]);
+            --print(pickId_dec)
+            
+            pickId=pickId_dec
+            
             gl.glEnable(gl.GL_LIGHTING)
             gl.glEnable(gl.GL_FOG)
             gl.glVertex2s(1,1); -- /gDEBugger GL/ backbuffer breakpoint, if you're wondering :)
-            if mab.parties[pickId[0]] then
-              tty=mab.parties[pickId[0]].name
+            if mab.parties[pickId] then
+              tty=mab.parties[pickId].name
              
-              picked=pickId[0]
+              picked=pickId
               mouse.rclick=true
               
               --@ Avoid bumpy picks
