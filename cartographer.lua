@@ -288,12 +288,22 @@ lujgl.setRenderCallback(function()
                 
                 gl.glVertex3d(0,0, 1.2) --y (pointing to the north a bit)
                 gl.glVertex3d(0,0,-1)   
-                
-                gl.glVertex3d(0,1, 1.2) --y (pointing to the north a bit)
-                gl.glVertex3d(0,1, 0)
+
               gl.glEnd()
               
+              
+              gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ZERO)--vertex colored solid
+              gl.glColor4d(1,.1,0,1)   --shockingly hot red
+          
+              gl.glBegin(gl.GL_LINES)                
+                gl.glVertex3d(0,1, 1.2) --y (pointing to the north a bit)
+                gl.glVertex3d(0,1, 0.0)
+              gl.glEnd()
+              
+              
+              gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE)--vertex colored solid
               gl.glColor4d(1,.6,0,1)   --hot yellow
+
           end
           
           quad = glu.gluNewQuadric()
@@ -347,7 +357,7 @@ lujgl.setRenderCallback(function()
     gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_FILL )
     
     lujgl.begin2D()
-      local highlight=.7 and mouse.rclick or .3
+      local highlight=.7 and key['g'] or .3
       gl.glColor4d(1,.9,1,highlight)
       gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_CONSTANT_ALPHA)--vertex colored solid
       mab.font:print(string.format("%d--%d",mouse.x, lujgl.height-mouse.y),
