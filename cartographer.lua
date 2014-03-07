@@ -148,7 +148,7 @@ lujgl.setIdleCallback(function()
     elseif mab.parties[picked].rot < 0   then mab.parties[picked].rot=360 end --clamp between 0<>360 deg
 
       --drag mode
-      elseif mouse.rclick or key['g'] then
+      elseif key['g'] then
       
         mab.parties[picked].isbeenmod=true
         
@@ -287,7 +287,10 @@ lujgl.setRenderCallback(function()
                 gl.glVertex3d(-1,0,0)
                 
                 gl.glVertex3d(0,0, 1.2) --y (pointing to the north a bit)
-                gl.glVertex3d(0,0,-1)
+                gl.glVertex3d(0,0,-1)   
+                
+                gl.glVertex3d(0,1, 1.2) --y (pointing to the north a bit)
+                gl.glVertex3d(0,1, 0)
               gl.glEnd()
               
               gl.glColor4d(1,.6,0,1)   --hot yellow
