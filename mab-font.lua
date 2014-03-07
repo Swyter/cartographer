@@ -81,6 +81,8 @@ end
 
 function mab.font:char(c,x,y,s)
   c=string.byte(c)
+  
+  if mab.font[c] then
 
   gl.glBegin(gl.GL_QUADS)
   
@@ -120,4 +122,7 @@ function mab.font:char(c,x,y,s)
   gl.glEnd()
   sx=sx*s
   return sx-(sx-(mab.font[c].postshift*s))
+  else
+    return 0
+  end
 end
