@@ -137,8 +137,12 @@ lujgl.setIdleCallback(function()
       if key['r'] then
       
         mab.parties[picked].isbeenmod=true
+        
+        if not mab.parties[picked].oldpos then --save position for good measure
+          mab.parties[picked].oldpos = mab.parties[picked].pos
+        end
       
-        if not mab.parties[picked].oldrot then --save if for good measure
+        if not mab.parties[picked].oldrot then --save rotation for good measure
           mab.parties[picked].oldrot = mab.parties[picked].rot
         end
 
@@ -152,7 +156,7 @@ lujgl.setIdleCallback(function()
       
         mab.parties[picked].isbeenmod=true
         
-        if not mab.parties[picked].oldpos then --save if for good measure
+        if not mab.parties[picked].oldpos then --save it for good measure
           mab.parties[picked].oldpos = mab.parties[picked].pos
         end
         
@@ -213,7 +217,7 @@ lujgl.setRenderCallback(function()
     gl.glEnable(gl.GL_LIGHT0)
 
     if not mapmesh or not gl.glIsList(mapmesh) then
-    print"(i)no cache avaliable, rebuilding displaylist"; local start=os.clock()
+    print"(i)no cache available, rebuilding displaylist"; local start=os.clock()
     mab.map:softnormal()
     
        mapmesh=gl.glGenLists(1)
