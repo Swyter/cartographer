@@ -277,7 +277,7 @@ lujgl.setRenderCallback(function()
           gl.glRotatef(mab.parties[p].rot, 0, 1, 0)
           
           gl.glColor4d(.8,.8,.8,.8)
-          
+          gl.glDisable(gl.GL_LIGHTING)
           --cross marker and yellow tinting when selected
           if picked==p then
               gl.glColor4d(.6,.2,0,.7)  --subtly orangey
@@ -307,6 +307,7 @@ lujgl.setRenderCallback(function()
               gl.glColor4d(1,.6,0,1)   --hot yellow
 
           end
+          gl.glEnable(gl.GL_LIGHTING)
           
           quad = glu.gluNewQuadric()
           glu.gluQuadricOrientation(quad, glu.GLU_OUTSIDE)
