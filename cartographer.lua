@@ -222,10 +222,9 @@ lujgl.setRenderCallback(function()
     
        mapmesh=gl.glGenLists(1)
        gl.glNewList(mapmesh, gl.GL_COMPILE)
-      
+       gl.glBegin(gl.GL_TRIANGLES)
+       
         for i=1,#mab.map.fcs do
-          gl.glBegin(gl.GL_TRIANGLE_STRIP)
-          
           x=tonumber(mab.map.fcs[i][11])
           gl.glColor3f(unpack(mab.map.terrain[x] or {1,0,1}))
           
@@ -236,9 +235,8 @@ lujgl.setRenderCallback(function()
             local vt=mab.map.vtx[mab.map.fcs[i][j]]
             gl.glVertex3d(vt.x,vt.y,vt.z)
           end
-          gl.glEnd()
         end
-        
+       gl.glEnd()
        gl.glEndList()
        print("generated displaylist "..(os.clock()-start).."s")
        --mab.map=nil --garbage collector, do your work!
