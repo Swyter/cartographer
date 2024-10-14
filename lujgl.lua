@@ -7838,12 +7838,15 @@ function LuJGL.initialize(name, w, h)
 	end
 	
 	--glfw.glfwOpenWindowHint(glfw.GLFW_WINDOW_NO_RESIZE, true)
-	
+	glfw.glfwOpenWindowHint(glfw.GLFW_FSAA_SAMPLES, 4) -- swy: use multisampling (?) to reduce ugly jaggies
+  
 	-- TODO: Whats a good default for the number of stencil bits?
 	if glfw.glfwOpenWindow(w,h,8,8,8,8,24,8,glfw.GLFW_WINDOW) == 0 then
 		glfw.glfwTerminate()
 		error("error initializing glfw window",0)
 	end
+  
+  glfw.glfwSwapInterval(1) -- swy: keep VSync enabled at all times, just in case
 	
 	size_buffer = ffi.new("int[2]")
 	glfw.glfwGetWindowSize(size_buffer, size_buffer + 1)
