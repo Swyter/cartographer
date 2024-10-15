@@ -368,14 +368,21 @@ lujgl.setRenderCallback(function()
                      
       mab.font:print(string.format("x:%g y:%g z:%g",-objX[0],objZ[0],objY[0]),
                      49,lujgl.height/2-60,.7)
+                     
+      if mab.parties[picked] then
+       mab.font:print(string.format("rotation: %g | %s", mab.parties[picked].rot, mab.parties[picked].id),
+                     49,lujgl.height/2-0,.7)
+      end
       
       gl.glColor4d(.3,1,1,((lujgl.height-(mouse.y-60))/lujgl.height)*2) --cool fadeoff when cursor is close :)
       mab.font:print("{F5} Saves map.txt "..
-                     "{F6} Reloads map.txt "..
+                     "{F6} Reloads map.txt   "..
                      "{F7} Imports Obj "..
-                     "{F8} Exports Obj "..
+                     "{F8} Exports Obj   "..
                      "{F9} Saves edited parties "..
-                     "{F10} Reloads module_parties.py",
+                     "{F10} Reloads module_parties.py  -  "..
+                     "{Shift} Show party IDs "..
+                     "{Ctrl} Move fast",
                      1,10,.3)
     lujgl.end2D()
     
