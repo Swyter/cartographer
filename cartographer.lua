@@ -18,17 +18,17 @@ objY=ffi.new("double[1]");
 objZ=ffi.new("double[1]");
 
 -- swy: redirect the debug prints to the actual 3D screen into a simulated kill log
-printbufpos=1; lastprintedbufpos=1; movetxt=0; new_unprinted_lines=0
+printbufpos=1; movetxt=0; new_unprinted_lines=0
 printbufmax=20; printbuf={}; orig_print=print
-function print(line,...) local arg={...}
+function print(line, ...) local arg={...}
   orig_print(line, ...) -- swy: call the original function so that it still prints to the console
   printbufpos = (printbufpos+1) % printbufmax -- swy: advance the ring buffer position, with wraparound
 
-  for k,v in ipairs(arg) do -- swy: if there is more than one argument, append the extra variables to the line
-      line=line.. " "..tostring(v)
+  for k,v in ipairs(arg) do         -- swy: if there is more than one argument, append the extra variables
+      line=line.. " "..tostring(v)  --      (could be a number/bool that needs conversion) to the line
   end
-  if new_unprinted_lines < printbufmax/3 then
-    new_unprinted_lines=new_unprinted_lines+1
+  if new_unprinted_lines < printbufmax/3 then -- swy: this is used to scroll down a notch for every line, don't allow 
+    new_unprinted_lines=new_unprinted_lines+1 --      scrolling too many of them at once or all of them will move below the screen
   end
   printbuf[printbufpos]=line -- swy: paste it into the current ring buffer position for printing
 end
@@ -406,7 +406,6 @@ lujgl.setRenderCallback(function()
 
       -- swy: a real m&b map editor clearly needs its own (animated) kill log
       if new_unprinted_lines > 0 then
-      --orig_print(printbufpos, lastprintedbufpos, (printbufpos-lastprintedbufpos))
         movetxt = movetxt + (20 * new_unprinted_lines) -- swy: reset it down a notch by a line height size every time a new line arrives
         new_unprinted_lines = 0
       end
