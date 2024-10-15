@@ -16,6 +16,22 @@ pickoffst={0,0}
 objX=ffi.new("double[1]");
 objY=ffi.new("double[1]");
 objZ=ffi.new("double[1]");
+
+-- swy: redirect the debug prints to the actual 3D screen into a simulated kill log
+printbufpos=1; lastprintedbufpos=1; movetxt=0; new_unprinted_lines=0
+printbufmax=20; printbuf={}; orig_print=print
+function print(line,...) local arg={...}
+  orig_print(line, ...) -- swy: call the original function so that it still prints to the console
+  printbufpos = (printbufpos+1) % printbufmax -- swy: advance the ring buffer position, with wraparound
+
+  for k,v in ipairs(arg) do -- swy: if there is more than one argument, append the extra variables to the line
+      line=line.. " "..tostring(v)
+  end
+  if new_unprinted_lines < printbufmax/3 then
+    new_unprinted_lines=new_unprinted_lines+1
+  end
+  printbuf[printbufpos]=line -- swy: paste it into the current ring buffer position for printing
+end
     
 --@ Load cooler dependencies
   require "winapi"
@@ -386,9 +402,27 @@ lujgl.setRenderCallback(function()
                      "{G} Drag party "..
                      "{R} Rotate party ",
                      1,10,.3)
+                     
+
+      -- swy: a real m&b map editor clearly needs its own (animated) kill log
+      if new_unprinted_lines > 0 then
+      --orig_print(printbufpos, lastprintedbufpos, (printbufpos-lastprintedbufpos))
+        movetxt = movetxt + (20 * new_unprinted_lines) -- swy: reset it down a notch by a line height size every time a new line arrives
+        new_unprinted_lines = 0
+      end
+      
+      if movetxt > 0 then
+        movetxt = movetxt - 1 -- swy: slowly animate the lines moving them up until reaching the base position
+      end
+
+      for i=1, printbufmax do -- swy: do the actual printing here
+        gl.glColor4d(1,.9,.4, (printbufmax-i)/printbufmax) -- swy: the more the lines go up, the fainter they look
+        mab.font:print(printbuf[(printbufpos + printbufmax - i) % printbufmax], 20, 45 - movetxt + (20 * i), .3) -- print the oldest line first and go down, the newest is the last one
+      end
+      
     lujgl.end2D()
     
-  --bugs ahoy?
+    --bugs ahoy?
     lujgl.checkError()
   end
   )
