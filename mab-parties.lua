@@ -8,14 +8,11 @@ local ffi,vector=require"ffi",require"vectors"
 --
 
 function Split(str, delim, maxNb) --from <http://lua-users.org/wiki/SplitJoin> #Function: Split a string with a pattern, Take Three
-    local result = {}
-
-    first=1;lastPos=0; nb=0; strsize=#str; in_string_block=nil
+    local result = {}; first=1; lastPos=0; nb=0; strsize=#str; in_string_block=nil
     tuple=tuple:gsub(".", function(c)
         lastPos = lastPos + 1
 
-        if c == '"' or c == "'" then
-            --print(c, strsize);
+        if c == '"' or c == "'" then -- swy: support two kinds of quote styles
             if not in_string_block then
                 in_string_block=c
             elseif in_string_block==c then
@@ -25,18 +22,14 @@ function Split(str, delim, maxNb) --from <http://lua-users.org/wiki/SplitJoin> #
         end
 
         if in_string_block~=nil then
-            --print(c, strsize);
-            return "-"
+            return "-" -- swy: this is returned for debugging
         end
 
         if c==delim or lastPos==strsize then
-            result[nb + 1] = str:sub(first, lastPos-1):gsub("%s*(.+)%s*", "%1"):gsub('"(.+)"', "%1"):gsub("'(.+)'", "%1")
-            --print("add", nb + 1, result[nb + 1], first, lastPos-1)
-            nb = nb + 1
-            first=lastPos+1
+            result[nb + 1] = str:sub(first, lastPos-1):gsub("%s*(.+)%s*", "%1"):gsub('"(.+)"', "%1"):gsub("'(.+)'", "%1") -- swy: remove any quotes and strip out whitespace at each side
+            nb = nb + 1; first=lastPos+1
         end
     end)
-    --print("tuple",tuple)
     return result
 end
 function Round(num, idp) --from <http://lua-users.org/wiki/SimpleRound> #Function: Igor Skoric (i.skoric@student.tugraz.at)
