@@ -8,27 +8,35 @@ local ffi,vector=require"ffi",require"vectors"
 --
 
 function Split(str, delim, maxNb) --from <http://lua-users.org/wiki/SplitJoin> #Function: Split a string with a pattern, Take Three
-    -- Eliminate bad cases...
-    if string.find(str, delim) == nil then
-        return { str }
-    end
-    if maxNb == nil or maxNb < 1 then
-        maxNb = 0    -- No limit
-    end
     local result = {}
-    local pat = "(.-)" .. delim .. "()"
-    local nb = 0
-    local lastPos
-    for part, pos in string.gfind(str, pat) do
-        nb = nb + 1
-        result[nb] = part
-        lastPos = pos
-        if nb == maxNb then break end
-    end
-    -- Handle the last field
-    if nb ~= maxNb then
-        result[nb + 1] = string.sub(str, lastPos)
-    end
+
+    first=1;lastPos=0; nb=0; strsize=#str; in_string_block=nil
+    tuple=tuple:gsub(".", function(c)
+        lastPos = lastPos + 1
+
+        if c == '"' or c == "'" then
+            --print(c, strsize);
+            if not in_string_block then
+                in_string_block=c
+            elseif in_string_block==c then
+                in_string_block=nil
+                return "-"
+            end
+        end
+
+        if in_string_block~=nil then
+            --print(c, strsize);
+            return "-"
+        end
+
+        if c==delim or lastPos==strsize then
+            result[nb + 1] = str:sub(first, lastPos-1):gsub("%s*(.+)%s*", "%1"):gsub('"(.+)"', "%1"):gsub("'(.+)'", "%1")
+            --print("add", nb + 1, result[nb + 1], first, lastPos-1)
+            nb = nb + 1
+            first=lastPos+1
+        end
+    end)
+    --print("tuple",tuple)
     return result
 end
 function Round(num, idp) --from <http://lua-users.org/wiki/SimpleRound> #Function: Igor Skoric (i.skoric@student.tugraz.at)
@@ -44,15 +52,13 @@ end
 function mab.parties:load(filename)
   print("@--start parsing parties"); s=0; tt=os.clock()
   for line in io.lines(filename) do
-  
         local ltrim=line:match("%S.*") or "#"
         local index=ltrim:sub(1,1)
-
+        
         if index ~= "#" then
           if index=="(" and (not line:find("pf_disabled") or cartographer.conf.showdisabled~=false) then --avoid comments and filler entries
-             
-             tuple=ltrim:gsub(",%s*#.+", "") --remove possible comments from the right side
-             tuple=tuple:gsub(" ", ""):gsub("\"", ""):gsub("%(", ""):gsub("%)", "") --remove all the: "()
+             tuple=ltrim:gsub(",%s*#.+", ",") --remove possible comments from the right side
+             tuple=tuple:gsub("%(", ""):gsub("%)", "") --remove all the: ()
              
              if tuple:find("pf_town") then kind=1 else kind=2 end
 
@@ -98,8 +104,7 @@ function mab.parties:save(filename)
               if mab.parties[pid].isbeenmod                            and  --itirerate over all the avaliable, modified parties
                  tline[i]:find("[\"']"..mab.parties[pid].id.."[\"']")  then --if matches in the line, bingo! try to replace coordinates by the new ones
               
-                  print( mab.parties[pid].name.." has been modified  -->  ",
-                         mab.parties[pid].pos.x*-1,mab.parties[pid].pos.y)
+                  print(string.format("%s has been modified  -->  %.2f, %.2f (%uº)", mab.parties[pid].name, mab.parties[pid].pos.x*-1,mab.parties[pid].pos.y, math.ceil(mab.parties[pid].rot)))
                  
                   tline[i]=string.gsub(tline[i], "%([ \t]*"..(mab.parties[pid].oldpos.x*-1).."[ \t]*,",    -- (NN,
                   function(pickedbit)
