@@ -391,16 +391,19 @@ lujgl.setRenderCallback(function()
       end
       
       gl.glColor4d(.3,1,1,((lujgl.height-(mouse.y-60))/lujgl.height)*2) --cool fadeoff when cursor is close :)
-      mab.font:print("{F5} Saves map.txt "..
+      mab.font:print((mab.parties[picked] and
+                        "{G} Drag party  "..
+                        "{R} Rotate party  |  \n" or "")..
+                     "{F5} Saves map.txt  "..
                      "{F6} Reloads map.txt   "..
-                     "{F7} Imports Obj "..
-                     "{F8} Exports Obj   "..
-                     "{F9} Saves edited parties "..
-                     "{F10} Reloads module_parties.py  - Hold:  "..
-                     "{Shift} Show party IDs "..
-                     "{Ctrl} Move fast  "..
-                     "{G} Drag party "..
-                     "{R} Rotate party ",
+                     "{F7} Imports Obj  "..
+                     "{F8} Exports Obj  |  "..
+                     "{F9} Saves edited parties  "..
+                     "{F10} Reloads module_parties.py - Hold: "..
+                     "{Shift} Show party IDs  "..
+                     "{Ctrl} Move fast  |  "..
+                     "{Tab} Sharp triangles"
+                     ,
                      1,10,.3)
                      
 
