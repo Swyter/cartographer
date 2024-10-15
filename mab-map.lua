@@ -395,11 +395,14 @@ end
 
 
 function mab.map:aretheaxisreversed()
-  if mab.map.vtx and mab.map.fcs then --if we have map
-  local max=math.max
-  local abs=math.abs
-  local ly,lz=0,0
+  do return false end  -- swy: this has caused plenty of grief and issues over the years, ignore it
+                       -- swy: the `do end` trick is needed put the unconditional return here: https://www.lua.org/pil/4.4.html
   
+  if mab.map.vtx and mab.map.fcs then --if we have map
+    local max=math.max
+    local abs=math.abs
+    local ly,lz=0,0
+    
     for i=1,#mab.map.fcs do --go across all the faces in the map and compare y/z of the second vertex
       ly=max(ly,abs(mab.map.vtx[mab.map.fcs[i][2]].y))
       lz=max(lz,abs(mab.map.vtx[mab.map.fcs[i][2]].z))
