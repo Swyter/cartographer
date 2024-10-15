@@ -138,7 +138,7 @@ function mab.map:save(file,reversed_mode)
     if reversed_mode then curr.x,curr.y,curr.z=curr.x*-1,curr.z,curr.y; end
     
     io.write(
-      string.format("%g %g %g\n",curr.x,curr.y,curr.z) --floats
+      string.format("%.6f %.6f %.6f\n",curr.x,curr.y,curr.z) --floats
     )
   end
   
@@ -208,7 +208,7 @@ o strategicmap
     for s=1,vtx do
       local curr=mab.map.vtx[s]; if reversed_mode then curr.y,curr.z=curr.z,(curr.y*-1); end
       io.write(
-        string.format("v %g %g %g\n",curr.x,curr.y,curr.z) --floats
+        string.format("v %.6f %.6f %.6f\n",curr.x,curr.y,curr.z) --floats
       )
     end
    
@@ -250,7 +250,7 @@ function mab.map:savemtl(file)
        ..'Ns 100.0\n'
        ..'d 1.0\n'
        ..'illum 2\n'
-       ..'Kd %g %g %g\n'
+       ..'Kd %.6f %.6f %.6f\n'
        ..'Ka 0.5 0.5 0.5\n'
        ..'Ks 0.3 0.3 0.5\n'
        ..'Ke 0.0 0.0 0.0\n'
@@ -345,7 +345,7 @@ function mab.map:loadobj(file,reversed_mode)
   
   print(string.format(
   [[%d vertex, %d faces
-   finished... in %gs]],
+   finished... in %.6fs]],
    vtx,
    fcs,
    (os.clock()-start)
