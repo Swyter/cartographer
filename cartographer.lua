@@ -376,7 +376,7 @@ lujgl.setRenderCallback(function()
     gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_FILL )
     
     lujgl.begin2D()
-      local highlight=.7 and key['g'] or .3
+      local highlight=.7 and (key['g'] or key['r']) or .3
       gl.glColor4d(1,.9,1,highlight)
       gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_CONSTANT_ALPHA)--vertex colored solid
       mab.font:print(string.format("%d--%d",mouse.x, lujgl.height-mouse.y),
@@ -386,7 +386,7 @@ lujgl.setRenderCallback(function()
                      49,lujgl.height/2-60,.7)
                      
       if mab.parties[picked] then
-       mab.font:print(string.format("rotation: %g | %s", mab.parties[picked].rot, mab.parties[picked].id),
+       mab.font:print(string.format("%s (%g�)", mab.parties[picked].id, mab.parties[picked].rot),
                      49,lujgl.height/2-0,.7)
       end
       
