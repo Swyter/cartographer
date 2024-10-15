@@ -49,7 +49,7 @@ function mab.parties:load(filename)
         local index=ltrim:sub(1,1)
 
         if index ~= "#" then
-          if index=="(" and not line:find("pf_disabled") then --avoid comments and filler entries
+          if index=="(" and (not line:find("pf_disabled") or cartographer.conf.showdisabled~=false) then --avoid comments and filler entries
              
              tuple=ltrim:gsub(",%s*#.+", "") --remove possible comments from the right side
              tuple=tuple:gsub(" ", ""):gsub("\"", ""):gsub("%(", ""):gsub("%)", "") --remove all the: "()
