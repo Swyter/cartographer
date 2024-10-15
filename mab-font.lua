@@ -6,6 +6,8 @@ local glu = lujgl.glu
 mab = mab or {}
 mab.font = mab.font or {}
 
+native_font_scaling = 1.0
+
   --
  -- Loading functions
 --
@@ -23,6 +25,7 @@ end
  
     if string.find(l,"<FontData") then  --pseudoparser!, fingers crossed in case it doesn't use a standard format
     
+      mab.font["font_size"] =_xmlblock(l,"font_size")
       mab.font["font_scale"] =_xmlblock(l,"font_scale")
       
       mab.font["width" ] =_xmlblock(l,"width")
@@ -49,8 +52,18 @@ end
   
   print(string.format("   font loaded in %gs",os.clock()-start))
   
-  
-  
+  -- swy: compensate for custom bitmap mod fonts that are generated with a bigger base pixel size
+  --      than the one used in Native (70px), for example, The Last Days uses a 350px font size
+  --      to make sure that text doesn't appear too big or small we scale those custom fonts
+  --      to match the apparent size of the Native font glyphs cartographer was made for.
+  if mab.font["font_size"] then
+    curmod_font_size = mab.font["font_size"]
+    native_font_size = 70
+    if curmod_font_size ~= native_font_size then 
+      native_font_scaling = native_font_size / curmod_font_size
+    end
+  end
+
   print("@--start loading font dds")
   fontdds = soil.loadTexture(filenamedds)
   
@@ -72,7 +85,7 @@ function mab.font:print(phrase,x,y,s)
   local x=x or 50
   local y=y or 40
   local s=s or 1--130
-        s=s*(mab.font["font_scale"]/100)
+        s=s*(mab.font["font_scale"]/100) * native_font_scaling
         
   phrase:gsub(".",
     function(c)
