@@ -380,9 +380,11 @@ lujgl.setRenderCallback(function()
                      "{F7} Imports Obj "..
                      "{F8} Exports Obj   "..
                      "{F9} Saves edited parties "..
-                     "{F10} Reloads module_parties.py  -  "..
+                     "{F10} Reloads module_parties.py  - Hold:  "..
                      "{Shift} Show party IDs "..
-                     "{Ctrl} Move fast",
+                     "{Ctrl} Move fast  "..
+                     "{G} Drag party "..
+                     "{R} Rotate party ",
                      1,10,.3)
     lujgl.end2D()
     
