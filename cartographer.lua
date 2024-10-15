@@ -119,34 +119,6 @@ lujgl.setIdleCallback(function()
                                  px=px-sin(rad(xrang-90)) * multiplier end --reversed
     if key["d"] or key[286] then pz=pz-cos(rad(xrang-90)) * multiplier
                                  px=px+sin(rad(xrang-90)) * multiplier end --reversed
-                                 
-    if key[265] then local objpath=winapi:SaveDialog(handle) --f8
-                        if objpath then
-                          print(string.format("saving OBJ to <%s>",objpath))
-                          mab.map:saveobj(objpath)
-                        end
-                     end
-    if key[264] then local objpath=winapi:OpenDialog(handle) --refresh cached map end --f7
-                      if objpath then
-                        print(string.format("loading OBJ from <%s>",objpath))
-                        mab.map:loadobj(objpath,false)
-                        
-                        gl.glDeleteLists(mapmesh,1);mapmesh=nil
-                        mab.parties:groundalign()
-                      end
-                     end 
-                     
-    if key[262] then mab.map:save(mod.."\\map.txt",true) end --f5
-    if key[263] then if winapi:messagebox() then --f6
-                       mab.map:load(mod);
-                       gl.glDeleteLists(mapmesh,1);mapmesh=nil
-                     end
-                    end--refresh cached map end
-                     
-    if key[266] then mab.parties:save(msys.."\\module_parties.py") end --f9
-    if key[267] then mab.parties:load(msys.."\\module_parties.py")     --f10
-                     mab.parties:groundalign() end
-    
     
     if mab.parties[picked] then
       --rotate mode
@@ -386,26 +358,24 @@ lujgl.setRenderCallback(function()
                      49,lujgl.height/2-60,.7)
                      
       if mab.parties[picked] then
-       mab.font:print(string.format("%s (%gï¿½)", mab.parties[picked].id, mab.parties[picked].rot),
+       mab.font:print(string.format("%s (%gº)", mab.parties[picked].id, mab.parties[picked].rot),
                      49,lujgl.height/2-0,.7)
       end
       
       gl.glColor4d(.3,1,1,((lujgl.height-(mouse.y-60))/lujgl.height)*2) --cool fadeoff when cursor is close :)
       mab.font:print((mab.parties[picked] and
                         "{G} Drag party  "..
-                        "{R} Rotate party  |  \n" or "")..
-                     "{F5} Saves map.txt  "..
-                     "{F6} Reloads map.txt   "..
-                     "{F7} Imports Obj  "..
-                     "{F8} Exports Obj  |  "..
-                     "{F9} Saves edited parties  "..
-                     "{F10} Reloads module_parties.py - Hold: "..
+                        "{R} Rotate party  |  " or "")..
+                     "{F5} Save map.txt  "..
+                     "{F6} Reload map.txt   "..
+                     "{F7} Import Obj  "..
+                     "{F8} Export Obj  |  "..
+                     "{F9} Save edited parties  "..
+                     "{F10} Reload module_parties.py - Hold: "..
                      "{Shift} Show party IDs  "..
                      "{Ctrl} Move fast  |  "..
-                     "{Tab} Sharp triangles"
-                     ,
+                     "{Tab} Sharp triangles",
                      1,10,.3)
-                     
 
       -- swy: a real m&b map editor clearly needs its own (animated) kill log
       if new_unprinted_lines > 0 then
@@ -450,8 +420,35 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
       
       key[k]=down end
       
-      --tab switchs between faceted display modes
-      if k==293 and down then faceted = not faceted; print("faceted is",faceted); mapmesh=nil end
+      --tab switches between faceted display modes
+          if k==293 and down then faceted = not faceted; print("faceted is",faceted); mapmesh=nil
+      elseif k==265 and down then local objpath=winapi:SaveDialog(handle) --f8
+                                  if objpath and mapmesh then
+                                    print(string.format("saving OBJ to <%s>",objpath))
+                                    mab.map:saveobj(objpath)
+                                  end
+                                   
+      elseif k==264 and down then local objpath=winapi:OpenDialog(handle) --refresh cached map end --f7
+                                  if objpath and mapmesh then
+                                    print(string.format("loading OBJ from <%s>",objpath))
+                                    mab.map:loadobj(objpath,false)
+                                    
+                                    if mapmesh then gl.glDeleteLists(mapmesh,1) end; mapmesh=nil
+                                    mab.parties:groundalign()
+                                  end
+                                   
+      elseif k==262 and down then if mapmesh then mab.map:save(mod.."\\map.txt",true) end --f5
+      elseif k==263 and down then if mapmesh and winapi:messagebox() then --f6
+                                    mab.map:load(mod);
+                                    
+                                    if mapmesh then gl.glDeleteLists(mapmesh,1) end; mapmesh=nil
+                                  end--refresh cached map end
+                                   
+      elseif k==266 and down then mab.parties:save(msys.."\\module_parties.py") --f9
+      elseif k==267 and down then mab.parties:load(msys.."\\module_parties.py") --f10
+                                  mab.parties:groundalign()
+      end
+      
       
     elseif ev=="motion" then -- mouse movement
       mouse.x=arg[1]
@@ -579,7 +576,7 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
       
     elseif ev=="close" then --closing down
       gl.glDeleteTextures(1,ffi.new("const unsigned int[1]",fontdds)) -- get rid of the bitmap font and unload the 
-      gl.glDeleteLists(mapmesh,1)                                     -- map mesh. that fixes those ugly GPU memory leaks
+      if mapmesh then gl.glDeleteLists(mapmesh,1) end                 -- map mesh. that fixes those ugly GPU memory leaks
     end
 
   end
