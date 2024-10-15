@@ -536,7 +536,7 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
       mouse.wheel_absl=arg[2]
       
       if mouse.wheel_absl then --mab scroll like effect
-       py=py+mouse.wheel_locl
+       py=py+mouse.wheel_locl * (abs(py)/30) * (key[289] and 3 or 1) -- swy: make zoom-in-out scroll movement x3 faster when Ctrl is held, also, scale up the scroll wheel effect as we get far higher and higher over the map; reduce medical bills
        --rx=rx+mouse.wheel_locl
        --rang=mouse.wheel_absl
       end
