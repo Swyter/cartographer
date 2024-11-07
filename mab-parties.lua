@@ -7,7 +7,7 @@ local ffi,vector=require"ffi",require"vectors"
  -- Helper functions
 --
 
-function Split(str, delim, maxNb) --from <http://lua-users.org/wiki/SplitJoin> #Function: Split a string with a pattern, Take Three
+function splitpartylines(str, delim, maxNb) --from <http://lua-users.org/wiki/SplitJoin> #Function: Split a string with a pattern, Take Three
     local result = {}; first=1; lastPos=0; nb=0; strsize=#str; in_string_block=nil
     str=str:gsub(".", function(c)
         lastPos = lastPos + 1
@@ -55,7 +55,7 @@ function mab.parties:load(filename)
              
              if tuple:find("pf_town") then kind=1 else kind=2 end
 
-             tuple = Split(tuple,",")
+             tuple = splitpartylines(tuple,",")
              s=s+1
 
              mab.parties[s]={

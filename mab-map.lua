@@ -265,7 +265,7 @@ function mab.map:savemtl(file)
 end
 
 
-function Split(str, delim, maxNb) --from <http://lua-users.org/wiki/SplitJoin> #Function: Split a string with a pattern, Take Three
+function splitmaplines(str, delim, maxNb) --from <http://lua-users.org/wiki/SplitJoin> #Function: Split a string with a pattern, Take Three
     -- Eliminate bad cases...
     if string.find(str, delim) == nil then
         return { str }
@@ -291,7 +291,7 @@ function Split(str, delim, maxNb) --from <http://lua-users.org/wiki/SplitJoin> #
 end
 
 function mab.map:loadobj(file,reversed_mode)
-  print("@--Importing OBJ..."); local lastmat="plain"; local start=os.clock(); local lSplit=Split local tonum=tonumber
+  print("@--Importing OBJ..."); local lastmat="plain"; local start=os.clock(); local localsplit=splitmaplines local tonum=tonumber
   mab.map.vtx,mab.map.fcs={},{}
 
   if io.open(file,"r") then
@@ -301,7 +301,7 @@ function mab.map:loadobj(file,reversed_mode)
       local index=ltrim:sub(1,1)
       if index ~= "#" then --not a comment
       
-          local raw=lSplit(ltrim," ")
+          local raw=localsplit(ltrim," ")
           
           --@vertex
           ---------------------------
@@ -329,7 +329,7 @@ function mab.map:loadobj(file,reversed_mode)
               
                 for i=2,4 do --for every section do this
                 
-                  local facesplit=lSplit(raw[i],'/');
+                  local facesplit=localsplit(raw[i],'/');
                   
                   mab.map.fcs[fcount][i-1]=tonum(facesplit[1])
       
