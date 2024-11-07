@@ -9,7 +9,7 @@ local ffi,vector=require"ffi",require"vectors"
 
 function Split(str, delim, maxNb) --from <http://lua-users.org/wiki/SplitJoin> #Function: Split a string with a pattern, Take Three
     local result = {}; first=1; lastPos=0; nb=0; strsize=#str; in_string_block=nil
-    tuple=tuple:gsub(".", function(c)
+    str=str:gsub(".", function(c)
         lastPos = lastPos + 1
 
         if c == '"' or c == "'" then -- swy: support two kinds of quote styles
