@@ -120,16 +120,16 @@ function mab.font:char(c,x,y,s)
   
   --1
     gl.glTexCoord2d(u,h)--(0,0)
-    gl.glVertex2i(x, (0+yadj*s)+y)
+    gl.glVertex2f(x, (0+yadj*s)+y)
   --2
     gl.glTexCoord2d(w,h)--(1,0)
-    gl.glVertex2i((sx*s)+x, (0+yadj*s)+y)
+    gl.glVertex2f((sx*s)+x, (0+yadj*s)+y)
   --3
     gl.glTexCoord2d(w,v)--(1,1)
-    gl.glVertex2i((sx*s)+x, ((sy+yadj)*s)+y)
+    gl.glVertex2f((sx*s)+x, ((sy+yadj)*s)+y)
   --4
     gl.glTexCoord2d(u,v)--(0,1)
-    gl.glVertex2i(x, ((sy+yadj)*s)+y)
+    gl.glVertex2f(x, ((sy+yadj)*s)+y)
   --    v
   --   4|      3
   -- u--+-----+
