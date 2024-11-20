@@ -122,6 +122,12 @@ parse = {}
 function splitpartylines(str, delim, maxNb) --from <http://lua-users.org/wiki/SplitJoin> #Function: Split a string with a pattern, Take Three
     local result = {}; first=1; lastPos=0; nb=0; strsize=#str; in_string_block=nil
 
+    function poptuple()
+      print("poppedtuple", all_trim(str:sub(getctxdata().last+1, lastPos-1)))
+      table.insert(getctxdata().data, "asdf")
+      getctxdata().last=lastPos
+    end
+
     str=str:gsub(".", function(c)
         lastPos = lastPos + 1
 
@@ -136,13 +142,17 @@ function splitpartylines(str, delim, maxNb) --from <http://lua-users.org/wiki/Sp
             end
         elseif c == '[' then
           pushcontext('array')
+          setctxdata({data={}, last=lastPos})
         elseif c == ']' and isctx('array') then
           popcontext()
         elseif c == '(' then
           pushcontext('tuple')
+          setctxdata({data={}, last=lastPos})
         elseif c == ')'  and isctx('tuple') then
+          poptuple()
           popcontext()
         elseif  c == ',' and (isctx('tuple') or isctx('array')) then
+          poptuple()
           print("comma")
         elseif  c == '=' and isctx('root') then
           print("assign")
