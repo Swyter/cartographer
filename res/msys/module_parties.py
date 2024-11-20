@@ -74,7 +74,7 @@ parties = [
   ("zendar","Zendar",pf_disabled|icon_fort1|pf_is_static|pf_always_visible|pf_hide_defenders, no_menu, pt_none, fac_neutral,0,ai_bhvr_hold,0,(52.35,-52.72),[]),
 
   ("town_1","Cantwaraburh",	icon_town_walled|pf_town, no_menu, pt_none, fac_neutral,0,ai_bhvr_hold,		170,(74.20,-249.1),[],170), #done                
-  ("town_2","Cippanhamm",	icon_town_walled|pf_town, no_menu, pt_none, fac_neutral,0,ai_bhvr_hold,		260,(-15.80,-181.91),[],260), #done         
+  ("town_2","Cippanhamm",	icon_town_walled|pf_town, no_menu, pt_none, fac_neutral,0,ai_bhvr_hold,		260,(-15.80,-181.24),[],111), #done          #[swycartographr] prev. coords: (-24.12, -171.88) #[swycartographr] prev. coords: (-15.8, -181.91) rot: 260
   ("town_3","Eidynburh",	icon_town_port|pf_town, no_menu, pt_none, fac_neutral,0,ai_bhvr_hold,		320,(48,92.1),[],320), #no                     
   ("town_4","Ribe",			icon_town_port|pf_town, no_menu, pt_none, fac_neutral,0,ai_bhvr_hold, 		70,(228,-142),[],70), #done                     
   ("town_5","Tunsberg",		icon_town_port|pf_town, no_menu, pt_none, fac_neutral,0,ai_bhvr_hold,		190,(263.05,89.05),[],190), #done                    

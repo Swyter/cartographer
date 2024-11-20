@@ -322,10 +322,15 @@ lujgl.setRenderCallback(function()
           gl.glGetIntegerv( gl.GL_VIEWPORT, viewport );
           glu.gluProject(mab.parties[p].pos.x, mab.parties[p].pos.z, mab.parties[p].pos.y, modelview, projection, viewport, scrX, scrY, scrZ);
 
-          if scrZ[0]<.9999 then
+
+          distance = (vector.new(-px, -pz, -py)-mab.parties[p].pos):len()
+
+          if scrX[0]>-(lujgl.width/2) and scrY[0]>0 and scrZ[0]<1 and distance < 200 then
+
+            
               gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_FILL )
               gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_SRC_COLOR)--outlines
-              gl.glColor4d(1,1,1,1)
+              --gl.glColor4d(1*(distance/300),1*(distance/300),1*(distance/300),1*(distance/300))
               
               lujgl.begin2D()
               
@@ -335,9 +340,22 @@ lujgl.setRenderCallback(function()
                     scal=.33
                 end
                 
-                mab.font:print( ( (key[287] or key[288]) and mab.parties[p].id or mab.parties[p].name), --switch between party name and id by pressing the shift keys...
+                --mab.font:print( ( mab.parties[p].name..string.format("%g/%g/%g  ::  %g", scrX[0], scrY[0], scrZ[0], distance)), --switch between party name and id by pressing the shift keys...
+                mab.font:print( ( mab.parties[p].name..string.format("%g/%g/%g %g/%g/%g  ::  %g", -px, -pz, -py, mab.parties[p].pos.x, mab.parties[p].pos.y, mab.parties[p].pos.z, distance)), --switch between party name and id by pressing the shift keys...
                                scrX[0],scrY[0],scal)
+                               gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_CONSTANT_ALPHA)--vertex colored solid    
+              if 1 then
+                if picked==p then
+                  gl.glColor4d(1,0,0,1)
 
+                else
+                  gl.glColor4d(1,1,1,1)
+                end
+
+                
+                               mab.font:print( mab.parties[p].name, --switch between party name and id by pressing the shift keys...
+                               scrX[0],scrY[0],scal)
+              end
               lujgl.end2D()
           end
      -- end
