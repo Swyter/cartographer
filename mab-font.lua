@@ -77,6 +77,9 @@ end
 function mab.font:print(phrase,x,y,s)
   gl.glEnable(gl.GL_TEXTURE_2D)
   gl.glBindTexture(gl.GL_TEXTURE_2D,fontdds)
+  gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR);
+  gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR_MIPMAP_LINEAR);
+  gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAX_ANISOTROPY_EXT, 16);
   
   gl.glEnable(gl.GL_BLEND)
 --gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_SRC_COLOR)--outlines
