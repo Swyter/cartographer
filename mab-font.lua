@@ -89,10 +89,10 @@ function mab.font:print(phrase,x,y,s)
   local y=y or 40
   local s=s or 1--130
         s=s*(mab.font["font_scale"]/100) * native_font_scaling
-        
+
   if not phrase then return end
   
-  phrase:gsub(".",
+  tostring(phrase):gsub(".",
     function(c)
       ls = mab.font:char(c,x,y,s)
       x = x + ls

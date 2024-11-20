@@ -10,12 +10,8 @@ function all_trim(s)
   return s:match( "^%s*(.-)%s*$" )
 end
 
-
-
-
-ctx_idx = 1
-context = {}
-context_data = {}
+-- swy: funky stack-like data structure to store the hierarchy of parsed syntax elements as we dig into the recursive fields
+ctx_idx = 1; context = {}; context_data = {}
 function pushcontext(name)
   context[ctx_idx] = name
   ctx_idx = ctx_idx + 1
@@ -137,16 +133,19 @@ function mab.parties:load(filename)
              tuple=line:gsub("#.+", ""):gsub("%s*(.+)%s*", "%1") --remove possible comments from the right side
              --print("<" .. (tuple) .. ">")
              tuple = splitpartylines(tuple,",")
-             
-
   end
 
   --print("parse", dump(parse['parties']))
 
-  for key, tuple in ipairs(parse['parties']) do
+  for key, tuple in ipairs(parse['parties']) do 
     s=s+1
+    for flag_key, flag_data in pairs(parse) do
+      if flag_key:sub(1, 3) == "pf_" then
+        tuple[3]=tuple[3]:gsub("%f[%a]"..flag_key.."%f[%A]", flag_data) -- swy: expand the aliases like pf_town but not pf_townn with http://lua-users.org/wiki/FrontierPattern
+      end
+    end
 
-    if tuple[3]:find("pf_town") then kind=1 else kind=2 end
+    if tuple[3]:find("pf_label_large") then kind=1 else kind=2 end
 
     mab.parties[s]={
         id=tuple[1] or "<error>",
