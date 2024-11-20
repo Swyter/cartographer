@@ -117,13 +117,17 @@ function getctxdata()
   return context_data[ctx_idx]
 end
 
-parse = {}
+parse = {} child_data=nil
 
 function splitpartylines(str, delim, maxNb) --from <http://lua-users.org/wiki/SplitJoin> #Function: Split a string with a pattern, Take Three
     local result = {}; first=1; lastPos=0; nb=0; strsize=#str; in_string_block=nil
 
     function poptuple()
       thing=all_trim(str:sub(getctxdata().last+1, lastPos-1))
+      if getctxdata()["child_data"] then
+        thing=getctxdata()["child_data"]
+        getctxdata()["child_data"]=nil 
+      end
       print("poppedtuple", thing)
       table.insert(getctxdata().data, thing)
       getctxdata().last=lastPos
@@ -145,14 +149,20 @@ function splitpartylines(str, delim, maxNb) --from <http://lua-users.org/wiki/Sp
           pushcontext('array')
           setctxdata({data={}, last=lastPos})
         elseif c == ']' and isctx('array') then
+          poptuple()
+          dump(getctxdata().data)
+          child_data=getctxdata().data
           popcontext()
+          getctxdata()["child_data"]=child_data
         elseif c == '(' then
           pushcontext('tuple')
           setctxdata({data={}, last=lastPos})
         elseif c == ')'  and isctx('tuple') then
           poptuple()
           dump(getctxdata().data)
+          child_data=getctxdata().data
           popcontext()
+          getctxdata()["child_data"]=child_data
         elseif  c == ',' and (isctx('tuple') or isctx('array')) then
           poptuple()
           print("comma")
