@@ -123,8 +123,9 @@ function splitpartylines(str, delim, maxNb) --from <http://lua-users.org/wiki/Sp
     local result = {}; first=1; lastPos=0; nb=0; strsize=#str; in_string_block=nil
 
     function poptuple()
-      print("poppedtuple", all_trim(str:sub(getctxdata().last+1, lastPos-1)))
-      table.insert(getctxdata().data, "asdf")
+      thing=all_trim(str:sub(getctxdata().last+1, lastPos-1))
+      print("poppedtuple", thing)
+      table.insert(getctxdata().data, thing)
       getctxdata().last=lastPos
     end
 
@@ -150,6 +151,7 @@ function splitpartylines(str, delim, maxNb) --from <http://lua-users.org/wiki/Sp
           setctxdata({data={}, last=lastPos})
         elseif c == ')'  and isctx('tuple') then
           poptuple()
+          dump(getctxdata().data)
           popcontext()
         elseif  c == ',' and (isctx('tuple') or isctx('array')) then
           poptuple()
