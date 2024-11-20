@@ -175,7 +175,7 @@ lujgl.setRenderCallback(function()
     gl.glMatrixMode(gl.GL_PROJECTION)
     gl.glLoadIdentity()
     
-    glu.gluPerspective(60,lujgl.width / lujgl.height, 0.01, 1000)
+    glu.gluPerspective(60,lujgl.width / lujgl.height, 0.01, 4000)
     gl.glMatrixMode(gl.GL_MODELVIEW)
     gl.glLoadIdentity()
     
