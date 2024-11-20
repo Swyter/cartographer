@@ -128,9 +128,9 @@ function splitpartylines(str, delim, maxNb) --from <http://lua-users.org/wiki/Sp
         thing=getctxdata()["child_data"]
         getctxdata()["child_data"]=nil 
       end
-      print("poppedtuple", thing)
+      --print("poppedtuple", thing)
       if thing == "" then
-        print("empty after comma")
+        --print("empty after comma")
       else
         table.insert(getctxdata().data, thing)
       end
@@ -141,13 +141,13 @@ function splitpartylines(str, delim, maxNb) --from <http://lua-users.org/wiki/Sp
         lastPos = lastPos + 1
 
         if c == '"' or c == "'" then -- swy: support two kinds of quote styles
-            print()
+            --print()
             if not isctx('str') then
               pushcontext('str')
               setctxdata({c, lastPos})
             elseif isctx('str') and getctxdata()[1] == c and not (getctxdata()["laststrchar"] == "\\" and getctxdata()["lastlaststrchar"] ~= getctxdata()["laststrchar"]) then
               child_data=all_trim(str:sub(getctxdata()[2]+1, lastPos-1))
-              print("poppedstr", child_data)
+              --print("poppedstr", child_data)
               popcontext()
               getctxdata()["child_data"]=child_data
             end
@@ -156,7 +156,7 @@ function splitpartylines(str, delim, maxNb) --from <http://lua-users.org/wiki/Sp
           setctxdata({data={}, last=lastPos})
         elseif c == ']' and isctx('array') then
           poptuple()
-          dump(getctxdata().data)
+          --dump(getctxdata().data)
           child_data=getctxdata().data
           popcontext()
           getctxdata()["child_data"]=child_data
@@ -165,15 +165,15 @@ function splitpartylines(str, delim, maxNb) --from <http://lua-users.org/wiki/Sp
           setctxdata({data={}, last=lastPos})
         elseif c == ')'  and isctx('tuple') then
           poptuple()
-          dump(getctxdata().data)
+          --dump(getctxdata().data)
           child_data=getctxdata().data
           popcontext()
           getctxdata()["child_data"]=child_data
         elseif  c == ',' and (isctx('tuple') or isctx('array')) then
           poptuple()
-          print("comma")
+          --print("comma")
         elseif  c == '=' and isctx('root') then
-          print("assign")
+          --print("assign")
           pushcontext('assignment')
           setctxdata({all_trim(str:sub(first, lastPos-1)), lastPos+1})
         end
@@ -183,12 +183,12 @@ function splitpartylines(str, delim, maxNb) --from <http://lua-users.org/wiki/Sp
           getctxdata()["laststrchar"]=c
         end
 
-        print(c, table.concat(context, ">"), getctxdata())
+        --print(c, table.concat(context, ">"), getctxdata())
     end)
 
     if isctx('assignment') then
       parse[getctxdata()[1]] = getctxdata()["child_data"] and getctxdata()["child_data"] or all_trim(str:sub(getctxdata()[2], lastPos))
-      print("crap", parse[getctxdata()[1]] )
+      --print("crap", parse[getctxdata()[1]] )
       popcontext()
     end
 
@@ -214,13 +214,31 @@ function mab.parties:load(filename)
         local index=ltrim:sub(1,1)
 
              tuple=line:gsub("#.+", ""):gsub("%s*(.+)%s*", "%1") --remove possible comments from the right side
-             print("<" .. (tuple) .. ">")
+             --print("<" .. (tuple) .. ">")
              tuple = splitpartylines(tuple,",")
-             s=s+1
+             
 
   end
 
-  print("parse", dump(parse))
+  --print("parse", dump(parse['parties']))
+
+  for key, tuple in ipairs(parse['parties']) do
+    s=s+1
+
+    if tuple[3]:find("pf_town") then kind=1 else kind=2 end
+
+    mab.parties[s]={
+        id=tuple[1] or "<error>",
+      name=tuple[2] and tuple[2]:gsub("_", " ") or "<error>",
+      pos=vector.new(
+            (tonumber(tuple[10][1])*-1) or 0, --invert X coordinates
+             tonumber(tuple[10][2])     or 0
+          ),
+      rot=tonumber(tuple[12]) or 0,
+      kind=kind
+    }
+  end
+
   
   print(string.format("   %d parties loaded... %gs",s,os.clock()-tt))
   return s
