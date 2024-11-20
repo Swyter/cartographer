@@ -129,7 +129,11 @@ function splitpartylines(str, delim, maxNb) --from <http://lua-users.org/wiki/Sp
         getctxdata()["child_data"]=nil 
       end
       print("poppedtuple", thing)
-      table.insert(getctxdata().data, thing)
+      if thing == "" then
+        print("empty after comma")
+      else
+        table.insert(getctxdata().data, thing)
+      end
       getctxdata().last=lastPos
     end
 
@@ -141,9 +145,11 @@ function splitpartylines(str, delim, maxNb) --from <http://lua-users.org/wiki/Sp
             if not isctx('str') then
               pushcontext('str')
               setctxdata({c, lastPos})
-            elseif isctx('str') and getctxdata()[1] == c then
-              print("poppedstr", all_trim(str:sub(getctxdata()[2]+1, lastPos-1)))
+            elseif isctx('str') and getctxdata()[1] == c and not (getctxdata()["laststrchar"] == "\\" and getctxdata()["lastlaststrchar"] ~= getctxdata()["laststrchar"]) then
+              child_data=all_trim(str:sub(getctxdata()[2]+1, lastPos-1))
+              print("poppedstr", child_data)
               popcontext()
+              getctxdata()["child_data"]=child_data
             end
         elseif c == '[' then
           pushcontext('array')
@@ -172,11 +178,16 @@ function splitpartylines(str, delim, maxNb) --from <http://lua-users.org/wiki/Sp
           setctxdata({all_trim(str:sub(first, lastPos-1)), lastPos+1})
         end
 
+        if isctx('str') then
+          getctxdata()["lastlaststrchar"]=getctxdata()["laststrchar"]
+          getctxdata()["laststrchar"]=c
+        end
+
         print(c, table.concat(context, ">"), getctxdata())
     end)
 
     if isctx('assignment') then
-      parse[getctxdata()[1]] = all_trim(str:sub(getctxdata()[2], lastPos))
+      parse[getctxdata()[1]] = getctxdata()["child_data"] and getctxdata()["child_data"] or all_trim(str:sub(getctxdata()[2], lastPos))
       print("crap", parse[getctxdata()[1]] )
       popcontext()
     end
