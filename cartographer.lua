@@ -325,12 +325,12 @@ lujgl.setRenderCallback(function()
 
           distance = (vector.new(-px, -pz, -py)-mab.parties[p].pos):len()
 
-          if scrX[0]>-(lujgl.width/2) and scrY[0]>0 and scrZ[0]<1 and distance < 200 then
+          if (scrX[0]> -(lujgl.width/2) and scrX[0] < lujgl.width) and (scrY[0]>0 and scrY[0]<lujgl.height) and scrZ[0]<1 and distance < 500 then
 
             
               gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_FILL )
-              gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_SRC_COLOR)--outlines
-              --gl.glColor4d(1*(distance/300),1*(distance/300),1*(distance/300),1*(distance/300))
+              gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_CONSTANT_ALPHA)--outlines
+              gl.glColor4d(1,1,1,1-(distance/300))
               
               lujgl.begin2D()
               
@@ -339,20 +339,23 @@ lujgl.setRenderCallback(function()
                 elseif mab.parties[p].kind==2 then
                     scal=.33
                 end
-                
+
+                  mab.font:print( ( mab.parties[p].name), --switch between party name and id by pressing the shift keys...
                 --mab.font:print( ( mab.parties[p].name..string.format("%g/%g/%g  ::  %g", scrX[0], scrY[0], scrZ[0], distance)), --switch between party name and id by pressing the shift keys...
-                mab.font:print( ( mab.parties[p].name..string.format("%g/%g/%g %g/%g/%g  ::  %g", -px, -pz, -py, mab.parties[p].pos.x, mab.parties[p].pos.y, mab.parties[p].pos.z, distance)), --switch between party name and id by pressing the shift keys...
+                --mab.font:print( ( mab.parties[p].name..string.format("%g/%g/%g %g/%g/%g  ::  %g", -px, -pz, -py, mab.parties[p].pos.x, mab.parties[p].pos.y, mab.parties[p].pos.z, distance)), --switch between party name and id by pressing the shift keys...
                                scrX[0],scrY[0],scal)
-                               gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_CONSTANT_ALPHA)--vertex colored solid    
-              if 1 then
+                               
+
+
+              if key['g'] or distance < 100 then
                 if picked==p then
-                  gl.glColor4d(1,0,0,1)
+                  gl.glColor4d(1,0,0,1-(distance/300))
 
                 else
-                  gl.glColor4d(1,1,1,1)
+                  gl.glColor4d(1,1,1,1-(distance/300))
                 end
 
-                
+                            gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_CONSTANT_ALPHA)--vertex colored solid
                                mab.font:print( mab.parties[p].name, --switch between party name and id by pressing the shift keys...
                                scrX[0],scrY[0],scal)
               end
