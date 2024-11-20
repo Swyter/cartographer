@@ -341,8 +341,13 @@ lujgl.setRenderCallback(function()
                     scal=.33
                 end
                 
-                mab.font:print( ( (key[287] or key[288]) and mab.parties[p].id or mab.parties[p].name), --switch between party name and id by pressing the shift keys...
-                               scrX[0],scrY[0],scal)
+                for i=1,2 do
+                  mab.font:print( ( (key[287] or key[288]) and mab.parties[p].id or mab.parties[p].name), --switch between party name and id by pressing the shift keys...
+                                scrX[0],scrY[0],scal)
+
+                  gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_CONSTANT_ALPHA) -- swy: draw the 3D settlement label a second time additively, to highlight the inner glyph shape
+                  if picked==p then gl.glColor4d(1,.5,0,1) end -- swy: set it to an orangey red if selected
+                end
 
               lujgl.end2D()
           end
