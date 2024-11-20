@@ -322,7 +322,13 @@ lujgl.setRenderCallback(function()
           gl.glGetIntegerv( gl.GL_VIEWPORT, viewport );
           glu.gluProject(mab.parties[p].pos.x, mab.parties[p].pos.z, mab.parties[p].pos.y, modelview, projection, viewport, scrX, scrY, scrZ);
 
-          if scrZ[0]<.9999 then
+          distance = (vector.new(-px, -pz, -py) - mab.parties[p].pos):len() -- swy: compute the length between the camera and the current party origin, don't ask me about the weird XZY swizzling and negations from ten years ago,
+                                                                            --      only got them right after adding debug code to see where they matched. :)
+                                                                            
+          if (scrX[0] > -(lujgl.width/2) and scrX[0] < lujgl.width ) and  -- swy: cull the party labels when they sit outside of the viewport, first horizontal with some leeway so that the right-aligned text shows up when the origin goes beyond the left side
+             (scrY[0] >               0  and scrY[0] < lujgl.height) and  --      then vertically, easier case that just skips them when the origin goes beyond the top or bottom of the screen, not easily noticed
+             (scrZ[0] < 1                                          ) and  --      then avoid drawing any labels behind the camera, without this we will draw like a black hole, showing in front what's behind
+             (distance < 500                                       ) then --      use the actual distance from the camera to control how far the label shows up, instead of the unprojection thing.
               gl.glPolygonMode( gl.GL_FRONT_AND_BACK, gl.GL_FILL )
               gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_SRC_COLOR)--outlines
               gl.glColor4d(1,1,1,1)
@@ -358,7 +364,7 @@ lujgl.setRenderCallback(function()
                      49,lujgl.height/2-60,.7)
                      
       if mab.parties[picked] then
-       mab.font:print(string.format("%s (%gบ)", mab.parties[picked].id, mab.parties[picked].rot),
+       mab.font:print(string.format("%s (%g\xBA)", mab.parties[picked].id, mab.parties[picked].rot), -- swy: 0xBA is "ยบ" without using UTF-8 encoding, so that the bitmap font shows it correctly
                      49,lujgl.height/2-0,.7)
       end
       

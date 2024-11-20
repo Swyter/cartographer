@@ -186,7 +186,7 @@ function mab.parties:save(filename)
               if mab.parties[pid].isbeenmod                            and  --itirerate over all the avaliable, modified parties
                  tline[i]:find("[\"']"..mab.parties[pid].id.."[\"']")  then --if matches in the line, bingo! try to replace coordinates by the new ones
               
-                  print(string.format("%s has been modified  -->  %.2f, %.2f (%uบ)", mab.parties[pid].name, mab.parties[pid].pos.x*-1,mab.parties[pid].pos.y, math.ceil(mab.parties[pid].rot)))
+                  print(string.format("%s has been modified  -->  %.2f, %.2f (%u\xBA)", mab.parties[pid].name, mab.parties[pid].pos.x*-1,mab.parties[pid].pos.y, math.ceil(mab.parties[pid].rot))) -- swy: 0xBA is ยบ without using UTF-8 encoding, so that it shows up fine with the bitmap font
                  
                   tline[i]=string.gsub(tline[i], "%([ \t]*"..(mab.parties[pid].oldpos.x*-1).."[ \t]*,",    -- (NN,
                   function(pickedbit)
