@@ -36,5 +36,11 @@ pf_village = pf_is_static|pf_always_visible|pf_hide_defenders|pf_label_small #ch
 # NEW TOWNS:
 
 parties = [
-  ("main'_pa'rty","Main Party",icon_player|pf_limit_members, no_menu, pt_none,fac_player_faction,0,ai_bhvr_hold,0,(32.08,-69.56),[(trp_player,1,0)]),
+  ("main'_party","Main Party",icon_player|pf_limit_members, no_menu, pt_none,fac_player_faction,0,ai_bhvr_hold,0,(32.08,-69.56),[(trp_player,1,0)]),
+    ("mega_danishrmy"   ,"Great Summer Army",icon_warriors_10|pf_disabled|pf_is_static|pf_hide_defenders|pf_always_visible, no_menu, pt_none, fac_kingdom_8,0,0,0,(0, 0),[
+        (trp_kingdom_8_lord, 1,0),(trp_knight_8_15, 1,0),(trp_knight_8_4, 1,0),(trp_knight_8_5, 1,0),(trp_knight_8_10, 1,0),(trp_knight_8_11, 1,0),(trp_knight_8_12, 1,0),(trp_knight_8_13, 1,0),(trp_knight_8_14, 1,0),
+        (trp_norse_level0_landed, 300,310),(trp_norse_bowman, 190,200),(trp_norse_level0_companion, 250,260),(trp_norse_standard_bearer, 15,20),(trp_todos_cuerno, 4,6),
+        (trp_norse_level1_landed, 180,190),(trp_norse_level2_landed, 140,150),(trp_norse_elitearcher, 50,60),(trp_norse_level3_landed, 15,20),
+        (trp_norse_level1_companion, 80,90),(trp_norse_level2_companion, 50,60),
+        ]),
 ] 
