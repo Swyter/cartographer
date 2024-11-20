@@ -6,30 +6,113 @@ local ffi,vector=require"ffi",require"vectors"
   --
  -- Helper functions
 --
+function all_trim(s)
+  return s:match( "^%s*(.-)%s*$" )
+end
+
+
+
+
+ctx_idx = 1
+context = {}
+context_data = {}
+function pushcontext(name)
+  context[ctx_idx] = name
+  ctx_idx = ctx_idx + 1
+end
+
+function popcontext()
+  table.remove(context, ctx_idx - 1)
+  ctx_idx = ctx_idx - 1
+end
+
+function isctx(name)
+  return context[ctx_idx-1] == name
+end
+
+function setctxdata(data)
+  context_data[ctx_idx] = data
+end
+
+function getctxdata()
+  return context_data[ctx_idx]
+end
+
+parse = {} child_data=nil
 
 function splitpartylines(str, delim, maxNb) --from <http://lua-users.org/wiki/SplitJoin> #Function: Split a string with a pattern, Take Three
     local result = {}; first=1; lastPos=0; nb=0; strsize=#str; in_string_block=nil
+
+    function poptuple()
+      thing=all_trim(str:sub(getctxdata().last+1, lastPos-1))
+      if getctxdata()["child_data"] then
+        thing=getctxdata()["child_data"]
+        getctxdata()["child_data"]=nil 
+      end
+      --print("poppedtuple", thing)
+      if thing == "" then
+        --print("empty after comma")
+      else
+        table.insert(getctxdata().data, thing)
+      end
+      getctxdata().last=lastPos
+    end
+
     str=str:gsub(".", function(c)
         lastPos = lastPos + 1
 
         if c == '"' or c == "'" then -- swy: support two kinds of quote styles
-            if not in_string_block then
-                in_string_block=c
-            elseif in_string_block==c then
-                in_string_block=nil
-                return "-"
+            --print()
+            if not isctx('str') then
+              pushcontext('str')
+              setctxdata({c, lastPos})
+            elseif isctx('str') and getctxdata()[1] == c and not (getctxdata()["laststrchar"] == "\\" and getctxdata()["lastlaststrchar"] ~= getctxdata()["laststrchar"]) then
+              child_data=all_trim(str:sub(getctxdata()[2]+1, lastPos-1))
+              --print("poppedstr", child_data)
+              popcontext()
+              getctxdata()["child_data"]=child_data
             end
+        elseif c == '[' then
+          pushcontext('array')
+          setctxdata({data={}, last=lastPos})
+        elseif c == ']' and isctx('array') then
+          poptuple()
+          --dump(getctxdata().data)
+          child_data=getctxdata().data
+          popcontext()
+          getctxdata()["child_data"]=child_data
+        elseif c == '(' then
+          pushcontext('tuple')
+          setctxdata({data={}, last=lastPos})
+        elseif c == ')'  and isctx('tuple') then
+          poptuple()
+          --dump(getctxdata().data)
+          child_data=getctxdata().data
+          popcontext()
+          getctxdata()["child_data"]=child_data
+        elseif  c == ',' and (isctx('tuple') or isctx('array')) then
+          poptuple()
+          --print("comma")
+        elseif  c == '=' and isctx('root') then
+          --print("assign")
+          pushcontext('assignment')
+          setctxdata({all_trim(str:sub(first, lastPos-1)), lastPos+1})
         end
 
-        if in_string_block~=nil then
-            return "-" -- swy: this is returned for debugging
+        if isctx('str') then
+          getctxdata()["lastlaststrchar"]=getctxdata()["laststrchar"]
+          getctxdata()["laststrchar"]=c
         end
 
-        if c==delim or lastPos==strsize then
-            result[nb + 1] = str:sub(first, lastPos-1):gsub("%s*(.+)%s*", "%1"):gsub('"(.+)"', "%1"):gsub("'(.+)'", "%1") -- swy: remove any quotes and strip out whitespace at each side
-            nb = nb + 1; first=lastPos+1
-        end
+        --print(c, table.concat(context, ">"), getctxdata())
     end)
+
+    if isctx('assignment') then
+      parse[getctxdata()[1]] = getctxdata()["child_data"] and getctxdata()["child_data"] or all_trim(str:sub(getctxdata()[2], lastPos))
+      --print("crap", parse[getctxdata()[1]] )
+      popcontext()
+    end
+
     return result
 end
 function Round(num, idp) --from <http://lua-users.org/wiki/SimpleRound> #Function: Igor Skoric (i.skoric@student.tugraz.at)
@@ -44,33 +127,39 @@ end
 
 function mab.parties:load(filename)
   print("@--start parsing parties"); s=0; tt=os.clock()
+
+  pushcontext('root')
+
   for line in io.lines(filename) do
         local ltrim=line:match("%S.*") or "#"
         local index=ltrim:sub(1,1)
-        
-        if index ~= "#" then
-          if index=="(" and (not line:find("pf_disabled") or cartographer.conf.showdisabled~=false) then --avoid comments and filler entries
-             tuple=ltrim:gsub(",%s*#.+", ",") --remove possible comments from the right side
-             tuple=tuple:gsub("%(", ""):gsub("%)", "") --remove all the: ()
-             
-             if tuple:find("pf_town") then kind=1 else kind=2 end
 
+             tuple=line:gsub("#.+", ""):gsub("%s*(.+)%s*", "%1") --remove possible comments from the right side
+             --print("<" .. (tuple) .. ">")
              tuple = splitpartylines(tuple,",")
-             s=s+1
+             
 
-             mab.parties[s]={
-                id=tuple[1] or "<error>",
-              name=tuple[2] and tuple[2]:gsub("_", " ") or "<error>",
-               pos=vector.new(
-                    (tonumber(tuple[10])*-1) or 0, --invert X coordinates
-                     tonumber(tuple[11])     or 0
-                   ),
-               rot=tonumber(tuple[13]) or 0,
-              kind=kind
-             }
-          end
-        end
   end
+
+  --print("parse", dump(parse['parties']))
+
+  for key, tuple in ipairs(parse['parties']) do
+    s=s+1
+
+    if tuple[3]:find("pf_town") then kind=1 else kind=2 end
+
+    mab.parties[s]={
+        id=tuple[1] or "<error>",
+      name=tuple[2] and tuple[2]:gsub("_", " ") or "<error>",
+      pos=vector.new(
+            (tonumber(tuple[10][1])*-1) or 0, --invert X coordinates
+             tonumber(tuple[10][2])     or 0
+          ),
+      rot=tonumber(tuple[12]) or 0,
+      kind=kind
+    }
+  end
+
   
   print(string.format("   %d parties loaded... %gs",s,os.clock()-tt))
   return s
