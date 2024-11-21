@@ -40,37 +40,35 @@ parse = {} child_data=nil
 function splitpartylines(str, delim, maxNb) --from <http://lua-users.org/wiki/SplitJoin> #Function: Split a string with a pattern, Take Three
     local result = {}; first=1; lastPos=0; nb=0; strsize=#str; in_string_block=nil
 
-    function poptuple()
-      begin_offset = getctxdata().last and getctxdata().last+1 or 0; end_offset = lastPos-1
-      print("bo", begin_offset, end_offset)
+    function poptuple() -- swy: this gets called when we reach the last character of a tuple or element, and we insert it as a new entry
+      begin_offset = getctxdata().last and getctxdata().last+1 or 0; end_offset = lastPos-1 --; print("bo", begin_offset, end_offset)
       thing=getctxdata()["prevlines"] .. all_trim(str:sub(begin_offset, end_offset))
       getctxdata()["prevlines"]=""
-      if getctxdata()["child_data"] then
+      if getctxdata()["child_data"] then -- swy: if the tuple element has had processing (the entry was an array/tuple/string) then use that instead of the raw unprocessed string (which is used for things like pf_ flags) and anything else
         thing=getctxdata()["child_data"]
         getctxdata()["child_data"]=nil
       end
-      print("poppedtuple", thing)
-      if thing == "" then
-        print("empty after comma")
+      --print("poppedtuple", thing)
+      if thing == "" then -- swy: many lines have a trailing comma after the last real element, there's nothing there, so don't add an empty thing
+        --print("empty after comma")
       else
-        print("asdfasdf")--,context[ctx_idx -1])
         table.insert(getctxdata().data, thing)
         --dump(getctxdata())
       end
       getctxdata().last=lastPos
     end
 
-    str=str:gsub(".", function(c)
+    str=str:gsub(".", function(c) -- swy: for every single character in the line
         lastPos = lastPos + 1
 
         if c == '"' or c == "'" then -- swy: support two kinds of quote styles
-            print()
+            --print()
             if not isctx('str') then
               pushcontext('str')
               setctxdata({c, lastPos})
             elseif isctx('str') and getctxdata()[1] == c and not (getctxdata()["laststrchar"] == "\\" and getctxdata()["lastlaststrchar"] ~= getctxdata()["laststrchar"]) then
-              child_data=all_trim(str:sub(getctxdata()[2]+1, lastPos-1))
-              print("poppedstr", child_data)
+              child_data=all_trim(str:sub(getctxdata()[2]+1, lastPos-1)) -- swy: save the string data for insertion in the parent element, e.g. as a tuple entry
+              --print("poppedstr", child_data)
               popcontext()
               getctxdata()["child_data"]=child_data
             end
@@ -80,7 +78,7 @@ function splitpartylines(str, delim, maxNb) --from <http://lua-users.org/wiki/Sp
           getctxdata()["lastlaststrchar"]=getctxdata()["laststrchar"]
           getctxdata()["laststrchar"]=c
         else
-          if c == '[' then
+          if c == '[' then -- swy: a new array begins
             pushcontext('array')
             setctxdata({data={}, last=lastPos, prevlines=''})
           elseif c == ']' and isctx('array') then
@@ -89,7 +87,7 @@ function splitpartylines(str, delim, maxNb) --from <http://lua-users.org/wiki/Sp
             child_data=getctxdata().data
             popcontext()
             getctxdata()["child_data"]=child_data
-          elseif c == '(' then
+          elseif c == '(' then -- swy: a new tuple begins
             pushcontext('tuple')
             setctxdata({data={}, last=lastPos, prevlines=''})
           elseif c == ')' and isctx('tuple') then
@@ -98,36 +96,34 @@ function splitpartylines(str, delim, maxNb) --from <http://lua-users.org/wiki/Sp
             child_data=getctxdata().data
             popcontext()
             getctxdata()["child_data"]=child_data
-          elseif  c == ',' and (isctx('tuple') or isctx('array')) then
+          elseif  c == ',' and (isctx('tuple') or isctx('array')) then -- swy: insert every single element when there's a separator for a next entry. commas at the end in the ,) or ),] style are also common, empty stuff will not get inserted
             poptuple()
-            print("comma")
+            --print("comma")
           elseif  c == '=' and isctx('root') then
-            print("assign")
+            --print("assign")
             pushcontext('assignment')
-            setctxdata({all_trim(str:sub(first, lastPos-1)), lastPos+1})
+            setctxdata({all_trim(str:sub(first, lastPos-1)), lastPos+1}) -- swy; store the name of the variable to be used later (after processing the line or the array/tuple)
           end
         end
         
-        print(c, table.concat(context, ">"), getctxdata())
+        --print(c, table.concat(context, ">"), getctxdata())
     end)
 
-    if isctx('assignment') then
+    if isctx('assignment') then -- swy: we've returned to the = context and we now have either the processed array/tuple or just a raw string, assign it to the stored variable name
       parse[getctxdata()[1]] = getctxdata()["child_data"] and getctxdata()["child_data"] or all_trim(str:sub(getctxdata()[2], lastPos))
-      print("crap", parse[getctxdata()[1]] )
+      --print("crap", parse[getctxdata()[1]] )
       popcontext()
     end
 
-    if (isctx('tuple') or isctx('array')) then
-      --dump(getctxdata())
+    if (isctx('tuple') or isctx('array')) then -- swy: for tuple text data spanning multiple lines, save the previous stuff and append it when changing lines if it hasn't been used yet
       begin_offset = getctxdata().last and getctxdata().last+1 or 0; end_offset = lastPos
-      print("bo", begin_offset, end_offset)
-      thing=getctxdata()["prevlines"] .. all_trim(str:sub(begin_offset, end_offset))
-      getctxdata()["prevlines"] = thing
+      getctxdata()["prevlines"] = getctxdata()["prevlines"] .. all_trim(str:sub(begin_offset, end_offset))
       getctxdata().last=0
     end
 
     return result
 end
+
 function Round(num, idp) --from <http://lua-users.org/wiki/SimpleRound> #Function: Igor Skoric (i.skoric@student.tugraz.at)
     local mult = 10^(idp or 0)
     if num >= 0 then return math.floor(num * mult + 0.5) / mult
@@ -147,14 +143,13 @@ function mab.parties:load(filename)
              tuple=line:gsub("#.+", ""):gsub("%s*(.+)%s*", "%1") --remove possible comments from the right side
              --print("<" .. (tuple) .. ">")
              tuple = splitpartylines(tuple,",")
-             print("\n")
+             --print("\n")
   end
-
   --print("parse", dump(parse))
 
   for key, tuple in ipairs(parse['parties']) do 
     --print(tuple[1],dump(tuple))--, table.concat(tuple, ">"))
-    s=s+1
+    
     for flag_key, flag_data in pairs(parse) do
       if flag_key:sub(1, 3) == "pf_" then
         tuple[3]=tuple[3]:gsub("%f[%a]"..flag_key.."%f[%A]", flag_data) -- swy: expand the aliases like pf_town but not pf_townn with http://lua-users.org/wiki/FrontierPattern
@@ -162,20 +157,21 @@ function mab.parties:load(filename)
     end
 
     if tuple[3]:find("pf_label_large") then kind=1 else kind=2 end
-    --print(tuple[1],dump(tuple))--, table.concat(tuple, ">"))
-    mab.parties[s]={
-        id=tuple[1] or "<error>",
-      name=tuple[2] and tuple[2]:gsub("_", " ") or "<error>",
-       pos=vector.new(
-            (tonumber(tuple[10][1])*-1) or 0, --invert X coordinates
-             tonumber(tuple[10][2])     or 0
-          ),
-       rot=tonumber(tuple[12]) or 0,
-      kind=kind
-    }
+    if not tuple[3]:find("pf_disabled") or cartographer.conf.showdisabled~=false then --avoid comments and filler entries
+      --print(tuple[1],dump(tuple))--, table.concat(tuple, ">"))
+      s=s+1
+      mab.parties[s]={
+          id=tuple[1] or "<error>",
+        name=tuple[2] and tuple[2]:gsub("_", " ") or "<error>",
+         pos=vector.new(
+              (tonumber(tuple[10][1])*-1) or 0, --invert X coordinates
+               tonumber(tuple[10][2])     or 0
+             ),
+         rot=tonumber(tuple[12]) or 0,
+        kind=kind
+      }
+    end
   end
-
-  
   print(string.format("   %d parties loaded... %gs",s,os.clock()-tt))
   return s
 end
