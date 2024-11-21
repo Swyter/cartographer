@@ -3,87 +3,6 @@ mab.parties = mab.parties or {}
 
 local ffi,vector=require"ffi",require"vectors"
 
-
-function dump(node)
-  local cache, stack, output = {},{},{}
-  local depth = 1
-  local output_str = "{\n"
-
-  while true do
-      local size = 0
-      for k,v in pairs(node) do
-          size = size + 1
-      end
-
-      local cur_index = 1
-      for k,v in pairs(node) do
-          if (cache[node] == nil) or (cur_index >= cache[node]) then
-
-              if (string.find(output_str,"}",output_str:len())) then
-                  output_str = output_str .. ",\n"
-              elseif not (string.find(output_str,"\n",output_str:len())) then
-                  output_str = output_str .. "\n"
-              end
-
-              -- This is necessary for working with HUGE tables otherwise we run out of memory using concat on huge strings
-              table.insert(output,output_str)
-              output_str = ""
-
-              local key
-              if (type(k) == "number" or type(k) == "boolean") then
-                  key = "["..tostring(k).."]"
-              else
-                  key = "['"..tostring(k).."']"
-              end
-
-              if (type(v) == "number" or type(v) == "boolean") then
-                  output_str = output_str .. string.rep('\t',depth) .. key .. " = "..tostring(v)
-              elseif (type(v) == "table") then
-                  output_str = output_str .. string.rep('\t',depth) .. key .. " = {\n"
-                  table.insert(stack,node)
-                  table.insert(stack,v)
-                  cache[node] = cur_index+1
-                  break
-              else
-                  output_str = output_str .. string.rep('\t',depth) .. key .. " = '"..tostring(v).."'"
-              end
-
-              if (cur_index == size) then
-                  output_str = output_str .. "\n" .. string.rep('\t',depth-1) .. "}"
-              else
-                  output_str = output_str .. ","
-              end
-          else
-              -- close the table
-              if (cur_index == size) then
-                  output_str = output_str .. "\n" .. string.rep('\t',depth-1) .. "}"
-              end
-          end
-
-          cur_index = cur_index + 1
-      end
-
-      if (size == 0) then
-          output_str = output_str .. "\n" .. string.rep('\t',depth-1) .. "}"
-      end
-
-      if (#stack > 0) then
-          node = stack[#stack]
-          stack[#stack] = nil
-          depth = cache[node] == nil and depth + 1 or depth - 1
-      else
-          break
-      end
-  end
-
-  -- This is necessary for working with HUGE tables otherwise we run out of memory using concat on huge strings
-  table.insert(output,output_str)
-  output_str = table.concat(output)
-
-  print(output_str)
-end
-
-
   --
  -- Helper functions
 --
@@ -136,7 +55,7 @@ function splitpartylines(str, delim, maxNb) --from <http://lua-users.org/wiki/Sp
       else
         print("asdfasdf")--,context[ctx_idx -1])
         table.insert(getctxdata().data, thing)
-        dump(getctxdata())
+        --dump(getctxdata())
       end
       getctxdata().last=lastPos
     end
@@ -166,7 +85,7 @@ function splitpartylines(str, delim, maxNb) --from <http://lua-users.org/wiki/Sp
             setctxdata({data={}, last=lastPos, prevlines=''})
           elseif c == ']' and isctx('array') then
             poptuple()
-            dump(getctxdata().data)
+            --dump(getctxdata().data)
             child_data=getctxdata().data
             popcontext()
             getctxdata()["child_data"]=child_data
@@ -175,7 +94,7 @@ function splitpartylines(str, delim, maxNb) --from <http://lua-users.org/wiki/Sp
             setctxdata({data={}, last=lastPos, prevlines=''})
           elseif c == ')' and isctx('tuple') then
             poptuple()
-            dump(getctxdata().data)
+            --dump(getctxdata().data)
             child_data=getctxdata().data
             popcontext()
             getctxdata()["child_data"]=child_data
@@ -199,7 +118,7 @@ function splitpartylines(str, delim, maxNb) --from <http://lua-users.org/wiki/Sp
     end
 
     if (isctx('tuple') or isctx('array')) then
-      dump(getctxdata())
+      --dump(getctxdata())
       begin_offset = getctxdata().last and getctxdata().last+1 or 0; end_offset = lastPos
       print("bo", begin_offset, end_offset)
       thing=getctxdata()["prevlines"] .. all_trim(str:sub(begin_offset, end_offset))
@@ -231,10 +150,10 @@ function mab.parties:load(filename)
              print("\n")
   end
 
-  print("parse", dump(parse))
+  --print("parse", dump(parse))
 
   for key, tuple in ipairs(parse['parties']) do 
-    print(tuple[1],dump(tuple))--, table.concat(tuple, ">"))
+    --print(tuple[1],dump(tuple))--, table.concat(tuple, ">"))
     s=s+1
     for flag_key, flag_data in pairs(parse) do
       if flag_key:sub(1, 3) == "pf_" then
@@ -243,7 +162,7 @@ function mab.parties:load(filename)
     end
 
     if tuple[3]:find("pf_label_large") then kind=1 else kind=2 end
-    print(tuple[1],dump(tuple))--, table.concat(tuple, ">"))
+    --print(tuple[1],dump(tuple))--, table.concat(tuple, ">"))
     mab.parties[s]={
         id=tuple[1] or "<error>",
       name=tuple[2] and tuple[2]:gsub("_", " ") or "<error>",
