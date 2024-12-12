@@ -137,7 +137,7 @@ end
 function mab.parties:load(filename)
   print("@--start parsing parties"); s=0; tt=os.clock()
 
-  pushcontext('root')
+  pushcontext('root'); setctxdata({data={}}) --swy: make sure even the root context has a defined data table set, as the other contexts expect that, even when out of order like root>tuple like a modmerge(var_set) call at the end
 
   for line in io.lines(filename) do
              tuple=line:gsub("#.+", ""):gsub("%s*(.+)%s*", "%1") --remove possible comments from the right side
