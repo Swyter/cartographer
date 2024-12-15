@@ -6,7 +6,7 @@ local gl, glu = lujgl.gl, lujgl.glu
 
 
 local key, mouse,  px, py, pz,   rx, ry, rz,   xrang, yrang=
-       {},    {}, -31,-43,-14,   38, 80, 90,     242,    32
+       {},    {}, 0,-4,0,   1, 1, 1,     0,    90
 
 mouse.x=0
 mouse.y=0
@@ -98,6 +98,8 @@ end
   
   gl.glEnable(gl.GL_LIGHTING)
   gl.glEnable(gl.GL_LIGHT0)
+
+  mab.map:loadobj("",false)
 
 --@ we like callbacks
 lujgl.setIdleCallback(function()
@@ -363,7 +365,7 @@ lujgl.setRenderCallback(function()
       local highlight=.7 and (key['g'] or key['r']) or .3
       gl.glColor4d(1,.9,1,highlight)
       gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_CONSTANT_ALPHA)--vertex colored solid
-      mab.font:print(string.format("%d--%d",mouse.x, lujgl.height-mouse.y),
+      mab.font:print(string.format("%f %f %f %f %f %f %f %f", px, py, pz,   rx, ry, rz,   xrang, yrang),
                      49,lujgl.height/2-110,.6)
                      
       mab.font:print(string.format("x:%g y:%g z:%g",-objX[0],objZ[0],objY[0]),
@@ -440,7 +442,7 @@ lujgl.setEventCallback(function(ev,...) local arg={...}
                                     mab.map:saveobj(objpath)
                                   end
                                    
-      elseif k==264 and down then local objpath=winapi:OpenDialog(handle) --refresh cached map end --f7
+      elseif k==264 and down then local objpath="asdf" --refresh cached map end --f7
                                   if objpath and mapmesh then
                                     print(string.format("loading OBJ from <%s>",objpath))
                                     mab.map:loadobj(objpath,false)

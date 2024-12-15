@@ -294,52 +294,47 @@ function mab.map:loadobj(file,reversed_mode)
   print("@--Importing OBJ..."); local lastmat="plain"; local start=os.clock(); local localsplit=splitmaplines local tonum=tonumber
   mab.map.vtx,mab.map.fcs={},{}
 
-  if io.open(file,"r") then
-    for line in io.lines(file) do
-    
-      local ltrim=line:match("%S.*") or "#"
-      local index=ltrim:sub(1,1)
-      if index ~= "#" then --not a comment
-      
-          local raw=localsplit(ltrim," ")
-          
-          --@vertex
-          ---------------------------
-          if raw[1]=="v" then
-          
-              --if reversed_mode then raw[2],raw[3]=raw[3],raw[2]*-1; end
-              mab.map.vtx[#mab.map.vtx+1]=vector.new(
-                                          tonum(raw[2]),
-                                          tonum(raw[3]),
-                                          tonum(raw[4])
-                                          )
-                                          
-          --@material
-          ---------------------------
-          elseif raw[1]=="usemtl" then
-          
-              lastmat=raw[2]
-          
-          --@face
-          ---------------------------
-          elseif raw[1]=="f" then
-          
-              fcount=(#mab.map.fcs+1)
-              mab.map.fcs[fcount]={}
-              
-                for i=2,4 do --for every section do this
-                
-                  local facesplit=localsplit(raw[i],'/');
-                  
-                  mab.map.fcs[fcount][i-1]=tonum(facesplit[1])
-      
-                end
-                
-              mab.map.fcs[fcount][11]=_G["rt_"..lastmat] or 3 --@FIXME hack, no material as of yet :(
+  width=200
+  height=400
+  density=1
 
-          end
-      end
-    end
+  for i=0,30 do
+    mab.map.vtx[(i*4)+1]=vector.new(i,     0, 0      )
+    mab.map.vtx[(i*4)+2]=vector.new(i,     0, 1      )
+    mab.map.vtx[(i*4)+3]=vector.new(i + 1, 0, 0 + 0.5)
+    mab.map.vtx[(i*4)+4]=vector.new(i + 1, 0, 1 + 0.5)
+
+    mab.map.fcs[(i*2)+1]={}
+    mab.map.fcs[(i*2)+1][1]=(i*4)+1
+    mab.map.fcs[(i*2)+1][2]=(i*4)+2
+    mab.map.fcs[(i*2)+1][3]=(i*4)+3
+    mab.map.fcs[(i*2)+1][11]=3
+
+    mab.map.fcs[(i*2)+2]={}
+    mab.map.fcs[(i*2)+2][1]=(i*4)+2
+    mab.map.fcs[(i*2)+2][2]=(i*4)+4
+    mab.map.fcs[(i*2)+2][3]=(i*4)+3
+    mab.map.fcs[(i*2)+2][11]=5
+  end
+
+
+
+-- for i=1,10 do
+--   mab.map.vtx[#mab.map.vtx+1]=vector.new(
+--                               tonum(i),
+--                               tonum(1),
+--                               tonum(1)
+--                               )
+-- end
+-- for i=1,10 do
+--   mab.map.fcs[fcount]={}
+--   
+--     for i=2,4 do --for every section do this                  
+--       mab.map.fcs[fcount][i-1]=tonum(facesplit[1])
+--     end
+--     
+--   mab.map.fcs[fcount][11]=3
+-- end
   
   vtx=#mab.map.vtx;fcs=#mab.map.fcs; --refresh with latest info
   
@@ -350,13 +345,6 @@ function mab.map:loadobj(file,reversed_mode)
    fcs,
    (os.clock()-start)
    ))
-  end
-  
-  if mab.map:aretheaxisreversed() then
-    for i=1,#mab.map.vtx do --go across all the faces in the map
-      mab.map.vtx[i].y, mab.map.vtx[i].z = mab.map.vtx[i].z, mab.map.vtx[i].y*-1
-    end
-  end
 end
 
 function mab.map:softnormal()
