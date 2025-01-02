@@ -299,35 +299,36 @@ function mab.map:loadobj(file,reversed_mode)
   density=1
 
   for i=0,1 do
-    mab.map.vtx[(i*6)+1]=vector.new((i*2) + 0, 0, 0      )
-    mab.map.vtx[(i*6)+2]=vector.new((i*2) + 0, 0, 1      )
-    mab.map.vtx[(i*6)+3]=vector.new((i*2) + 1, 0, 0 + 0.5)
-    mab.map.vtx[(i*6)+4]=vector.new((i*2) + 1, 0, 1 + 0.5)
-    mab.map.vtx[(i*6)+5]=vector.new((i*2) + 2, 0, 0      )
-    mab.map.vtx[(i*6)+6]=vector.new((i*2) + 2, 0, 1      )
-
+    j=i
+    mab.map.vtx[(i*6)+1]=vector.new((j*2) + 0, 0, 0      )
+    mab.map.vtx[(i*6)+2]=vector.new((j*2) + 0, 0, 1      )
+    mab.map.vtx[(i*6)+3]=vector.new((j*2) + 1, 0, 0 + 0.5)
+    mab.map.vtx[(i*6)+4]=vector.new((j*2) + 1, 0, 1 + 0.5)
+    mab.map.vtx[(i*6)+5]=vector.new((j*2) + 2, 0, 0      )
+    mab.map.vtx[(i*6)+6]=vector.new((j*2) + 2, 0, 1      )
+    h=i
     mab.map.fcs[(i*4)+1]={}
-    mab.map.fcs[(i*4)+1][1]=(i*4)+1
-    mab.map.fcs[(i*4)+1][2]=(i*4)+2
-    mab.map.fcs[(i*4)+1][3]=(i*4)+3
+    mab.map.fcs[(i*4)+1][1]=(h*4)+1
+    mab.map.fcs[(i*4)+1][2]=(h*4)+2
+    mab.map.fcs[(i*4)+1][3]=(h*4)+3
     mab.map.fcs[(i*4)+1][11]=3
 
     mab.map.fcs[(i*4)+2]={}
-    mab.map.fcs[(i*4)+2][1]=(i*4)+3
-    mab.map.fcs[(i*4)+2][2]=(i*4)+2
-    mab.map.fcs[(i*4)+2][3]=(i*4)+4
+    mab.map.fcs[(i*4)+2][1]=(h*4)+3
+    mab.map.fcs[(i*4)+2][2]=(h*4)+2
+    mab.map.fcs[(i*4)+2][3]=(h*4)+4
     mab.map.fcs[(i*4)+2][11]=5
 
     mab.map.fcs[(i*4)+3]={}
-    mab.map.fcs[(i*4)+3][1]=(i*4)+3
-    mab.map.fcs[(i*4)+3][2]=(i*4)+4
-    mab.map.fcs[(i*4)+3][3]=(i*4)+6
+    mab.map.fcs[(i*4)+3][1]=(h*4)+3
+    mab.map.fcs[(i*4)+3][2]=(h*4)+4
+    mab.map.fcs[(i*4)+3][3]=(h*4)+6
     mab.map.fcs[(i*4)+3][11]=6
 
     mab.map.fcs[(i*4)+4]={}
-    mab.map.fcs[(i*4)+4][1]=(i*4)+3
-    mab.map.fcs[(i*4)+4][2]=(i*4)+6
-    mab.map.fcs[(i*4)+4][3]=(i*4)+5
+    mab.map.fcs[(i*4)+4][1]=(h*4)+3
+    mab.map.fcs[(i*4)+4][2]=(h*4)+6
+    mab.map.fcs[(i*4)+4][3]=(h*4)+5
     mab.map.fcs[(i*4)+4][11]=8
   end
 

@@ -1,3 +1,7 @@
+if os.getenv("LOCAL_LUA_DEBUGGER_VSCODE") == "1" then
+  require("lldebugger").start()
+end
+
 local vector = require "vectors"
 local lujgl  = require "lujgl"
 local ffi    = require "ffi"
@@ -71,8 +75,8 @@ end
   
 --@ load our locations
   require "mab-parties"
-  mab.parties:load(msys.."\\module_parties.py")--"R:\\Juegos\\swconquest\\modules\\swconquest-msys\\module_parties.py")
-  mab.parties:groundalign()
+  --mab.parties:load(msys.."\\module_parties.py")--"R:\\Juegos\\swconquest\\modules\\swconquest-msys\\module_parties.py")
+  --mab.parties:groundalign()
   
 --@ opengl directives
   gl.glShadeModel(gl.GL_SMOOTH)
@@ -208,7 +212,7 @@ lujgl.setRenderCallback(function()
 
     if not mapmesh or not gl.glIsList(mapmesh) then
     print"(i)no cache available, rebuilding displaylist"; local start=os.clock()
-    mab.map:softnormal()
+    --mab.map:softnormal()
     
        mapmesh=gl.glGenLists(1)
        gl.glNewList(mapmesh, gl.GL_COMPILE)
@@ -219,9 +223,6 @@ lujgl.setRenderCallback(function()
           gl.glColor3f(unpack(mab.map.terrain[x] or {1,0,1}))
           
           for j=1,3 do
-            local nm=faceted and mab.map.fcn[i]
-                              or mab.map.vtn[mab.map.fcs[i][j]]
-            gl.glNormal3d(nm.x,nm.y,nm.z)
             local vt=mab.map.vtx[mab.map.fcs[i][j]]
             gl.glVertex3d(vt.x,vt.y,vt.z)
           end
