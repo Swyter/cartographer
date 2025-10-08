@@ -40,6 +40,27 @@ parse = {} child_data=nil
 function splitpartylines(str, delim, maxNb) --from <http://lua-users.org/wiki/SplitJoin> #Function: Split a string with a pattern, Take Three
     local result = {}; first=1; lastPos=0; nb=0; strsize=#str; in_string_block=nil
 
+
+    function getunprocessedctxstringlen()
+        thing = 0
+        if getctxdata() then
+            begin_offset = getctxdata().last and getctxdata().last + 1 or 0; end_offset = lastPos - 1
+            thing = end_offset - begin_offset
+        end
+        
+        return thing
+    end
+    
+    function getunprocessedctxstring()
+        thing = ""
+        if getctxdata() then
+            begin_offset = getctxdata().last and getctxdata().last + 1 or 0; end_offset = lastPos - 1
+            thing = (getctxdata()["prevlines"] or "") .. all_trim(str:sub(begin_offset, end_offset))
+        end
+        
+        return thing
+    end
+
     function poptuple() -- swy: this gets called when we reach the last character of a tuple or element, and we insert it as a new entry
       begin_offset = getctxdata().last and getctxdata().last+1 or 0; end_offset = lastPos-1 --; print("bo", begin_offset, end_offset)
       thing=getctxdata()["prevlines"] .. all_trim(str:sub(begin_offset, end_offset))
@@ -87,7 +108,12 @@ function splitpartylines(str, delim, maxNb) --from <http://lua-users.org/wiki/Sp
             child_data=getctxdata().data
             popcontext()
             getctxdata()["child_data"]=child_data
-          elseif c == '(' then -- swy: a new tuple begins
+          -- swy: skip over Python functions like 'carries_goods(20)' to avoid confusing them with tuples '(stuff)', makes it possible to read pf_ flags with that stuff as text
+          elseif c == '(' and #getunprocessedctxstring() > 0 then
+            pushcontext('function')
+          elseif c == ')' and isctx('function') then
+            popcontext()
+          elseif c == '(' and #getunprocessedctxstring() == 0 then -- swy: a new tuple begins
             pushcontext('tuple')
             setctxdata({data={}, last=lastPos, prevlines=''})
           elseif c == ')' and isctx('tuple') then
@@ -95,7 +121,9 @@ function splitpartylines(str, delim, maxNb) --from <http://lua-users.org/wiki/Sp
             --dump(getctxdata().data)
             child_data=getctxdata().data
             popcontext()
-            getctxdata()["child_data"]=child_data
+            if not isctx('root') then
+              getctxdata()["child_data"]=child_data
+            end
           elseif  c == ',' and (isctx('tuple') or isctx('array')) then -- swy: insert every single element when there's a separator for a next entry. commas at the end in the ,) or ),] style are also common, empty stuff will not get inserted
             poptuple()
             --print("comma")
@@ -149,7 +177,9 @@ function mab.parties:load(filename)
 
   for key, tuple in ipairs(parse['parties']) do 
     --print(tuple[1],dump(tuple))--, table.concat(tuple, ">"))
-    
+
+    if not tuple[3] then tuple[3] = "0" end -- swy: add a stand-in value if we didn't manage to parse the party flags and fail silently, we only use this for big town label sizing
+
     for flag_key, flag_data in pairs(parse) do
       if flag_key:sub(1, 3) == "pf_" then
         tuple[3]=tuple[3]:gsub("%f[%a]"..flag_key.."%f[%A]", flag_data) -- swy: expand the aliases like pf_town but not pf_townn with http://lua-users.org/wiki/FrontierPattern
