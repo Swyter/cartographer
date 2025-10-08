@@ -164,8 +164,8 @@ function mab.parties:load(filename)
           id=tuple[1] or "<error>",
         name=tuple[2] and tuple[2]:gsub("_", " ") or "<error>",
          pos=vector.new(
-              (tonumber(tuple[10][1])*-1) or 0, --invert X coordinates
-               tonumber(tuple[10][2])     or 0
+              (tonumber(tuple[10][1]) or 0) * -1, --invert X coordinates
+              (tonumber(tuple[10][2]) or 0)
              ),
          rot=tonumber(tuple[12]) or 0,
         kind=kind
