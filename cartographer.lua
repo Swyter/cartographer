@@ -59,6 +59,10 @@ end
     if not io.open(f,"r") then return false else io.close() return f end
   end
   
+  assert(check(mod.."\\map.txt"), "\nERROR: Your current module folder seems wrong. Make sure that your module_info.py's 'export_dir' path"..
+                                  "\n       points to the right place (i.e. that your module system actually builds .txt files correctly),"..
+                                  "\n       and that said folder exists at the '<game-root>/Modules/<my-mod>' directory to load the font.")
+
   mab.font:load(check(mod.."\\Data\\FONT_DATA.XML") or mod.."\\..\\..\\Data\\FONT_DATA.XML",
                 check(mod.."\\textures\\FONT.dds")  or mod.."\\..\\..\\textures\\FONT.dds")
                 
