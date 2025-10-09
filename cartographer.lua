@@ -18,11 +18,10 @@ objY=ffi.new("double[1]");
 objZ=ffi.new("double[1]");
 
 -- swy: redirect the debug prints to the actual 3D screen into a simulated kill log
-printbufpos=1; movetxt=0; new_unprinted_lines=0
+printbufpos=0; movetxt=0; new_unprinted_lines=0
 printbufmax=20; printbuf={}; orig_print=print
 function print(line, ...) local arg={...}
   orig_print(line, ...) -- swy: call the original function so that it still prints to the console
-  printbufpos = (printbufpos+1) % printbufmax -- swy: advance the ring buffer position, with wraparound
 
   for k,v in ipairs(arg) do         -- swy: if there is more than one argument, append the extra variables
       line=line.. " "..tostring(v)  --      (could be a number/bool that needs conversion) to the line
@@ -30,7 +29,8 @@ function print(line, ...) local arg={...}
   if new_unprinted_lines < printbufmax/3 then -- swy: this is used to scroll down a notch for every line, don't allow 
     new_unprinted_lines=new_unprinted_lines+1 --      scrolling too many of them at once or all of them will move below the screen
   end
-  printbuf[printbufpos]=line -- swy: paste it into the current ring buffer position for printing
+  printbuf[printbufpos]=line                  -- swy: paste it into the current ring buffer position for printing
+  printbufpos = (printbufpos+1) % printbufmax -- swy: advance the ring buffer position, with wraparound
 end
     
 --@ Load cooler dependencies
@@ -405,7 +405,7 @@ lujgl.setRenderCallback(function()
 
       for i=0, printbufmax do -- swy: do the actual printing here
         gl.glColor4d(1,.9,.4, (printbufmax-i)/printbufmax) -- swy: the more the lines go up, the fainter they look
-        mab.font:print(printbuf[(printbufpos + printbufmax - i) % printbufmax], 20, 45 - movetxt + (20 * i), .3) -- print the oldest line first and go down, the newest is the last one
+        mab.font:print(printbuf[(printbufpos + printbufmax - i - 1) % printbufmax], 20, 45 - movetxt + (20 * i), .3) -- print the oldest line first and go down, the newest is the last one
       end
       
     lujgl.end2D()
