@@ -277,7 +277,7 @@ function splitmaplines(str, delim, maxNb) --from <http://lua-users.org/wiki/Spli
     local pat = "(.-)" .. delim .. "()"
     local nb = 0
     local lastPos
-    for part, pos in string.gfind(str, pat) do
+    for part, pos in string.gmatch(str, pat) do
         nb = nb + 1
         result[nb] = part
         lastPos = pos
@@ -318,7 +318,7 @@ function mab.map:loadobj(file,reversed_mode)
           ---------------------------
           elseif raw[1]=="usemtl" then
           
-              lastmat=raw[2]
+              lastmat=raw[2]:match("^([^.]+).-$") -- swy: strip out any (plain.1) material suffixes that Blender may have added when importing multiple maps, meaning that the first object would have material 'plain', which is okay, the second one would be 'plain.1', 'plain.99' and so on. ignore the dot and what comes afterwards
           
           --@face
           ---------------------------
