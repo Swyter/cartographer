@@ -399,7 +399,7 @@ lujgl.setRenderCallback(function()
         movetxt = movetxt - 1 -- swy: slowly animate the lines moving them up until reaching the base position
       end
 
-      for i=1, printbufmax do -- swy: do the actual printing here
+      for i=0, printbufmax do -- swy: do the actual printing here
         gl.glColor4d(1,.9,.4, (printbufmax-i)/printbufmax) -- swy: the more the lines go up, the fainter they look
         mab.font:print(printbuf[(printbufpos + printbufmax - i) % printbufmax], 20, 45 - movetxt + (20 * i), .3) -- print the oldest line first and go down, the newest is the last one
       end
