@@ -394,18 +394,19 @@ lujgl.setRenderCallback(function()
                      1,10,.3)
 
       -- swy: a real m&b map editor clearly needs its own (animated) kill log
-      if new_unprinted_lines > 0 then
+      if new_unprinted_lines > 0 and movetxt <= (13 * printbufmax) then -- swy: the second condition limits the max amount of scroll in case the user spams
         movetxt = movetxt + (20 * new_unprinted_lines) -- swy: reset it down a notch by a line height size every time a new line arrives
         new_unprinted_lines = 0
       end
       
       if movetxt > 0 then
-        movetxt = movetxt - 1 -- swy: slowly animate the lines moving them up until reaching the base position
+        movetxt = movetxt - 2 -- swy: slowly animate the lines moving them up until reaching the base position
       end
 
       for i=0, printbufmax do -- swy: do the actual printing here
-        gl.glColor4d(1,.9,.4, (printbufmax-i)/printbufmax) -- swy: the more the lines go up, the fainter they look
-        mab.font:print(printbuf[(printbufpos + printbufmax - i - 1) % printbufmax], 20, 45 - movetxt + (20 * i), .3) -- print the oldest line first and go down, the newest is the last one
+        cur_height = 45 - movetxt + (20 * i)
+        gl.glColor4d(1,.9,.4, ((printbufmax-i)/printbufmax/5) * ((cur_height - 5) / 10) ) -- swy: the more the lines go up, the fainter they look, the second multiplier fades out lines as they appear from below
+        mab.font:print(printbuf[(printbufpos + printbufmax - i - 1) % printbufmax], 20, cur_height, .3) -- print the oldest line first and go down, the newest is the last one
       end
       
     lujgl.end2D()
