@@ -134,11 +134,11 @@ function mab.map:save(file,reversed_mode)
   
   io.write(string.format("%d\n",vtx))
   for s=1,vtx do
-    local curr=mab.map.vtx[s]
-    if reversed_mode then curr.x,curr.y,curr.z=curr.x*-1,curr.z,curr.y; end
-    
+    local curr=mab.map.vtx[s]; local curr_x, curr_y, curr_z = curr.x, curr.y, curr.z -- swy: copy them by value, if we overwrite curr.x directly we'd be overwriting and flipping the original, causing flips on F5 -> F5 followed by an F6
+    if reversed_mode then curr_x, curr_y, curr_z = curr_x*-1, curr_z, curr_y; end
+
     io.write(
-      string.format("%.6f %.6f %.6f\n",curr.x,curr.y,curr.z) --floats
+      string.format("%.6f %.6f %.6f\n",curr_x,curr_y,curr_z) --floats
     )
   end
   
