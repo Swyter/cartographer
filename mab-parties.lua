@@ -198,7 +198,9 @@ function mab.parties:load(filename)
               (tonumber(tuple[10][2]) or 0)
              ),
          rot=tonumber(tuple[12]) or 0,
-        kind=kind
+        kind=kind,
+		str_oldpos=tuple[10], -- swy: save the original string version of the digits to find and replace them later. otherwise we may not find it and have 
+		str_oldrot=tuple[12]  --      issues like the original being "-27.50" and we searching for "-27.5" without a trailing zero, so we can't replace it.
       }
     end
   end
@@ -229,21 +231,21 @@ function mab.parties:save(filename)
               
                   print(string.format("%s has been modified  -->  %.2f, %.2f (%u\xBA)", mab.parties[pid].name, mab.parties[pid].pos.x*-1,mab.parties[pid].pos.y, math.ceil(mab.parties[pid].rot))) -- swy: 0xBA is º without using UTF-8 encoding, so that it shows up fine with the bitmap font
                  
-                  tline[i]=string.gsub(tline[i], "%([ \t]*"..(mab.parties[pid].oldpos.x*-1).."[ \t]*,",    -- (NN,
+                  tline[i]=string.gsub(tline[i], "%([ \t]*"..mab.parties[pid].str_oldpos[1].."[ \t]*,",    -- (NN,
                   function(pickedbit)
-                    return pickedbit:gsub(mab.parties[pid].oldpos.x*-1,Round(mab.parties[pid].pos.x, 2)*-1)
+                    return pickedbit:gsub(mab.parties[pid].str_oldpos[1], Round(mab.parties[pid].pos.x, 2)*-1)
                   end,1) --XX
                   
-                  tline[i]=string.gsub(tline[i], ",[ \t]*".. mab.parties[pid].oldpos.y    .."[ \t]*%)",    -- ,NN)
+                  tline[i]=string.gsub(tline[i], ",[ \t]*".. mab.parties[pid].str_oldpos[2].."[ \t]*%)",    -- ,NN)
                   function(pickedbit)
-                    return pickedbit:gsub(mab.parties[pid].oldpos.y,Round(mab.parties[pid].pos.y, 2))
+                    return pickedbit:gsub(mab.parties[pid].str_oldpos[2], Round(mab.parties[pid].pos.y, 2))
                   end,1) --YY
                   
                 if mab.parties[pid].oldrot then
                   --round up to integer first, this is important
                   mab.parties[pid].rot=math.ceil(mab.parties[pid].rot)
                   
-                  tline[i]=string.gsub(tline[i], "%],[ \t]*".. mab.parties[pid].oldrot    .."[ \t]*%),",   -- ],NN),
+                  tline[i]=string.gsub(tline[i], "%],[ \t]*".. mab.parties[pid].str_oldrot.."[ \t]*%),",   -- ],NN),
                   function(pickedbit)
                     return pickedbit:gsub(mab.parties[pid].oldrot, mab.parties[pid].rot)
                   end,1) --ROT
@@ -253,9 +255,9 @@ function mab.parties:save(filename)
                   tline[i]=cartographer.conf.sprevcoords~=false and --only show/print if the config says so! :-)
                            string.format("%s #[swycartographr] prev. coords: (%g, %g)%s",
                                 tline[i]..string.rep(" ",(140-tline[i]:len())),
-                                mab.parties[pid].oldpos.x*-1,
-                                mab.parties[pid].oldpos.y,
-                               (mab.parties[pid].oldrot==nil and "" or " rot: "..mab.parties[pid].oldrot)
+                                mab.parties[pid].str_oldpos[1],
+                                mab.parties[pid].str_oldpos[2],
+                               (mab.parties[pid].oldrot==nil and "" or " rot: "..mab.parties[pid].str_oldrot)
                            ) or tline[i];
                            
                   mab.parties[pid].isbeenmod=false
