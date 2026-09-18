@@ -82,6 +82,10 @@ function splitpartylines(str, delim, maxNb) --from <http://lua-users.org/wiki/Sp
     str=str:gsub(".", function(c) -- swy: for every single character in the line
         lastPos = lastPos + 1
 
+        if isctx('comment') then -- swy: ignore any special syntax symbols inside a comment i.e. anything on the right side of # that's not inside a literal quoted string, here we turn comment characters into spaces so that our comment text doesn't appear as part of getunprocessedctxstring()
+            return ' '
+        end
+
         if c == '"' or c == "'" then -- swy: support two kinds of quote styles
             --print()
             if not isctx('str') then
@@ -131,11 +135,19 @@ function splitpartylines(str, delim, maxNb) --from <http://lua-users.org/wiki/Sp
             --print("assign")
             pushcontext('assignment')
             setctxdata({all_trim(str:sub(first, lastPos-1)), lastPos+1}) -- swy; store the name of the variable to be used later (after processing the line or the array/tuple)
+          elseif  c == '#' and not isctx('comment') then -- swy; we're not inside a quoted string or anything weird, this is probably the start of a comment, set the parser context and turn it into a space so that any future getunprocessedctxstring() doesn't think any subsequent '(' interprets the prepended comment text from previous lines is a function name instead of a tuple
+            --print("comment")
+            pushcontext('comment')
+            return ' '
           end
         end
         
         --print(c, table.concat(context, ">"), getctxdata())
     end)
+
+    if isctx('comment') then -- swy; we're at the end of the current line and this is where a # comment influence ends, back to normal
+      popcontext()
+    end
 
     if isctx('assignment') then -- swy: we've returned to the = context and we now have either the processed array/tuple or just a raw string, assign it to the stored variable name
       parse[getctxdata()[1]] = getctxdata()["child_data"] and getctxdata()["child_data"] or all_trim(str:sub(getctxdata()[2], lastPos))
@@ -168,7 +180,7 @@ function mab.parties:load(filename)
   pushcontext('root'); setctxdata({data={}}) --swy: make sure even the root context has a defined data table set, as the other contexts expect that, even when out of order like root>tuple like a modmerge(var_set) call at the end
 
   for line in io.lines(filename) do
-             tuple=line:gsub("#.+", ""):gsub("%s*(.+)%s*", "%1") --remove possible comments from the right side
+             tuple=line:gsub("%s*(.+)%s*", "%1") -- swy; strip out any spaces at the beginning or end
              --print("<" .. (tuple) .. ">")
              tuple = splitpartylines(tuple,",")
              --print("\n")
