@@ -42,6 +42,18 @@
            outer keys: save
            inner keys: load
   
+  WSE2 texture variants
+  ---------------------
+  
+  WSE2 can draw a map face with an extra texture. The face type in map.txt is then
+  terrain_type + 256 * variant (variant 1 to 127), and the face uses the material
+  map_<terrain>_<variant>, e.g. map_plain_2. Gameplay only sees the terrain type.
+  
+  In the exported OBJ a variant is the terrain name with the number appended: plain_2,
+  steppe_forest_3, deep_water_1. Assign those material names in Blender and import the
+  OBJ back. Don't put a dot in the name, everything after a dot is cut off.
+  The viewer tints variant faces so that they stand out from their base terrain.
+  
   Acknowledgements
   ----------------
   

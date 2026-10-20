@@ -78,6 +78,48 @@ mab.map.terrain={
     [(rt_deep_water)]       ={  0,   0,  .2  }
 }
 
+--# WSE2 texture variants: a face type of terrain_type + 256 * variant (variant 1..127) draws that face
+--  with the map_<terrain>_<variant> material; the OBJ material name is the terrain name with the variant
+--  appended, e.g. plain_2 or mountain_forest_15. vanilla Warband, or WSE2 without that material, use the base texture
+mab.map.variant_factor = 256
+mab.map.max_variant    = 127
+
+function mab.map:splittype(value)
+  value=tonumber(value)
+  return value % mab.map.variant_factor, math.floor(value / mab.map.variant_factor)
+end
+
+function mab.map:typename(value)
+  local base,variant=mab.map:splittype(value)
+  if not mat[base] or variant > mab.map.max_variant then return nil end
+  return variant > 0 and string.format("%s_%d",mat[base],variant) or mat[base]
+end
+
+function mab.map:typefromname(name)
+  local base,variant=name:match("^(.-)_(%d+)$")
+  if not base or not _G["rt_"..base] then base,variant=name,0 end
+
+  local terrain=_G["rt_"..base]; variant=tonumber(variant)
+  if not terrain or variant > mab.map.max_variant then return nil end
+  return terrain + variant * mab.map.variant_factor
+end
+
+function mab.map:typecolor(value)
+  local base,variant=mab.map:splittype(value)
+  local color=mab.map.terrain[base]
+  if not color or variant == 0 then return color end
+
+  --blend in a hue picked by the variant number, so that variants stand out from their base and from each other
+  local h=(variant*0.618034)%1
+  local min,max,abs=math.min,math.max,math.abs
+  local hue={
+    min(max(abs(h*6-3)-1,0),1),
+    min(max(2-abs(h*6-2),0),1),
+    min(max(2-abs(h*6-4),0),1)
+  }
+  return {color[1]*.6+hue[1]*.4, color[2]*.6+hue[2]*.4, color[3]*.6+hue[3]*.4}
+end
+
 
 function mab.map:load(path)
   mab.map.path=path.."\\map.txt"
@@ -194,7 +236,7 @@ function mab.map:computearea(triangle)
 end
 
 function mab.map:saveobj(file,reversed_mode)
-  print("@--Exporting OBJ..."); local start=os.clock(); local lastmat=-1;
+  print("@--Exporting OBJ..."); local start=os.clock(); local lastmat=-1; local usedtypes={}
   if io.output(io.open(file,"w")) then
     io.write([[
   # Mount&Blade Map file
@@ -217,12 +259,13 @@ o strategicmap
       local cmat=tonumber(curr[11])
       
       --sanitize input, check for weird things
-      assert(mat[cmat],"[!] Uh oh, undefined material: "..cmat)
+      local cname=mab.map:typename(cmat)
+      assert(cname,"[!] Uh oh, undefined material: "..cmat)
       
       if lastmat ~= cmat then --implemented material export
         io.write(
-          string.format("g %s\nusemtl %s\n",mat[cmat],mat[cmat])
-        ); lastmat=cmat
+          string.format("g %s\nusemtl %s\n",cname,cname)
+        ); lastmat=cmat; usedtypes[cmat]=true
       end
       
       io.write(
@@ -230,20 +273,24 @@ o strategicmap
       )
     end
     io.close()
-    mab.map:savemtl(file)
+    mab.map:savemtl(file,usedtypes)
     print("   done... "..(os.clock()-start).."s")
   end
 end
 
-function mab.map:savemtl(file)
+function mab.map:savemtl(file,usedtypes)
   file=file:gsub("\\[^\\]+$", "\\swycartographer.mtl")
   print(file)
   
   if io.output(io.open(file,"w")) then
   
-    for s,_ in pairs(mab.map.terrain) do
-    if mat[s] then
-      local r,g,b=unpack(mab.map.terrain[s])
+    local types={}
+    for s,_ in pairs(mab.map.terrain) do types[s]=true end
+    for s,_ in pairs(usedtypes or {}) do types[s]=true end --texture variants found in this map
+
+    for s,_ in pairs(types) do
+    if mab.map:typename(s) and mab.map:typecolor(s) then
+      local r,g,b=unpack(mab.map:typecolor(s))
       
       io.write(
         string.format("newmtl %s\n"
@@ -255,7 +302,7 @@ function mab.map:savemtl(file)
        ..'Ks 0.3 0.3 0.5\n'
        ..'Ke 0.0 0.0 0.0\n'
        ..'\n'
-        ,mat[s],r,g,b) --floats
+        ,mab.map:typename(s),r,g,b) --floats
       )
     end
     end
@@ -291,7 +338,7 @@ function splitmaplines(str, delim, maxNb) --from <http://lua-users.org/wiki/Spli
 end
 
 function mab.map:loadobj(file,reversed_mode)
-  print("@--Importing OBJ..."); local lastmat="plain"; local start=os.clock(); local localsplit=splitmaplines local tonum=tonumber
+  print("@--Importing OBJ..."); local lastmat="plain"; local start=os.clock(); local localsplit=splitmaplines local tonum=tonumber; local unknownmats={}
   mab.map.vtx,mab.map.fcs={},{}
 
   if io.open(file,"r") then
@@ -335,7 +382,11 @@ function mab.map:loadobj(file,reversed_mode)
       
                 end
                 
-              mab.map.fcs[fcount][11]=_G["rt_"..lastmat] or 3 --@FIXME hack, no material as of yet :(
+              local ftype=mab.map:typefromname(lastmat)
+              if not ftype and not unknownmats[lastmat] then
+                print("[!] unknown material '"..lastmat.."', its faces become plain"); unknownmats[lastmat]=true
+              end
+              mab.map.fcs[fcount][11]=ftype or 3 --@FIXME hack, no material as of yet :(
 
           end
       end
