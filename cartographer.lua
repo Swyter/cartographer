@@ -218,7 +218,7 @@ lujgl.setRenderCallback(function()
        
         for i=1,#mab.map.fcs do
           x=tonumber(mab.map.fcs[i][11])
-          gl.glColor3f(unpack(mab.map.terrain[x] or {1,0,1}))
+          gl.glColor3f(unpack(mab.map:typecolor(x) or {1,0,1}))
           
           for j=1,3 do
             local nm=faceted and mab.map.fcn[i]
