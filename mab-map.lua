@@ -238,6 +238,12 @@ end
 
 function mab.map:saveobj(file,reversed_mode)
   print("@--Exporting OBJ..."); local start=os.clock(); local lastmat=-1; local usedtypes={}
+
+  -- swy: add the .obj extension if it's missing from the save dialog
+  if (string.sub(file:lower(), -4) ~= ".obj") then -- swy: grab the last four filename characters, turn them to lowercase and see if there's an extension
+    file=file..".obj"
+  end
+  
   if io.output(io.open(file,"w")) then
     io.write([[
   # Mount&Blade Map file
