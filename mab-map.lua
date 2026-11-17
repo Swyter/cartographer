@@ -172,6 +172,7 @@ end
 
 function mab.map:save(file,reversed_mode)
   print("@--Saving Map..."); local start=os.clock(); local lastmat=-1;
+  os.rename(file, file..".OLD-"..os.date("%Y.%m.%d-%H.%M.%S")) -- swy: move any existing map.txt into a timestamped backup suffixed with the current date, like 'map.txt.OLD-2026.11.16-14.11', in case cartographer crashes, so that we don't lose the existing file, suggested by @Erundil. thanks!
   io.output(io.open(file,"w"))
   
   io.write(string.format("%d\n",vtx))
